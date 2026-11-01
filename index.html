@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09090f"><meta name="description" content="PD Tools — ferramentas rápidas, gratuitas e simples.">
+<title>PD Tools — Ferramentas inteligentes</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="ambient"></div>
+<header class="topbar"><a class="brand" href="#"><span class="brand-mark">PD</span><span>PD <b>TOOLS</b></span></a><nav><a href="#tools">Ferramentas</a><a href="#about">Sobre</a><button class="admin-trigger" id="adminOpen">Admin</button></nav></header>
+<main>
+<section class="hero"><div class="eyebrow"><i></i> UM UNIVERSO DE POSSIBILIDADES</div><h1>Suas ideias.<br><span>Sem limites.</span></h1><p>Ferramentas inteligentes para facilitar seu dia. Rápidas, gratuitas e direto no navegador.</p><a class="primary-btn" href="#tools">Explorar ferramentas <b>↗</b></a><div class="hero-note"><span>✦</span> Desenvolvido por <b>Kraz</b></div></section>
+<section class="tools-section" id="tools"><div class="section-head"><div><div class="eyebrow">CENTRAL DE FERRAMENTAS</div><h2>O que vamos criar hoje?</h2></div><div class="search-wrap">⌕ <input id="search" placeholder="Buscar ferramenta..."></div></div><div class="filters" id="filters"></div><div class="tool-grid" id="toolGrid"></div></section>
+<section class="about" id="about"><div class="eyebrow">SIMPLES. RÁPIDO. PODEROSO.</div><h2>Tecnologia que trabalha<br><span>por você.</span></h2><p>O PD Tools reúne utilidades essenciais em uma experiência limpa e intuitiva. Sem cadastro, sem complicação.</p></section>
+</main>
+<footer><div class="brand"><span class="brand-mark">PD</span><span>PD <b>TOOLS</b></span></div><span>Desenvolvido por <b>Kraz</b></span><span>© <span id="year"></span> PD Tools</span></footer>
+<div class="modal-backdrop" id="toolModal"><section class="modal"><div class="modal-head"><div><div class="eyebrow" id="modalCategory">FERRAMENTA</div><h3 id="modalTitle">Ferramenta</h3></div><button class="icon-btn" data-close="toolModal">✕</button></div><div id="toolContent"></div></section></div>
+<div class="modal-backdrop" id="adminModal"><section class="modal admin-modal"><div class="modal-head"><div><div class="eyebrow">CONTROLE DO SITE</div><h3>Painel administrativo</h3></div><button class="icon-btn" data-close="adminModal">✕</button></div><div class="admin-warning">As configurações deste painel são salvas neste navegador. Para publicar mudanças para todos os visitantes, é necessário conectar um backend.</div><div class="admin-tabs"><button class="active" data-tab="overview">Visão geral</button><button data-tab="toolsAdmin">Ferramentas</button><button data-tab="appearance">Aparência</button></div><div id="adminContent"></div></section></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="app.js"></script>
+</body></html>
