@@ -146,8 +146,9 @@ function render() {
 
 const field = (label, id, placeholder = "", type = "text") => `
   <div class="field">
-    <label>${label}</label>
-    <input id="${id}" type="${type}" placeholder="${placeholder}">
+    <label>${esc(label)}</label>
+    <input id="${esc(id)}" type="${esc(type)}"
+      placeholder="${esc(placeholder)}">
   </div>
 `;
 
@@ -171,6 +172,138 @@ function toolHTML(id) {
         <button class="action" id="qrMake">Gerar QR Code</button>
         <div id="qrcode"></div>
         <button class="secondary" id="qrDownload" hidden>Baixar PNG</button>
+      `;
+
+    case "names":
+      return `
+        <div class="field">
+          <label>Estilo do nome</label>
+          <select id="nameStyle">
+            <option value="brand">Marca ou projeto</option>
+            <option value="game">Game ou personagem</option>
+            <option value="nickname">Apelido</option>
+            <option value="fantasy">Fantasia</option>
+          </select>
+        </div>
+        ${field("Palavra opcional", "nameWord", "Ex.: Shadow, Pixel, Nova")}
+        <button class="action" id="nameMake">Gerar nomes</button>
+        <div class="result" id="nameResult">Seus nomes aparecerão aqui.</div>
+        <button class="secondary" id="nameCopy">Copiar resultado</button>
+      `;
+
+    case "ideas":
+      return `
+        <div class="field">
+          <label>Área de interesse</label>
+          <select id="ideaType">
+            <option value="business">Negócios</option>
+            <option value="content">Conteúdo</option>
+            <option value="game">Games</option>
+            <option value="community">Comunidade</option>
+            <option value="general">Ideias gerais</option>
+          </select>
+        </div>
+        <button class="action" id="ideaMake">Gerar ideias</button>
+        <div class="result" id="ideaResult">Suas ideias aparecerão aqui.</div>
+        <button class="secondary" id="ideaCopy">Copiar ideias</button>
+      `;
+
+    case "slogans":
+      return `
+        ${field("Nome da marca ou projeto", "sloganName", "Ex.: PD Tools")}
+        <div class="field">
+          <label>Estilo</label>
+          <select id="sloganStyle">
+            <option value="impact">Impactante</option>
+            <option value="modern">Moderno</option>
+            <option value="creative">Criativo</option>
+            <option value="professional">Profissional</option>
+          </select>
+        </div>
+        <button class="action" id="sloganMake">Gerar slogans</button>
+        <div class="result" id="sloganResult">Seus slogans aparecerão aqui.</div>
+        <button class="secondary" id="sloganCopy">Copiar slogans</button>
+      `;
+
+    case "palette":
+      return `
+        <button class="action" id="paletteMake">Gerar nova paleta</button>
+        <div id="paletteResult" class="result"></div>
+        <button class="secondary" id="paletteCopy">Copiar cores HEX</button>
+      `;
+
+    case "gradients":
+      return `
+        <div class="field">
+          <label>Primeira cor</label>
+          <input type="color" id="gradientA" value="#7c3aed">
+        </div>
+        <div class="field">
+          <label>Segunda cor</label>
+          <input type="color" id="gradientB" value="#ec4899">
+        </div>
+        <div class="field">
+          <label>Direção</label>
+          <select id="gradientDirection">
+            <option value="to right">Horizontal</option>
+            <option value="to left">Horizontal inverso</option>
+            <option value="to bottom">Vertical</option>
+            <option value="135deg">Diagonal</option>
+          </select>
+        </div>
+        <div id="gradientPreview" style="height:120px;border-radius:12px;margin:15px 0"></div>
+        <button class="action" id="gradientMake">Atualizar gradiente</button>
+        <div class="result" id="gradientResult"></div>
+        <button class="secondary" id="gradientCopy">Copiar CSS</button>
+      `;
+
+    case "color-combinations":
+      return `
+        <div class="field">
+          <label>Escolha uma cor</label>
+          <input type="color" id="combinationColor" value="#8b5cf6">
+        </div>
+        <button class="action" id="combinationMake">Encontrar combinações</button>
+        <div class="result" id="combinationResult"></div>
+        <button class="secondary" id="combinationCopy">Copiar cores</button>
+      `;
+
+    case "symbols":
+      return `
+        <div class="field">
+          <label>Categoria</label>
+          <select id="symbolType">
+            <option value="all">Todos</option>
+            <option value="arrows">Setas</option>
+            <option value="stars">Estrelas</option>
+            <option value="shapes">Formas</option>
+            <option value="special">Especiais</option>
+          </select>
+        </div>
+        <div class="result" id="symbolResult"></div>
+        <button class="secondary" id="symbolCopy">Copiar símbolos</button>
+      `;
+
+    case "fonts":
+      return `
+        <div class="field">
+          <label>Seu texto</label>
+          <textarea id="fontInput" placeholder="Digite algo..."></textarea>
+        </div>
+        <button class="action" id="fontMake">Gerar estilos</button>
+        <div class="result" id="fontResult"></div>
+        <button class="secondary" id="fontCopy">Copiar estilos</button>
+      `;
+
+    case "decorative-text":
+      return `
+        <div class="field">
+          <label>Seu texto</label>
+          <textarea id="decorativeInput" placeholder="Digite algo..."></textarea>
+        </div>
+        <button class="action" id="decorativeMake">Criar decorações</button>
+        <div class="result" id="decorativeResult"></div>
+        <button class="secondary" id="decorativeCopy">Copiar resultado</button>
       `;
 
     case "counter":
@@ -284,7 +417,7 @@ function toolHTML(id) {
       `;
 
     default:
-      return "<p>Ferramenta não encontrada.</p>";
+      return "<p>Esta ferramenta ainda não foi implementada.</p>";
   }
 }
 
@@ -294,6 +427,58 @@ function copy(value) {
   navigator.clipboard?.writeText(value)
     .then(() => toast("Copiado!"))
     .catch(() => toast("Não foi possível copiar."));
+}
+
+function randomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function gerarCor() {
+  return "#" + Math.floor(Math.random() * 16777215)
+    .toString(16).padStart(6, "0");
+}
+
+function hexParaHsl(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s;
+  const l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      default: h = (r - g) / d + 4;
+    }
+
+    h /= 6;
+  }
+
+  return [h * 360, s * 100, l * 100];
+}
+
+function hslParaHex(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s /= 100;
+  l /= 100;
+
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * color).toString(16).padStart(2, "0");
+  };
+
+  return `#${f(0)}${f(8)}${f(4)}`;
 }
 
 function wireTool(id) {
@@ -327,6 +512,278 @@ function wireTool(id) {
       link.download = "pd-tools-qrcode.png";
       link.click();
     };
+  }
+
+  if (id === "names") {
+    $("#nameMake").onclick = () => {
+      const style = $("#nameStyle").value;
+      const word = $("#nameWord").value.trim();
+
+      const lists = {
+        brand: ["Nova", "Pixel", "Prime", "Nexus", "Vortex", "Orbit", "Pulse", "Vision", "Core", "Infinity"],
+        game: ["Shadow", "Dragon", "Phantom", "Blaze", "Storm", "Raven", "Wolf", "Knight", "Ghost", "Hunter"],
+        nickname: ["Dark", "Fast", "Lucky", "Crazy", "Silent", "King", "Zero", "Frost", "Fire", "Legend"],
+        fantasy: ["Eldoria", "Aether", "Valoria", "Drakon", "Mystara", "Eclipse", "Arvand", "Zephyria", "Nébula", "Lunaris"]
+      };
+
+      const suffixes = ["X", "Lab", "Hub", "Zone", "One", "Pro", "BR", "Plus", "Studio", "World"];
+      const results = [];
+
+      for (let i = 0; i < 10; i++) {
+        const base = randomItem(lists[style]);
+        const suffix = randomItem(suffixes);
+        results.push(word ? `${word} ${base}` : `${base}${suffix}`);
+      }
+
+      $("#nameResult").textContent = [...new Set(results)].join("\n");
+    };
+
+    $("#nameCopy").onclick = () => copy($("#nameResult").textContent);
+  }
+
+  if (id === "ideas") {
+    $("#ideaMake").onclick = () => {
+      const ideas = {
+        business: [
+          "Criar uma loja virtual de produtos personalizados.",
+          "Montar um serviço de assinatura mensal.",
+          "Criar uma marca com produtos exclusivos.",
+          "Oferecer consultoria para pequenos negócios.",
+          "Criar um marketplace de serviços locais.",
+          "Desenvolver uma plataforma de cursos.",
+          "Criar kits personalizados para presentes.",
+          "Montar um clube de benefícios.",
+          "Criar uma agência de conteúdo digital.",
+          "Desenvolver uma ferramenta online gratuita."
+        ],
+        content: [
+          "Criar uma série de vídeos com dicas rápidas.",
+          "Fazer desafios semanais com seguidores.",
+          "Publicar curiosidades em formato de quiz.",
+          "Criar tutoriais para iniciantes.",
+          "Fazer comparações entre ferramentas.",
+          "Criar uma série de erros comuns.",
+          "Publicar bastidores do projeto.",
+          "Criar vídeos respondendo perguntas.",
+          "Fazer rankings temáticos.",
+          "Criar um quadro de novidades."
+        ],
+        game: [
+          "Organizar um campeonato entre jogadores.",
+          "Criar um sistema de missões semanais.",
+          "Fazer uma caça ao tesouro.",
+          "Criar um desafio de sobrevivência.",
+          "Montar um ranking por temporadas.",
+          "Organizar uma noite de jogos.",
+          "Criar um mapa personalizado.",
+          "Fazer um torneio em equipes.",
+          "Criar recompensas por conquistas.",
+          "Organizar uma competição de construção."
+        ],
+        community: [
+          "Criar um membro destaque da semana.",
+          "Organizar encontros temáticos.",
+          "Criar um mural de sugestões.",
+          "Fazer uma votação de eventos.",
+          "Criar desafios entre grupos.",
+          "Montar um programa de boas-vindas.",
+          "Criar uma campanha de participação.",
+          "Organizar uma noite de perguntas.",
+          "Criar um sistema de reconhecimento.",
+          "Fazer uma retrospectiva mensal."
+        ],
+        general: [
+          "Criar um projeto colaborativo.",
+          "Organizar um desafio de 7 dias.",
+          "Desenvolver uma ferramenta simples.",
+          "Criar um guia para iniciantes.",
+          "Montar uma competição criativa.",
+          "Criar um calendário de atividades.",
+          "Desenvolver uma identidade visual.",
+          "Criar um espaço de compartilhamento.",
+          "Organizar uma votação de ideias.",
+          "Criar um projeto com metas mensais."
+        ]
+      };
+
+      $("#ideaResult").textContent = [...ideas[$("#ideaType").value]]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5)
+        .map((idea, i) => `${i + 1}. ${idea}`)
+        .join("\n");
+    };
+
+    $("#ideaCopy").onclick = () => copy($("#ideaResult").textContent);
+  }
+
+  if (id === "slogans") {
+    $("#sloganMake").onclick = () => {
+      const name = $("#sloganName").value.trim() || "Sua marca";
+
+      const phrases = {
+        impact: ["O próximo nível começa aqui.", "Feito para ir além.", "Sua evolução não tem limites.", "Transformando possibilidades em realidade.", "O futuro começa agora."],
+        modern: ["Inovação em cada detalhe.", "Simples. Inteligente. Seu.", "Uma nova forma de fazer.", "Conectando ideias ao futuro.", "Tecnologia que acompanha você."],
+        creative: ["Ideias que ganham vida.", "Onde a criatividade acontece.", "Pense diferente. Crie mais.", "Sua imaginação em movimento.", "Criatividade sem fronteiras."],
+        professional: ["Compromisso com resultados.", "Excelência em cada etapa.", "Soluções que fazem a diferença.", "Qualidade que inspira confiança.", "Construindo resultados juntos."]
+      };
+
+      $("#sloganResult").textContent = phrases[$("#sloganStyle").value]
+        .map((phrase, i) => `${i + 1}. ${name} — ${phrase}`)
+        .join("\n");
+    };
+
+    $("#sloganCopy").onclick = () => copy($("#sloganResult").textContent);
+  }
+
+  if (id === "palette") {
+    const gerar = () => {
+      const colors = Array.from({ length: 5 }, gerarCor);
+
+      $("#paletteResult").innerHTML = colors.map(color => `
+        <div style="display:flex;align-items:center;gap:10px;margin:9px 0">
+          <span style="width:42px;height:32px;border-radius:7px;background:${color};display:inline-block"></span>
+          <b>${color}</b>
+        </div>
+      `).join("");
+
+      $("#paletteResult").dataset.colors = colors.join(", ");
+    };
+
+    $("#paletteMake").onclick = gerar;
+    $("#paletteCopy").onclick = () => copy($("#paletteResult").dataset.colors);
+    gerar();
+  }
+
+  if (id === "gradients") {
+    const atualizar = () => {
+      const a = $("#gradientA").value;
+      const b = $("#gradientB").value;
+      const direction = $("#gradientDirection").value;
+      const css = `linear-gradient(${direction}, ${a}, ${b})`;
+
+      $("#gradientPreview").style.background = css;
+      $("#gradientResult").textContent = `background: ${css};`;
+    };
+
+    $("#gradientMake").onclick = atualizar;
+    $("#gradientCopy").onclick = () => copy($("#gradientResult").textContent);
+    $("#gradientA").oninput = atualizar;
+    $("#gradientB").oninput = atualizar;
+    $("#gradientDirection").onchange = atualizar;
+    atualizar();
+  }
+
+  if (id === "color-combinations") {
+    $("#combinationMake").onclick = () => {
+      const [h, s, l] = hexParaHsl($("#combinationColor").value);
+
+      const colors = [
+        hslParaHex(h, s, l),
+        hslParaHex(h + 180, s, l),
+        hslParaHex(h + 30, s, l),
+        hslParaHex(h + 150, s, l),
+        hslParaHex(h + 210, s, l)
+      ];
+
+      $("#combinationResult").innerHTML = colors.map(color => `
+        <div style="display:flex;align-items:center;gap:10px;margin:9px 0">
+          <span style="width:42px;height:32px;border-radius:7px;background:${color};display:inline-block"></span>
+          <b>${color}</b>
+        </div>
+      `).join("");
+
+      $("#combinationResult").dataset.colors = colors.join(", ");
+    };
+
+    $("#combinationCopy").onclick = () => copy($("#combinationResult").dataset.colors);
+    $("#combinationMake").click();
+  }
+
+  if (id === "symbols") {
+    const groups = {
+      arrows: "← → ↑ ↓ ↗ ↘ ↙ ↖ ⇐ ⇒ ⇑ ⇓ ↔ ↕ ⟵ ⟶",
+      stars: "★ ☆ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯ ✰ ⋆ ⁕",
+      shapes: "■ □ ▪ ▫ ● ○ ◉ ◎ ◆ ◇ ▲ △ ▼ ▽",
+      special: "© ® ™ § ¶ † ‡ ※ ⁂ ♡ ♥ ♧ ♢ ♤ ♠",
+      all: "← → ↑ ↓ ↗ ↘ ↙ ↖ ⇐ ⇒ ⇑ ⇓ ↔ ↕ ★ ☆ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯ ✰ ■ □ ▪ ▫ ● ○ ◉ ◎ ◆ ◇ ▲ △ ▼ ▽ © ® ™ § ¶ † ‡ ※ ⁂ ♡ ♥ ♧ ♢ ♤ ♠"
+    };
+
+    const atualizar = () => {
+      const symbols = groups[$("#symbolType").value].split(" ");
+
+      $("#symbolResult").innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+          ${symbols.map(symbol => `
+            <button type="button" class="secondary symbol-option"
+              data-symbol="${symbol}" style="font-size:22px;padding:10px">
+              ${symbol}
+            </button>
+          `).join("")}
+        </div>
+      `;
+
+      $$("#symbolResult [data-symbol]").forEach(button => {
+        button.onclick = () => copy(button.dataset.symbol);
+      });
+
+      $("#symbolResult").dataset.symbols = symbols.join(" ");
+    };
+
+    $("#symbolType").onchange = atualizar;
+    $("#symbolCopy").onclick = () => copy($("#symbolResult").dataset.symbols);
+    atualizar();
+  }
+
+  if (id === "fonts") {
+    const mapear = (text, start) => [...text].map(char => {
+      const code = char.codePointAt(0);
+
+      if (code >= 65 && code <= 90) return String.fromCodePoint(start + code - 65);
+      if (code >= 97 && code <= 122) return String.fromCodePoint(start + code - 97);
+      return char;
+    }).join("");
+
+    $("#fontMake").onclick = () => {
+      const value = $("#fontInput").value;
+      if (!value) return toast("Digite um texto primeiro.");
+
+      const styles = [
+        ["Negrito", mapear(value, 0x1D400)],
+        ["Itálico", mapear(value, 0x1D434)],
+        ["Negrito itálico", mapear(value, 0x1D468)],
+        ["Monoespaçado", mapear(value, 0x1D670)],
+        ["Duplo", mapear(value, 0x1D538)]
+      ];
+
+      const result = styles.map(([name, text]) => `${name}: ${text}`).join("\n\n");
+      $("#fontResult").textContent = result;
+    };
+
+    $("#fontCopy").onclick = () => copy($("#fontResult").textContent);
+  }
+
+  if (id === "decorative-text") {
+    $("#decorativeMake").onclick = () => {
+      const value = $("#decorativeInput").value.trim();
+      if (!value) return toast("Digite um texto primeiro.");
+
+      const results = [
+        `★彡 ${value} 彡★`,
+        `『 ${value} 』`,
+        `꧁ ${value} ꧂`,
+        `༺ ${value} ༻`,
+        `✧･ﾟ: ${value} :･ﾟ✧`,
+        `【 ${value} 】`,
+        `『✦』${value}『✦』`,
+        `•°¯\`${value}\`¯°•`,
+        `♡ ${value} ♡`,
+        `⫷ ${value} ⫸`
+      ];
+
+      $("#decorativeResult").textContent = results.join("\n");
+    };
+
+    $("#decorativeCopy").onclick = () => copy($("#decorativeResult").textContent);
   }
 
   if (id === "counter") {
@@ -601,7 +1058,7 @@ async function abrirAdmin() {
     const password = prompt("Digite sua senha:");
     if (!password) return;
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
+    const { error } = await supabaseClient.auth.signInWithPassword({
       email,
       password
     });
