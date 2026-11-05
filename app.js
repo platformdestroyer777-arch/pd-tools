@@ -1,6 +1,8 @@
 
 const SUPABASE_URL = "https://aohhacasirnzkchbyzlw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I5gPq6-Qti8SPAoN_8RrOg_-w5shIPo";
+const ASSET_BUCKET = "site-assets";
+const ASSET_BASE = `${SUPABASE_URL}/storage/v1/object/public/${ASSET_BUCKET}`;
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
