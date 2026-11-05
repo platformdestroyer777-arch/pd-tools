@@ -1,0 +1,16 @@
+/* Ajustes adicionais sem alterar o tema existente. */
+#qrcode { max-width: 100%; width: fit-content; }
+#qrcode canvas, #qrcode img { max-width: 100%; height: auto; }
+.modal { max-width: 100%; overscroll-behavior: contain; }
+.admin-tabs { overflow-x: auto; }
+.admin-tabs button { flex-shrink: 0; }
+.tool-card:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--purple); outline-offset: 3px; }
+@media (max-width: 420px) {
+  .topbar { gap: 8px; }
+  .topbar .brand { font-size: 12px; letter-spacing: .5px; }
+  .topbar nav { gap: 5px; }
+  .admin-trigger { font-size: 10px; padding: 8px; }
+  .hero h1 { overflow-wrap: anywhere; }
+  .modal-backdrop { padding: 8px; }
+  .modal { padding: 15px; }
+}
