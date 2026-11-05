@@ -1,8 +1,8 @@
 
 /* ==========================================
-   PD TOOLS — PREMIUM FUNCIONAL
-   5 ferramentas disponíveis
-   10 ferramentas em desenvolvimento
+   PD TOOLS — PREMIUM
+   15 ferramentas cadastradas
+   Integração com Supabase
    ========================================== */
 
 (() => {
@@ -15,7 +15,7 @@
   const content = document.getElementById("toolContent");
 
   if (!filters || !grid || !modal || !content) {
-    console.error("PD Tools: elementos não encontrados.");
+    console.error("PD Tools: elementos Premium não encontrados.");
     return;
   }
 
@@ -27,26 +27,39 @@
   const client = supabaseClient;
 
   const premiumTools = [
-    { id: "remove-bg", name: "Removedor de fundo", desc: "Remova fundos de imagens.", icon: "✂️" },
-    { id: "pdf-studio", name: "PDF Studio", desc: "Organize arquivos PDF.", icon: "📄" },
-    { id: "ocr", name: "Extrator de texto OCR", desc: "Extraia textos de imagens.", icon: "🔎" },
+    { id: "remove-bg", name: "Removedor de fundo", desc: "Remova fundos de imagens.", icon: "✂️", ready: true },
+    { id: "pdf-studio", name: "PDF Studio", desc: "Organize arquivos PDF.", icon: "📄", ready: true },
+    { id: "ocr", name: "Extrator de texto OCR", desc: "Extraia textos de imagens.", icon: "🔎", ready: true },
     { id: "html-studio", name: "HTML Studio", desc: "Edite e visualize HTML.", icon: "💻", ready: true },
     { id: "banner", name: "Criador de banners", desc: "Crie banners personalizados.", icon: "🎨", ready: true },
-    { id: "image-batch", name: "Conversor de imagens em lote", desc: "Converta várias imagens.", icon: "🔄" },
-    { id: "qr-advanced", name: "QR Code avançado", desc: "Personalize QR Codes.", icon: "▦" },
+    { id: "image-batch", name: "Conversor de imagens em lote", desc: "Converta várias imagens.", icon: "🔄", ready: true },
+    { id: "qr-advanced", name: "QR Code avançado", desc: "Personalize QR Codes.", icon: "▦", ready: true },
     { id: "json-studio", name: "JSON Studio", desc: "Analise e formate JSON.", icon: "{}", ready: true },
-    { id: "watermark", name: "Marca d'água em lote", desc: "Proteja suas imagens.", icon: "◈" },
-    { id: "pdf-compress", name: "Compressor de PDF", desc: "Reduza arquivos PDF.", icon: "📦" },
-    { id: "resume", name: "Criador de currículos", desc: "Monte currículos.", icon: "📋" },
-    { id: "image-editor", name: "Editor de imagens", desc: "Edite suas imagens.", icon: "🖼️" },
+    { id: "watermark", name: "Marca d'água em lote", desc: "Proteja suas imagens.", icon: "◈", ready: true },
+    { id: "pdf-compress", name: "Compressor de PDF", desc: "Reduza arquivos PDF.", icon: "📦", ready: true },
+    { id: "resume", name: "Criador de currículos", desc: "Monte currículos.", icon: "📋", ready: true },
+    { id: "image-editor", name: "Editor de imagens", desc: "Edite suas imagens.", icon: "🖼️", ready: true },
     { id: "srt", name: "Criador de legendas SRT", desc: "Crie legendas para vídeos.", icon: "≡", ready: true },
     { id: "minifier", name: "Minificador avançado", desc: "Compacte códigos HTML, CSS e JavaScript.", icon: "⌘", ready: true },
-    { id: "site-builder", name: "Criador de sites", desc: "Monte páginas personalizadas.", icon: "🌐" }
+    { id: "site-builder", name: "Criador de sites", desc: "Monte páginas personalizadas.", icon: "🌐", ready: true }
   ];
 
+  const externalTools = new Set([
+    "remove-bg",
+    "pdf-studio",
+    "ocr",
+    "image-batch",
+    "qr-advanced",
+    "watermark",
+    "pdf-compress",
+    "resume",
+    "image-editor",
+    "site-builder"
+  ]);
+
   let premiumSelected = false;
-  let requestVersion = 0;
   let premiumVerified = false;
+  let requestVersion = 0;
 
   const $ = selector => document.querySelector(selector);
 
@@ -250,7 +263,10 @@
     );
 
     if (!visible.length) {
-      showMessage("Nenhuma ferramenta encontrada", "Tente outra pesquisa.");
+      showMessage(
+        "Nenhuma ferramenta encontrada",
+        "Tente outra pesquisa."
+      );
       return;
     }
 
@@ -383,7 +399,7 @@
     link.click();
     link.remove();
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
   function downloadText(text, filename, type = "text/plain") {
@@ -472,9 +488,8 @@
           ])}
           ${textarea("Resultado", "pdMinOutput")}
           <p style="color:#999;font-size:12px">
-            Compactação conservadora. Não substitui um
-            minificador profissional e deve ser testada
-            antes de publicar código em produção.
+            Compactação conservadora. Teste o código
+            antes de utilizá-lo em produção.
           </p>
         `;
 
@@ -502,8 +517,9 @@
       default:
         return `
           <div class="pd-premium-result">
-            Esta ferramenta ainda está em desenvolvimento.
-            Estamos preparando sua funcionalidade.
+            Não foi possível abrir esta ferramenta.
+            Verifique se o arquivo JavaScript correspondente
+            está carregado no site.
           </div>
         `;
     }
@@ -518,7 +534,11 @@
     };
 
     $("#pdHtmlDownload").onclick = () => {
-      downloadText(input.value, "pdtools-pagina.html", "text/html");
+      downloadText(
+        input.value,
+        "pdtools-pagina.html",
+        "text/html"
+      );
     };
 
     frame.srcdoc = input.value;
@@ -545,7 +565,10 @@
 
         return output;
       } catch (error) {
-        setResult("pdJsonResult", "JSON inválido: " + error.message);
+        setResult(
+          "pdJsonResult",
+          "JSON inválido: " + error.message
+        );
         return null;
       }
     }
@@ -555,8 +578,13 @@
 
     $("#pdJsonDownload").onclick = () => {
       const output = process(false);
+
       if (output !== null) {
-        downloadText(output, "pdtools-dados.json", "application/json");
+        downloadText(
+          output,
+          "pdtools-dados.json",
+          "application/json"
+        );
       }
     };
   }
@@ -571,7 +599,9 @@
     const hours = Number(match[1]);
     const minutes = Number(match[2]);
     const seconds = Number(match[3]);
-    const millis = Number((match[4] || "0").padEnd(3, "0"));
+    const millis = Number(
+      (match[4] || "0").padEnd(3, "0")
+    );
 
     const total =
       ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis;
@@ -590,7 +620,10 @@
     let generated = "";
 
     function generate() {
-      const lines = input.value.split(/\r?\n/).filter(line => line.trim());
+      const lines = input.value
+        .split(/\r?\n/)
+        .filter(line => line.trim());
+
       const entries = [];
 
       for (const [index, line] of lines.entries()) {
@@ -624,13 +657,15 @@
       }
 
       if (!entries.length) {
-        setResult("pdSrtResult", "Adicione pelo menos uma legenda.");
+        setResult(
+          "pdSrtResult",
+          "Adicione pelo menos uma legenda."
+        );
         generated = "";
         return false;
       }
 
       generated = entries.join("\n\n") + "\n";
-
       setResult("pdSrtResult", generated);
       return true;
     }
@@ -639,7 +674,10 @@
 
     $("#pdSrtDownload").onclick = () => {
       if (generate()) {
-        downloadText(generated, "pdtools-legendas.srt");
+        downloadText(
+          generated,
+          "pdtools-legendas.srt"
+        );
       }
     };
   }
@@ -667,8 +705,6 @@
       }
 
       if (type.value === "js") {
-        // Compactação básica sem remover espaços
-        // que poderiam alterar o funcionamento.
         result = result
           .split("\n")
           .map(line => line.trim())
@@ -685,9 +721,13 @@
     $("#pdMinCopy").onclick = async () => {
       try {
         await navigator.clipboard.writeText(output.value);
-        if (typeof toast === "function") toast("Código copiado!");
+
+        if (typeof toast === "function") {
+          toast("Código copiado!");
+        }
       } catch {
         output.select();
+
         if (typeof toast === "function") {
           toast("Selecione e copie o resultado.");
         }
@@ -732,7 +772,9 @@
 
       do {
         ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+
         if (ctx.measureText(title).width <= 990) break;
+
         fontSize -= 2;
       } while (fontSize > 22);
 
@@ -742,13 +784,14 @@
       ctx.font = "32px Arial, sans-serif";
       ctx.fillStyle = accent;
 
-      // Quebra o subtítulo em linhas quando necessário.
       const words = subtitle.split(/\s+/);
       const lines = [];
       let line = "";
 
       for (const word of words) {
-        const candidate = line ? line + " " + word : word;
+        const candidate = line
+          ? line + " " + word
+          : word;
 
         if (ctx.measureText(candidate).width > 950 && line) {
           lines.push(line);
@@ -761,7 +804,12 @@
       if (line) lines.push(line);
 
       lines.slice(0, 3).forEach((text, index) => {
-        ctx.fillText(text, 130, 355 + index * 44, 950);
+        ctx.fillText(
+          text,
+          130,
+          355 + index * 44,
+          950
+        );
       });
 
       ctx.fillStyle = "#77717f";
@@ -775,7 +823,12 @@
       draw();
 
       canvas.toBlob(blob => {
-        if (blob) downloadBlob(blob, "pdtools-banner.png");
+        if (blob) {
+          downloadBlob(
+            blob,
+            "pdtools-banner.png"
+          );
+        }
       }, "image/png");
     };
 
@@ -787,12 +840,16 @@
 
     if (!tool || !premiumSelected || !premiumVerified) return;
 
-    // Revalida o acesso antes de abrir.
+    // Ferramentas externas possuem seus próprios eventos.
+    // Não abrir aqui para evitar janelas duplicadas.
+    if (externalTools.has(id)) return;
+
     try {
       const allowed = await hasPremium();
 
       if (!allowed) {
         premiumVerified = false;
+
         showMessage(
           "🔒 Premium bloqueado",
           "Seu acesso Premium não está ativo."
@@ -801,6 +858,7 @@
       }
     } catch (error) {
       console.error("Erro ao validar Premium:", error);
+
       showMessage(
         "Erro ao verificar Premium",
         "Tente novamente."
@@ -811,7 +869,10 @@
     $("#modalTitle").textContent = tool.name;
     $("#modalCategory").textContent = "PD TOOLS PREMIUM";
 
-    if (typeof activeToolInterval !== "undefined" && activeToolInterval) {
+    if (
+      typeof activeToolInterval !== "undefined" &&
+      activeToolInterval
+    ) {
       clearInterval(activeToolInterval);
       activeToolInterval = null;
     }
@@ -842,7 +903,7 @@
     }
   }
 
-  // Intercepta os filtros antes dos eventos do app.js.
+  // Intercepta os filtros antes do app.js.
   filters.addEventListener("click", event => {
     const button = event.target.closest("button[data-cat]");
 
@@ -858,7 +919,7 @@
     }
   }, true);
 
-  // Abre ferramentas Premium.
+  // Ferramentas internas.
   grid.addEventListener("click", event => {
     const card = event.target.closest("[data-premium-tool]");
 
@@ -872,13 +933,13 @@
 
     const card = event.target.closest("[data-premium-tool]");
 
-    if (!card) return;
+    if (!card || !grid.contains(card)) return;
 
     event.preventDefault();
     openPremiumTool(card.dataset.premiumTool);
   });
 
-  // Mantém o Premium na pesquisa.
+  // Mantém a busca Premium funcionando.
   if (search) {
     search.addEventListener("input", () => {
       if (premiumSelected && premiumVerified) {
@@ -887,7 +948,8 @@
     });
   }
 
-  // O app.js recria os filtros ao carregar dados.
+  // Restaura o botão Premium quando o app.js
+  // recriar a lista de categorias.
   const observer = new MutationObserver(() => {
     if (!filters.querySelector('[data-cat="Premium"]')) {
       addPremiumButton();
@@ -896,8 +958,8 @@
 
   observer.observe(filters, { childList: true });
 
-  // Se o app.js renderizar novamente enquanto Premium
-  // estiver selecionado, restaura a visualização correta.
+  // Restaura os cards quando o app.js
+  // atualizar as ferramentas gratuitas.
   const gridObserver = new MutationObserver(() => {
     if (!premiumSelected) return;
 
@@ -929,5 +991,5 @@
 
   addPremiumButton();
 
-  console.log("PD Tools Premium: 5 ferramentas disponíveis.");
+  console.log("PD Tools Premium: 15 ferramentas cadastradas.");
 })();
