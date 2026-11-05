@@ -20,7 +20,9 @@
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="fixes.css">
+  <link rel="stylesheet" href="premium-auth.css">
 </head>
+
 <body>
   <div class="ambient" aria-hidden="true"></div>
 
@@ -34,6 +36,11 @@
       <a href="#ferramentas">Ferramentas</a>
       <a href="#sobre">Sobre</a>
       <a href="#doacoes">Doações</a>
+
+      <button class="pd-account-trigger" id="pdAccountOpen" type="button">
+        Entrar / Criar conta
+      </button>
+
       <button class="admin-trigger" id="adminOpen" type="button">
         Painel administrativo
       </button>
@@ -45,17 +52,24 @@
       <div class="eyebrow">
         <i></i> SIMPLES, ÚTIL E GRATUITO
       </div>
+
       <h1>Suas ferramentas.<br><span>Sem complicação.</span></h1>
-      <p>Uma coleção de ferramentas online para facilitar tarefas do dia a dia, tudo em um só lugar.</p>
+
+      <p>
+        Uma coleção de ferramentas online para facilitar
+        tarefas do dia a dia, tudo em um só lugar.
+      </p>
+
       <a class="primary-btn" href="#ferramentas">
         Explorar ferramentas <b>→</b>
       </a>
+
       <div class="hero-note">
         <span>✦</span> Developer Kraz &amp; HZ
       </div>
     </section>
 
-    <!-- DOAÇÕES ACIMA DAS FERRAMENTAS -->
+    <!-- DOAÇÕES -->
     <section class="donation-section" id="doacoes">
       <div class="donation-card">
         <div class="donation-label">♡ APOIE O PROJETO</div>
@@ -82,6 +96,7 @@
         </div>
 
         <label for="donationAmount">Ou digite outro valor (R$)</label>
+
         <input
           id="donationAmount"
           type="number"
@@ -105,11 +120,16 @@
           Doação voluntária · Um projeto da Platform Destroyer
         </p>
 
-        <p class="donation-message" id="donationMessage" role="status" aria-live="polite"></p>
+        <p
+          class="donation-message"
+          id="donationMessage"
+          role="status"
+          aria-live="polite"
+        ></p>
       </div>
     </section>
 
-    <!-- FERRAMENTAS -->
+    <!-- FERRAMENTAS GRATUITAS -->
     <section class="tools-section" id="ferramentas">
       <div class="section-head">
         <div>
@@ -128,14 +148,21 @@
         </label>
       </div>
 
-      <div class="filters" id="filters" aria-label="Categorias de ferramentas"></div>
+      <div
+        class="filters"
+        id="filters"
+        aria-label="Categorias de ferramentas"
+      ></div>
+
       <div class="tool-grid" id="toolGrid"></div>
     </section>
 
     <!-- SOBRE -->
     <section class="about" id="sobre">
       <div class="eyebrow">SOBRE O PROJETO</div>
+
       <h2>Menos complicação.<br><span>Mais produtividade.</span></h2>
+
       <p>
         O PD Tools reúne ferramentas práticas, gratuitas e fáceis
         de usar para ajudar você nas tarefas do dia a dia.
@@ -148,11 +175,16 @@
       <span class="brand-mark">PD</span>
       <span>PD <b>TOOLS</b></span>
     </a>
-    <span>© <span id="year"></span> PD Tools. Todos os direitos reservados.</span>
+
+    <span>
+      © <span id="year"></span> PD Tools.
+      Todos os direitos reservados.
+    </span>
+
     <span>Desenvolvido por <b>Kraz e Hz</b></span>
   </footer>
 
-  <!-- ANÚNCIO INICIAL -->
+  <!-- ANÚNCIO DE DOAÇÕES -->
   <div class="donation-popup-overlay" id="donationPopup" hidden>
     <div
       class="donation-popup"
@@ -171,6 +203,7 @@
         <div class="donation-popup-logo">
           PD <span>TOOLS</span>
         </div>
+
         <div class="donation-popup-subtitle">APOIADOR</div>
       </div>
 
@@ -190,7 +223,7 @@
         </div>
 
         <p class="donation-popup-highlight">
-          Qualquer valor faz a diferença.<br>
+          Qualquer valor faz a diferença.
           Até R$ 0,10 já ajuda!
         </p>
 
@@ -209,6 +242,92 @@
     </div>
   </div>
 
+  <!-- LOGIN E CONTA PREMIUM -->
+  <div class="pd-account-overlay" id="pdAccountOverlay" hidden>
+    <div
+      class="pd-account-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pdAccountTitle"
+    >
+      <button
+        class="pd-account-x"
+        id="pdAccountClose"
+        type="button"
+        aria-label="Fechar"
+      >✕</button>
+
+      <div class="pd-account-tag">PD TOOLS PREMIUM</div>
+
+      <h2 id="pdAccountTitle">Entrar</h2>
+
+      <p class="pd-account-desc" id="pdAccountDesc">
+        Entre para acompanhar seu acesso Premium.
+      </p>
+
+      <form id="pdAccountForm">
+        <label for="pdAccountEmail">E-mail</label>
+
+        <input
+          id="pdAccountEmail"
+          type="email"
+          autocomplete="email"
+          required
+        >
+
+        <label for="pdAccountPassword">Senha</label>
+
+        <input
+          id="pdAccountPassword"
+          type="password"
+          minlength="8"
+          autocomplete="current-password"
+          required
+        >
+
+        <button
+          class="pd-account-primary"
+          id="pdAccountSubmit"
+          type="submit"
+        >
+          Entrar
+        </button>
+      </form>
+
+      <div
+        class="pd-account-profile"
+        id="pdAccountProfile"
+        hidden
+      >
+        <p id="pdAccountUser"></p>
+        <p id="pdAccountStatus"></p>
+
+        <button
+          class="pd-account-primary"
+          id="pdAccountLogout"
+          type="button"
+        >
+          Sair da conta
+        </button>
+      </div>
+
+      <button
+        class="pd-account-switch"
+        id="pdAccountSwitch"
+        type="button"
+      >
+        Não tem conta? Criar conta
+      </button>
+
+      <p
+        class="pd-account-message"
+        id="pdAccountMessage"
+        role="status"
+        aria-live="polite"
+      ></p>
+    </div>
+  </div>
+
   <!-- JANELA DAS FERRAMENTAS -->
   <div
     class="modal-backdrop"
@@ -223,6 +342,7 @@
           <div class="eyebrow" id="modalCategory">FERRAMENTA</div>
           <h3 id="modalTitle">Ferramenta</h3>
         </div>
+
         <button
           class="icon-btn"
           type="button"
@@ -230,11 +350,12 @@
           aria-label="Fechar"
         >✕</button>
       </div>
+
       <div id="toolContent"></div>
     </div>
   </div>
 
-  <!-- PAINEL ADMINISTRATIVO -->
+  <!-- PAINEL ADMINISTRATIVO ORIGINAL -->
   <div
     class="modal-backdrop"
     id="adminModal"
@@ -248,6 +369,7 @@
           <div class="eyebrow">PD TOOLS</div>
           <h3>Administração</h3>
         </div>
+
         <button
           class="icon-btn"
           type="button"
@@ -257,35 +379,61 @@
       </div>
 
       <div class="admin-warning">
-        Área restrita. Entre com sua conta administrativa para gerenciar
-        as ferramentas e a aparência do site.
+        Área restrita. Entre com sua conta administrativa
+        para gerenciar as ferramentas e a aparência do site.
       </div>
 
-      <div class="admin-tabs" role="tablist" aria-label="Seções administrativas">
-        <button class="active" type="button" data-tab="overview">Visão geral</button>
-        <button type="button" data-tab="toolsAdmin">Ferramentas</button>
-        <button type="button" data-tab="appearance">Aparência</button>
+      <div
+        class="admin-tabs"
+        role="tablist"
+        aria-label="Seções administrativas"
+      >
+        <button
+          class="active"
+          type="button"
+          data-tab="overview"
+        >Visão geral</button>
+
+        <button
+          type="button"
+          data-tab="toolsAdmin"
+        >Ferramentas</button>
+
+        <button
+          type="button"
+          data-tab="appearance"
+        >Aparência</button>
       </div>
 
       <div id="adminContent"></div>
     </div>
   </div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
 
-  <!-- BIBLIOTECAS ORIGINAIS -->
+  <!-- BIBLIOTECAS E SISTEMA ORIGINAL -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="app.js"></script>
 
-  <!-- SISTEMA DE DOAÇÕES E ANÚNCIO -->
+  <!-- LOGIN PREMIUM -->
+  <script src="premium-auth.js"></script>
+
+  <!-- DOAÇÕES E ANÚNCIO -->
   <script>
     (() => {
       const amountInput = document.getElementById("donationAmount");
       const total = document.getElementById("donationTotal");
       const message = document.getElementById("donationMessage");
       const submit = document.getElementById("donationSubmit");
-      const valueButtons = document.querySelectorAll("[data-donation-value]");
+
+      const valueButtons =
+        document.querySelectorAll("[data-donation-value]");
 
       const popup = document.getElementById("donationPopup");
       const closeButton = document.getElementById("closeDonationPopup");
@@ -353,9 +501,12 @@
         document.body.classList.remove("donation-popup-open");
 
         try {
-          sessionStorage.setItem("pdtoolsDonationPopupSeen", "1");
+          sessionStorage.setItem(
+            "pdtoolsDonationPopupSeen",
+            "1"
+          );
         } catch (error) {
-          // O anúncio também funciona sem armazenamento.
+          // Funciona sem armazenamento.
         }
 
         previousFocus?.focus?.();
@@ -384,9 +535,10 @@
         }
 
         if (event.key === "Tab") {
-          const focusable = [closeButton, donateButton];
-
-          if (event.shiftKey && document.activeElement === closeButton) {
+          if (
+            event.shiftKey &&
+            document.activeElement === closeButton
+          ) {
             event.preventDefault();
             donateButton.focus();
           } else if (
@@ -403,7 +555,9 @@
 
       try {
         alreadySeen =
-          sessionStorage.getItem("pdtoolsDonationPopupSeen") === "1";
+          sessionStorage.getItem(
+            "pdtoolsDonationPopupSeen"
+          ) === "1";
       } catch (error) {
         alreadySeen = false;
       }
