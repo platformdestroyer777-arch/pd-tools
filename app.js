@@ -937,6 +937,27 @@ function toolHTML(id) {
         <button class="secondary" id="apiQrDownload" hidden>Baixar QR Code</button>
       `;
 
+    case "image-bg-remover":
+      return `<div class="field"><label>Escolha uma imagem</label><input id="imgBgFile" type="file" accept="image/*"></div><div id="imgBgPreview" class="result">A imagem processada aparecerá aqui.</div><button class="action" id="imgBgGo">Remover fundo</button><button class="secondary" id="imgBgDownload" hidden>Baixar PNG transparente</button><p style="font-size:12px;color:#999">O processamento é feito no navegador. Na primeira utilização, será necessário baixar o modelo pela internet.</p>`;
+    case "image-compressor":
+      return `<div class="field"><label>Imagem</label><input id="imgCompFile" type="file" accept="image/*"></div><div class="field"><label>Qualidade: <span id="imgCompQualityLabel">75%</span></label><input id="imgCompQuality" type="range" min="10" max="100" value="75"></div><div class="field"><label>Formato</label><select id="imgCompFormat"><option value="image/webp">WEBP</option><option value="image/jpeg">JPG</option></select></div><div class="result" id="imgCompResult">Selecione uma imagem para começar.</div><button class="action" id="imgCompGo">Comprimir imagem</button><button class="secondary" id="imgCompDownload" hidden>Baixar imagem</button>`;
+    case "image-resizer":
+      return `<div class="field"><label>Imagem</label><input id="imgResizeFile" type="file" accept="image/*"></div><div class="field"><label>Largura (px)</label><input id="imgResizeWidth" type="number" min="1" placeholder="Ex.: 800"></div><div class="field"><label>Altura (px)</label><input id="imgResizeHeight" type="number" min="1" placeholder="Ex.: 600"></div><label><input id="imgResizeKeep" type="checkbox" checked> Manter proporção</label><button class="action" id="imgResizeGo">Redimensionar</button><button class="secondary" id="imgResizeDownload" hidden>Baixar imagem</button><div class="result" id="imgResizeResult">A imagem redimensionada aparecerá aqui.</div>`;
+    case "image-converter":
+      return `<div class="field"><label>Imagem</label><input id="imgConvertFile" type="file" accept="image/*"></div><div class="field"><label>Converter para</label><select id="imgConvertFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPG</option><option value="image/webp">WEBP</option></select></div><button class="action" id="imgConvertGo">Converter imagem</button><button class="secondary" id="imgConvertDownload" hidden>Baixar imagem</button><div class="result" id="imgConvertResult">O resultado aparecerá aqui.</div>`;
+    case "image-crop":
+      return `<div class="field"><label>Imagem</label><input id="imgCropFile" type="file" accept="image/*"></div><div class="field"><label>Posição X (px)</label><input id="imgCropX" type="number" min="0" value="0"></div><div class="field"><label>Posição Y (px)</label><input id="imgCropY" type="number" min="0" value="0"></div><div class="field"><label>Largura do corte (px)</label><input id="imgCropW" type="number" min="1" placeholder="Largura"></div><div class="field"><label>Altura do corte (px)</label><input id="imgCropH" type="number" min="1" placeholder="Altura"></div><button class="action" id="imgCropGo">Cortar imagem</button><button class="secondary" id="imgCropDownload" hidden>Baixar recorte</button><div class="result" id="imgCropResult">O recorte aparecerá aqui.</div>`;
+    case "image-rotate":
+      return `<div class="field"><label>Imagem</label><input id="imgRotateFile" type="file" accept="image/*"></div><div class="field"><label>Rotação</label><select id="imgRotateAngle"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></div><button class="action" id="imgRotateGo">Rotacionar imagem</button><button class="secondary" id="imgRotateDownload" hidden>Baixar imagem</button><div class="result" id="imgRotateResult">A imagem rotacionada aparecerá aqui.</div>`;
+    case "image-resolution":
+      return `<div class="field"><label>Imagem</label><input id="imgResFile" type="file" accept="image/*"></div><div class="field"><label>Reduzir para</label><select id="imgResScale"><option value="75">75%</option><option value="50" selected>50%</option><option value="25">25%</option><option value="10">10%</option></select></div><button class="action" id="imgResGo">Reduzir resolução</button><button class="secondary" id="imgResDownload" hidden>Baixar imagem</button><div class="result" id="imgResResult">O resultado aparecerá aqui.</div>`;
+    case "image-circle":
+      return `<div class="field"><label>Imagem</label><input id="imgCircleFile" type="file" accept="image/*"></div><button class="action" id="imgCircleGo">Criar imagem circular</button><button class="secondary" id="imgCircleDownload" hidden>Baixar PNG</button><div class="result" id="imgCircleResult">A imagem circular aparecerá aqui.</div>`;
+    case "image-watermark":
+      return `<div class="field"><label>Imagem</label><input id="imgWaterFile" type="file" accept="image/*"></div><div class="field"><label>Texto da marca d'água</label><input id="imgWaterText" placeholder="Ex.: PD Tools"></div><div class="field"><label>Opacidade: <span id="imgWaterOpacityLabel">40%</span></label><input id="imgWaterOpacity" type="range" min="10" max="100" value="40"></div><button class="action" id="imgWaterGo">Adicionar marca d'água</button><button class="secondary" id="imgWaterDownload" hidden>Baixar imagem</button><div class="result" id="imgWaterResult">O resultado aparecerá aqui.</div>`;
+    case "image-color-picker":
+      return `<div class="field"><label>Imagem</label><input id="imgColorFile" type="file" accept="image/*"></div><p style="font-size:12px;color:#999">Clique na imagem para capturar a cor daquele ponto.</p><div id="imgColorPreview" style="max-width:100%;overflow:auto"></div><div class="result" id="imgColorResult">HEX e RGB aparecerão aqui.</div><button class="secondary" id="imgColorCopy">Copiar cor HEX</button>`;
+
     case "color-viewer":
       return `
         <div class="field"><label>Cor hexadecimal</label><input id="colorHexInput" value="#8b5cf6" placeholder="#8b5cf6"></div>
@@ -2160,6 +2181,61 @@ function wireTool(id) {
   if (id === "color-viewer") {
     const update=()=>{let hex=$("#colorHexInput").value.trim();if(!/^#?[0-9a-f]{6}$/i.test(hex))return toast("Digite uma cor HEX válida, como #8b5cf6.");if(!hex.startsWith("#"))hex="#"+hex;hex=hex.toUpperCase();const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const [h,s,l]=hexParaHsl(hex);$("#colorHexInput").value=hex;$("#colorPickerInput").value=hex;$("#colorViewerSwatch").style.background=hex;$("#colorViewerResult").textContent=`HEX: ${hex}\nRGB: rgb(${r}, ${g}, ${b})\nHSL: hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;};
     $("#colorViewerGo").onclick=update;$("#colorPickerInput").oninput=()=>{$("#colorHexInput").value=$("#colorPickerInput").value;update();};$("#colorViewerCopy").onclick=()=>copy($("#colorViewerResult").textContent);update();
+  }
+
+
+  const imageTools = ["image-bg-remover","image-compressor","image-resizer","image-converter","image-crop","image-rotate","image-resolution","image-circle","image-watermark","image-color-picker"];
+  if (imageTools.includes(id)) {
+    const loadImage = (file) => new Promise((resolve,reject) => { if(!file) return reject(new Error("Selecione uma imagem.")); const url=URL.createObjectURL(file); const img=new Image(); img.onload=()=>resolve({img,url}); img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível abrir a imagem."));}; img.src=url; });
+    const makeCanvas = (w,h) => { const c=document.createElement("canvas"); c.width=w; c.height=h; return c; };
+    const downloadCanvas = (canvas, buttonId, filename, mime="image/png", quality=0.92) => { canvas.toBlob(blob=>{if(!blob)return toast("Não foi possível gerar o arquivo.");const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);},mime,quality); };
+    const showCanvas = (canvas, resultId) => { const el=$("#"+resultId); if(el){el.innerHTML="";canvas.style.maxWidth="100%";canvas.style.height="auto";canvas.style.borderRadius="10px";el.appendChild(canvas);} };
+    const bindFile = (inputId, callback) => { $("#"+inputId).onchange=()=>{const f=$("#"+inputId).files[0];if(f)callback(f);}; };
+    const safeRun = fn => async()=>{try{await fn();}catch(e){toast(e.message||"Ocorreu um erro ao processar a imagem.");}};
+
+    if(id==="image-bg-remover"){
+      let output=null;
+      bindFile("imgBgFile",async file=>{try{const {img}=await loadImage(file);const c=makeCanvas(img.naturalWidth,img.naturalHeight);c.getContext("2d").drawImage(img,0,0);showCanvas(c,"imgBgPreview");}catch(e){toast(e.message);}});
+      $("#imgBgGo").onclick=safeRun(async()=>{const file=$("#imgBgFile").files[0];if(!file)throw new Error("Selecione uma imagem.");const btn=$("#imgBgGo");btn.disabled=true;btn.textContent="Carregando modelo...";try{const lib=await import("https://esm.sh/@imgly/background-removal@1.5.5");const blob=await lib.removeBackground(file);output=await createImageBitmap(blob);const c=makeCanvas(output.width,output.height);c.getContext("2d").drawImage(output,0,0);showCanvas(c,"imgBgPreview");$("#imgBgDownload").hidden=false;$("#imgBgDownload").onclick=()=>downloadCanvas(c,"imgBgDownload","pd-tools-sem-fundo.png");}catch(e){console.error(e);throw new Error("Não foi possível remover o fundo. Verifique sua conexão e tente novamente.");}finally{btn.disabled=false;btn.textContent="Remover fundo";}});
+    }
+    if(id==="image-compressor"){
+      let canvas=null;$("#imgCompQuality").oninput=()=>$("#imgCompQualityLabel").textContent=$("#imgCompQuality").value+"%";
+      bindFile("imgCompFile",async file=>{const {img}=await loadImage(file);canvas=makeCanvas(img.naturalWidth,img.naturalHeight);canvas.getContext("2d").drawImage(img,0,0);$("#imgCompResult").textContent=`Original: ${file.size>1048576?(file.size/1048576).toFixed(2)+" MB":(file.size/1024).toFixed(1)+" KB"} • ${img.naturalWidth} × ${img.naturalHeight}px`;});
+      $("#imgCompGo").onclick=safeRun(async()=>{if(!canvas)throw new Error("Selecione uma imagem.");const mime=$("#imgCompFormat").value,q=Number($("#imgCompQuality").value)/100;canvas.toBlob(blob=>{if(!blob)return toast("Falha ao comprimir.");window.__pdCompressedBlob=blob;$("#imgCompResult").textContent=`Novo tamanho: ${blob.size>1048576?(blob.size/1048576).toFixed(2)+" MB":(blob.size/1024).toFixed(1)+" KB"}`;$("#imgCompDownload").hidden=false;$("#imgCompDownload").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pd-tools-comprimida."+(mime==="image/webp"?"webp":"jpg");a.click();};},mime,q);});
+    }
+    if(id==="image-resizer"){
+      let source=null;bindFile("imgResizeFile",async f=>{source=(await loadImage(f)).img;$("#imgResizeWidth").value=source.naturalWidth;$("#imgResizeHeight").value=source.naturalHeight;});
+      $("#imgResizeWidth").oninput=()=>{if(source&&$("#imgResizeKeep").checked)$("#imgResizeHeight").value=Math.max(1,Math.round(Number($("#imgResizeWidth").value)*source.naturalHeight/source.naturalWidth));};
+      $("#imgResizeGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const w=Number($("#imgResizeWidth").value),h=Number($("#imgResizeHeight").value);if(!w||!h||w>12000||h>12000)throw new Error("Informe dimensões válidas (até 12.000 px).");const c=makeCanvas(w,h);c.getContext("2d").drawImage(source,0,0,w,h);showCanvas(c,"imgResizeResult");$("#imgResizeDownload").hidden=false;$("#imgResizeDownload").onclick=()=>downloadCanvas(c,"imgResizeDownload","pd-tools-redimensionada.png");});
+    }
+    if(id==="image-converter"){
+      let source=null;bindFile("imgConvertFile",async f=>source=(await loadImage(f)).img);
+      $("#imgConvertGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const mime=$("#imgConvertFormat").value,c=makeCanvas(source.naturalWidth,source.naturalHeight);c.getContext("2d").drawImage(source,0,0);c.toBlob(blob=>{if(!blob)return toast("Falha na conversão.");const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pd-tools-convertida."+({"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}[mime]);a.click();$("#imgConvertResult").textContent="Imagem convertida com sucesso!";},mime,0.92);});
+    }
+    if(id==="image-crop"){
+      let source=null;bindFile("imgCropFile",async f=>{source=(await loadImage(f)).img;$("#imgCropW").value=source.naturalWidth;$("#imgCropH").value=source.naturalHeight;});
+      $("#imgCropGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const x=Math.max(0,Number($("#imgCropX").value)),y=Math.max(0,Number($("#imgCropY").value)),w=Number($("#imgCropW").value),h=Number($("#imgCropH").value);if(!w||!h||x+w>source.naturalWidth||y+h>source.naturalHeight)throw new Error("O recorte precisa ficar dentro dos limites da imagem.");const c=makeCanvas(w,h);c.getContext("2d").drawImage(source,x,y,w,h,0,0,w,h);showCanvas(c,"imgCropResult");$("#imgCropDownload").hidden=false;$("#imgCropDownload").onclick=()=>downloadCanvas(c,"imgCropDownload","pd-tools-recorte.png");});
+    }
+    if(id==="image-rotate"){
+      let source=null;bindFile("imgRotateFile",async f=>source=(await loadImage(f)).img);
+      $("#imgRotateGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const a=Number($("#imgRotateAngle").value)*Math.PI/180,swap=a===Math.PI/2||a===3*Math.PI/2,w=swap?source.naturalHeight:source.naturalWidth,h=swap?source.naturalWidth:source.naturalHeight,c=makeCanvas(w,h),ctx=c.getContext("2d");ctx.translate(w/2,h/2);ctx.rotate(a);ctx.drawImage(source,-source.naturalWidth/2,-source.naturalHeight/2);showCanvas(c,"imgRotateResult");$("#imgRotateDownload").hidden=false;$("#imgRotateDownload").onclick=()=>downloadCanvas(c,"imgRotateDownload","pd-tools-rotacionada.png");});
+    }
+    if(id==="image-resolution"){
+      let source=null;bindFile("imgResFile",async f=>source=(await loadImage(f)).img);
+      $("#imgResGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const scale=Number($("#imgResScale").value)/100,w=Math.max(1,Math.round(source.naturalWidth*scale)),h=Math.max(1,Math.round(source.naturalHeight*scale)),c=makeCanvas(w,h);c.getContext("2d").drawImage(source,0,0,w,h);showCanvas(c,"imgResResult");$("#imgResDownload").hidden=false;$("#imgResDownload").onclick=()=>downloadCanvas(c,"imgResDownload","pd-tools-resolucao-reduzida.png");});
+    }
+    if(id==="image-circle"){
+      let source=null;bindFile("imgCircleFile",async f=>source=(await loadImage(f)).img);
+      $("#imgCircleGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const size=Math.min(source.naturalWidth,source.naturalHeight),sx=(source.naturalWidth-size)/2,sy=(source.naturalHeight-size)/2,c=makeCanvas(size,size),ctx=c.getContext("2d");ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(source,sx,sy,size,size,0,0,size,size);showCanvas(c,"imgCircleResult");$("#imgCircleDownload").hidden=false;$("#imgCircleDownload").onclick=()=>downloadCanvas(c,"imgCircleDownload","pd-tools-circular.png");});
+    }
+    if(id==="image-watermark"){
+      let source=null;$("#imgWaterOpacity").oninput=()=>$("#imgWaterOpacityLabel").textContent=$("#imgWaterOpacity").value+"%";bindFile("imgWaterFile",async f=>source=(await loadImage(f)).img);
+      $("#imgWaterGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const label=$("#imgWaterText").value.trim();if(!label)throw new Error("Digite o texto da marca d'água.");const c=makeCanvas(source.naturalWidth,source.naturalHeight),ctx=c.getContext("2d");ctx.drawImage(source,0,0);ctx.globalAlpha=Number($("#imgWaterOpacity").value)/100;ctx.fillStyle="#ffffff";ctx.strokeStyle="#222222";ctx.lineWidth=Math.max(1,source.naturalWidth/700);ctx.textAlign="right";ctx.font=`bold ${Math.max(18,source.naturalWidth/22)}px Arial`;ctx.strokeText(label,c.width-24,c.height-28);ctx.fillText(label,c.width-24,c.height-28);ctx.globalAlpha=1;showCanvas(c,"imgWaterResult");$("#imgWaterDownload").hidden=false;$("#imgWaterDownload").onclick=()=>downloadCanvas(c,"imgWaterDownload","pd-tools-marca-dagua.png");});
+    }
+    if(id==="image-color-picker"){
+      let canvas=null;bindFile("imgColorFile",async f=>{const {img}=await loadImage(f);canvas=makeCanvas(img.naturalWidth,img.naturalHeight);canvas.getContext("2d").drawImage(img,0,0);showCanvas(canvas,"imgColorPreview");canvas.style.cursor="crosshair";canvas.onclick=e=>{const r=canvas.getBoundingClientRect(),x=Math.min(canvas.width-1,Math.max(0,Math.floor((e.clientX-r.left)*canvas.width/r.width))),y=Math.min(canvas.height-1,Math.max(0,Math.floor((e.clientY-r.top)*canvas.height/r.height))),d=canvas.getContext("2d").getImageData(x,y,1,1).data,hex="#"+[...d].slice(0,3).map(v=>v.toString(16).padStart(2,"0")).join("").toUpperCase();$("#imgColorResult").textContent=`HEX: ${hex}\nRGB: rgb(${d[0]}, ${d[1]}, ${d[2]})`;$("#imgColorResult").dataset.hex=hex;};});
+      $("#imgColorCopy").onclick=()=>copy($("#imgColorResult").dataset.hex||"");
+    }
   }
 
 }
