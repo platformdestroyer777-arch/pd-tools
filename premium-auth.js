@@ -1,5 +1,6 @@
 
-/* PD Tools — Autenticação dos membros */
+/* PD Tools — Login e cadastro dos membros */
+
 (() => {
   "use strict";
 
@@ -9,12 +10,10 @@
       : null;
 
   const byId = id => document.getElementById(id);
+
   const overlay = byId("pdAccountOverlay");
-
-  if (!client || !overlay) return;
-
   const trigger = byId("pdAccountOpen");
-  const close = byId("pdAccountClose");
+  const closeButton = byId("pdAccountClose");
   const form = byId("pdAccountForm");
   const email = byId("pdAccountEmail");
   const password = byId("pdAccountPassword");
@@ -25,57 +24,89 @@
   const title = byId("pdAccountTitle");
   const desc = byId("pdAccountDesc");
   const message = byId("pdAccountMessage");
+  const userLabel = byId("pdAccountUser");
+  const premiumStatus = byId("pdAccountStatus");
+
+  if (
+    !client || !overlay || !trigger ||
+    !closeButton || !form || !email ||
+    !password || !submit || !profile ||
+    !logout || !toggle || !title ||
+    !desc || !message || !userLabel ||
+    !premiumStatus
+  ) {
+    console.error(
+      "PD Tools Premium: configuração incompleta."
+    );
+    return;
+  }
 
   let mode = "login";
   let previousFocus = null;
+  let refreshVersion = 0;
 
-  const status = text => {
+  function showMessage(text) {
     message.textContent = text;
-  };
+  }
 
-  const dateBR = value =>
-    new Date(value).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric"
-    });
+  function dateBR(value) {
+    return new Date(value).toLocaleDateString(
+      "pt-BR",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }
+    );
+  }
+
+  function showGuest() {
+    form.hidden = false;
+    profile.hidden = true;
+    toggle.hidden = false;
+
+    trigger.textContent = "Entrar / Criar conta";
+
+    title.textContent =
+      mode === "login" ? "Entrar" : "Criar conta";
+
+    desc.textContent =
+      mode === "login"
+        ? "Entre para acompanhar seu acesso Premium."
+        : "Crie sua conta com e-mail e senha.";
+
+    submit.textContent =
+      mode === "login" ? "Entrar" : "Criar conta";
+
+    toggle.textContent =
+      mode === "login"
+        ? "Não tem conta? Criar conta"
+        : "Já tem conta? Entrar";
+
+    password.autocomplete =
+      mode === "login"
+        ? "current-password"
+        : "new-password";
+  }
 
   async function refresh() {
-    const { data: { user }, error } =
-      await client.auth.getUser();
+    const version = ++refreshVersion;
+
+    const {
+      data: { user },
+      error
+    } = await client.auth.getUser();
+
+    if (version !== refreshVersion) return;
 
     if (error || !user) {
-      form.hidden = false;
-      profile.hidden = true;
-      toggle.hidden = false;
-
-      trigger.textContent = "Entrar / Criar conta";
-      title.textContent =
-        mode === "login" ? "Entrar" : "Criar conta";
-
-      desc.textContent =
-        mode === "login"
-          ? "Entre para acompanhar seu acesso Premium."
-          : "Crie sua conta com e-mail e senha.";
-
-      submit.textContent =
-        mode === "login" ? "Entrar" : "Criar conta";
-
-      toggle.textContent =
-        mode === "login"
-          ? "Não tem conta? Criar conta"
-          : "Já tem conta? Entrar";
-
-      password.autocomplete =
-        mode === "login"
-          ? "current-password"
-          : "new-password";
-
+      showGuest();
       return;
     }
 
     trigger.textContent = "Minha conta";
     title.textContent = "Minha conta";
+
     desc.textContent =
       "Acompanhe seu acesso ao PD Tools Premium.";
 
@@ -83,118 +114,157 @@
     toggle.hidden = true;
     profile.hidden = false;
 
-    byId("pdAccountUser").textContent =
+    userLabel.textContent =
       user.email || "Conta conectada";
 
-    byId("pdAccountStatus").textContent =
+    premiumStatus.textContent =
       "Consultando seu Premium...";
 
-    const { data, error: accessError } = await client
+    const {
+      data,
+      error: accessError
+    } = await client
       .from("premium_access")
       .select("expires_at")
       .eq("user_id", user.id)
       .maybeSingle();
 
+    if (version !== refreshVersion) return;
+
     if (accessError) {
-      byId("pdAccountStatus").textContent =
+      premiumStatus.textContent =
         "Não foi possível consultar o Premium agora.";
-    } else if (
+      return;
+    }
+
+    if (
       data &&
       new Date(data.expires_at).getTime() > Date.now()
     ) {
-      byId("pdAccountStatus").textContent =
+      premiumStatus.textContent =
         `💜 Premium ativo até ${dateBR(data.expires_at)}.`;
     } else {
-      byId("pdAccountStatus").textContent =
+      premiumStatus.textContent =
         "🔒 Premium inativo. Doe R$ 5,00 ou mais para obter 30 dias após a confirmação do pagamento.";
     }
   }
 
+  function hideModal() {
+    overlay.hidden = true;
+    previousFocus?.focus?.();
+  }
+
   trigger.addEventListener("click", async () => {
     previousFocus = document.activeElement;
-    status("");
+    showMessage("");
     overlay.hidden = false;
+    closeButton.focus();
 
     try {
       await refresh();
     } catch (error) {
       console.error(error);
-      status("Não foi possível carregar a conta.");
+      showMessage(
+        "Não foi possível carregar sua conta."
+      );
     }
-
-    close.focus();
   });
 
-  function hide() {
-    overlay.hidden = true;
-    previousFocus?.focus?.();
-  }
-
-  close.addEventListener("click", hide);
+  closeButton.addEventListener(
+    "click",
+    hideModal
+  );
 
   overlay.addEventListener("click", event => {
-    if (event.target === overlay) hide();
+    if (event.target === overlay) {
+      hideModal();
+    }
   });
 
   document.addEventListener("keydown", event => {
     if (overlay.hidden) return;
 
-    if (event.key === "Escape") hide();
+    if (event.key === "Escape") {
+      hideModal();
+      return;
+    }
 
-    if (event.key === "Tab") {
-      const focusables = [
-        ...overlay.querySelectorAll(
-          "button:not([hidden]):not(:disabled), input:not([hidden]):not(:disabled)"
-        )
-      ].filter(el => el.getClientRects().length);
+    if (event.key !== "Tab") return;
 
-      if (!focusables.length) return;
+    const focusables = [
+      ...overlay.querySelectorAll(
+        "button:not(:disabled), input:not(:disabled)"
+      )
+    ].filter(element =>
+      element.getClientRects().length > 0
+    );
 
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
+    if (!focusables.length) return;
 
-      if (
-        event.shiftKey &&
-        document.activeElement === first
-      ) {
-        event.preventDefault();
-        last.focus();
-      } else if (
-        !event.shiftKey &&
-        document.activeElement === last
-      ) {
-        event.preventDefault();
-        first.focus();
-      }
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (
+      event.shiftKey &&
+      document.activeElement === first
+    ) {
+      event.preventDefault();
+      last.focus();
+    } else if (
+      !event.shiftKey &&
+      document.activeElement === last
+    ) {
+      event.preventDefault();
+      first.focus();
     }
   });
 
   toggle.addEventListener("click", async () => {
     mode = mode === "login" ? "signup" : "login";
-    status("");
-    await refresh();
+    showMessage("");
+
+    try {
+      await refresh();
+    } catch (error) {
+      console.error(error);
+      showMessage(
+        "Não foi possível atualizar a tela."
+      );
+    }
   });
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
 
-    if (password.value.length < 8) {
-      status("Use uma senha com pelo menos 8 caracteres.");
+    const userEmail = email.value.trim();
+    const userPassword = password.value;
+
+    if (!userEmail || !userPassword) {
+      showMessage(
+        "Preencha seu e-mail e sua senha."
+      );
+      return;
+    }
+
+    if (userPassword.length < 8) {
+      showMessage(
+        "A senha precisa ter pelo menos 8 caracteres."
+      );
       return;
     }
 
     submit.disabled = true;
-    status("Aguarde...");
+    showMessage("Aguarde...");
 
     try {
       if (mode === "signup") {
         const { data, error } =
           await client.auth.signUp({
-            email: email.value.trim(),
-            password: password.value,
+            email: userEmail,
+            password: userPassword,
             options: {
               emailRedirectTo:
-                `${location.origin}${location.pathname}`
+                location.origin + location.pathname
             }
           });
 
@@ -203,31 +273,40 @@
         password.value = "";
 
         if (data.session) {
-          status("Conta criada com sucesso!");
           await refresh();
+          showMessage(
+            "Conta criada com sucesso!"
+          );
         } else {
-          status(
+          showMessage(
             "Confira seu e-mail e confirme o cadastro. Depois, volte para entrar."
           );
         }
       } else {
         const { error } =
           await client.auth.signInWithPassword({
-            email: email.value.trim(),
-            password: password.value
+            email: userEmail,
+            password: userPassword
           });
 
         if (error) throw error;
 
         password.value = "";
-        status("Login realizado com sucesso!");
+
         await refresh();
+
+        showMessage(
+          "Login realizado com sucesso!"
+        );
       }
     } catch (error) {
-      console.error("Erro de autenticação:", error);
+      console.error(
+        "Erro de autenticação:",
+        error
+      );
 
-      status(
-        "Não foi possível concluir. Confira e-mail, senha e confirmação da conta e tente novamente."
+      showMessage(
+        "Não foi possível concluir. Confira seu e-mail, sua senha e a confirmação da conta."
       );
     } finally {
       submit.disabled = false;
@@ -235,33 +314,46 @@
   });
 
   logout.addEventListener("click", async () => {
-    const { error } = await client.auth.signOut();
+    logout.disabled = true;
 
-    if (error) {
-      status("Não foi possível sair agora.");
-      return;
+    try {
+      const { error } =
+        await client.auth.signOut();
+
+      if (error) throw error;
+
+      mode = "login";
+      password.value = "";
+
+      await refresh();
+
+      showMessage(
+        "Você saiu da conta."
+      );
+    } catch (error) {
+      console.error(error);
+
+      showMessage(
+        "Não foi possível sair agora."
+      );
+    } finally {
+      logout.disabled = false;
     }
-
-    mode = "login";
-    status("Você saiu da conta.");
-    await refresh();
   });
 
-  client.auth.onAuthStateChange(() => {
-    if (!overlay.hidden) {
-      setTimeout(() => {
-        refresh().catch(console.error);
-      }, 0);
-    } else {
-      client.auth.getSession()
-        .then(({ data }) => {
-          trigger.textContent = data.session
-            ? "Minha conta"
-            : "Entrar / Criar conta";
-        })
-        .catch(console.error);
+  client.auth.onAuthStateChange(
+    (_event, session) => {
+      trigger.textContent = session
+        ? "Minha conta"
+        : "Entrar / Criar conta";
+
+      if (!overlay.hidden) {
+        setTimeout(() => {
+          refresh().catch(console.error);
+        }, 0);
+      }
     }
-  });
+  );
 
   client.auth.getSession()
     .then(({ data }) => {
