@@ -79,7 +79,7 @@ async function carregarFerramentasSupabase() {
 async function carregarAparencia() {
   const { data, error } = await supabaseClient
     .from("site_settings")
-    .select("site_name, primary_color")
+    .select("site_name, primary_color, logo_url, favicon_url")
     .eq("id", 1)
     .maybeSingle();
 
@@ -98,6 +98,25 @@ async function carregarAparencia() {
   if (data?.site_name) {
     document.title = `${data.site_name} — Ferramentas inteligentes`;
   }
+
+  if (data?.logo_url) aplicarLogo(data.logo_url);
+  if (data?.favicon_url) aplicarFavicon(data.favicon_url);
+}
+
+function aplicarLogo(url) {
+  document.querySelectorAll(".brand-mark").forEach(mark => {
+    mark.innerHTML = `<img src="${esc(url)}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">`;
+  });
+}
+
+function aplicarFavicon(url) {
+  let link = document.querySelector('link[ rel="icon" ]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "icon";
+    document.head.appendChild(link);
+  }
+  link.href = url;
 }
 
 function render() {
@@ -2455,19 +2474,11 @@ async function salvarAparencia() {
   const color = $("#siteColor").value.trim();
 
   if (!siteName) return toast("Informe o nome do site.");
-
-  if (!/^#[0-9a-f]{6}$/i.test(color)) {
-    return toast("Informe uma cor hexadecimal válida.");
-  }
+  if (!/^#[0-9a-f]{6}$/i.test(color)) return toast("Informe uma cor hexadecimal válida.");
 
   const { error } = await supabaseClient
     .from("site_settings")
-    .upsert({
-      id: 1,
-      site_name: siteName,
-      primary_color: color,
-      updated_at: new Date().toISOString()
-    });
+    .upsert({ id: 1, site_name: siteName, primary_color: color, updated_at: new Date().toISOString() });
 
   if (error) {
     console.error(error);
@@ -2477,10 +2488,75 @@ async function salvarAparencia() {
 
   document.documentElement.style.setProperty("--purple", color);
   document.title = `${siteName} — Ferramentas inteligentes`;
-
   toast("Aparência salva no Supabase!");
 }
 
+async function enviarImagemSite(tipo, inputId) {
+  const input = $(inputId);
+  const file = input?.files?.[0];
+  if (!file) return toast("Selecione uma imagem primeiro.");
+  if (!file.type.startsWith("image/")) return toast("Envie um arquivo de imagem.");
+  if (file.size > 5 * 1024 * 1024) return toast("A imagem deve ter no máximo 5 MB.");
+
+  const button = $(`[data-upload="${tipo}"]`);
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "Enviando...";
+
+  try {
+    const ext = tipo === "favicon" ? "png" : (file.name.split(".").pop() || "png").toLowerCase();
+    const path = tipo === "logo" ? `logo.${ext}` : `${tipo}.png`;
+    const { error: uploadError } = await supabaseClient.storage
+      .from(ASSET_BUCKET)
+      .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "0" });
+    if (uploadError) throw uploadError;
+
+    const publicUrl = `${ASSET_BASE}/${path}`;
+    const column = tipo === "logo" ? "logo_url" : "favicon_url";
+    const { error: saveError } = await supabaseClient
+      .from("site_settings")
+      .upsert({ id: 1, [column]: publicUrl, updated_at: new Date().toISOString() });
+    if (saveError) throw saveError;
+
+    const freshUrl = `${publicUrl}?v=${Date.now()}`;
+    if (tipo === "logo") aplicarLogo(freshUrl);
+    if (tipo === "favicon") aplicarFavicon(freshUrl);
+    input.value = "";
+    toast(tipo === "logo" ? "Logo atualizada!" : "Ícone da aba atualizado!");
+  } catch (error) {
+    console.error(error);
+    toast("Não foi possível enviar. Confira o bucket e as permissões do Supabase.");
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
+async function enviarImagemCompartilhamento() {
+  const input = $("#shareImage");
+  const file = input?.files?.[0];
+  if (!file) return toast("Selecione uma imagem primeiro.");
+  if (!file.type.startsWith("image/")) return toast("Envie um arquivo de imagem.");
+  if (file.size > 5 * 1024 * 1024) return toast("A imagem deve ter no máximo 5 MB.");
+  const button = $('[data-upload="share"]');
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "Enviando...";
+  try {
+    const { error } = await supabaseClient.storage.from(ASSET_BUCKET).upload("share.png", file, {
+      upsert: true, contentType: file.type, cacheControl: "0"
+    });
+    if (error) throw error;
+    input.value = "";
+    toast("Imagem de compartilhamento atualizada! Pode levar um tempo para redes sociais renovarem o cache.");
+  } catch (error) {
+    console.error(error);
+    toast("Não foi possível enviar. Confira o bucket e as permissões do Supabase.");
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
 function renderAdmin(tab) {
   $$(".admin-tabs button").forEach(button => {
     button.classList.toggle("active", button.dataset.tab === tab);
@@ -2554,15 +2630,32 @@ function renderAdmin(tab) {
         <input id="siteColor" value="#9b7bff">
       </div>
       <button class="action" id="saveAppearance">Salvar aparência</button>
-      <p style="color:#999;font-size:11px">
-        As alterações serão salvas no Supabase.
+      <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+      <h4>Imagens do site</h4>
+      <div class="field">
+        <label>Logo do site</label>
+        <input id="logoImage" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+        <button class="secondary" type="button" data-upload="logo">Enviar logo</button>
+      </div>
+      <div class="field">
+        <label>Ícone da aba do navegador (PNG)</label>
+        <input id="faviconImage" type="file" accept="image/png">
+        <button class="secondary" type="button" data-upload="favicon">Enviar ícone</button>
+      </div>
+      <div class="field">
+        <label>Imagem de prévia ao compartilhar o link (recomendado: 1200 × 630)</label>
+        <input id="shareImage" type="file" accept="image/png,image/jpeg,image/webp">
+        <button class="secondary" type="button" data-upload="share">Enviar imagem de compartilhamento</button>
+      </div>
+      <p style="color:#999;font-size:11px;line-height:1.6">
+        Imagens de até 5 MB. Os arquivos ficam no armazenamento do Supabase. A prévia de redes sociais pode demorar para atualizar por causa do cache.
       </p>
     `;
 
     carregarAparencia().then(async () => {
       const { data } = await supabaseClient
         .from("site_settings")
-        .select("site_name, primary_color")
+        .select("site_name, primary_color, logo_url, favicon_url")
         .eq("id", 1)
         .maybeSingle();
 
@@ -2573,6 +2666,9 @@ function renderAdmin(tab) {
     });
 
     $("#saveAppearance").onclick = salvarAparencia;
+    $('[data-upload="logo"]').onclick = () => enviarImagemSite("logo", "#logoImage");
+    $('[data-upload="favicon"]').onclick = () => enviarImagemSite("favicon", "#faviconImage");
+    $('[data-upload="share"]').onclick = enviarImagemCompartilhamento;
   }
 }
 
