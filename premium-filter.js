@@ -82,55 +82,53 @@
     })[char]);
   }
 
-  async function hasPremium() {
-    const { data: auth, error: authError } =
-      await supabaseClient.auth.getUser();
+  
+async function hasPremium() {
+  // Verifica primeiro se existe uma sessão de login.
+  const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
 
-    if (authError) throw authError;
-
-    if (!auth?.user) return false;
-
-    const { data, error } = await supabaseClient
-      .from("premium_access")
-      .select("expires_at")
-      .eq("user_id", auth.user.id)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    const expiration = Date.parse(data?.expires_at || "");
-
-    return Number.isFinite(expiration) &&
-      expiration > Date.now();
+  if (sessionError) {
+    console.error("Erro ao verificar sessão:", sessionError);
+    return false;
   }
 
-  function addPremiumButton() {
-    let button = filters.querySelector('[data-cat="Premium"]');
-
-    if (!button) {
-      button = document.createElement("button");
-      button.type = "button";
-      button.className = "filter";
-      button.dataset.cat = "Premium";
-      button.textContent = "🔒 Premium";
-    }
-
-    const allButton = filters.querySelector('[data-cat="Todas"]');
-
-    if (allButton) {
-      allButton.insertAdjacentElement("afterend", button);
-    } else {
-      filters.prepend(button);
-    }
-
-    button.classList.toggle("active", premiumSelected);
-
-    if (premiumSelected) {
-      filters.querySelectorAll(".filter").forEach(item => {
-        if (item !== button) item.classList.remove("active");
-      });
-    }
+  // Visitante sem login: Premium bloqueado normalmente.
+  if (!sessionData?.session?.user) {
+    return false;
   }
+
+  // Confirma a identidade da conta conectada.
+  const { data: authData, error: authError } =
+    await supabaseClient.auth.getUser();
+
+  if (authError || !authData?.user) {
+    console.error("Erro ao verificar usuário:", authError);
+    return false;
+  }
+
+  // Consulta o Premium dessa conta no Supabase.
+  const { data, error } = await supabaseClient
+    .from("premium_access")
+    .select("expires_at")
+    .eq("user_id", authData.user.id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  // Sem Premium cadastrado: acesso bloqueado.
+  if (!data?.expires_at) {
+    return false;
+  }
+
+  // Confere se o Premium ainda está válido.
+  const expiration = new Date(data.expires_at).getTime();
+
+  return Number.isFinite(expiration) &&
+    expiration > Date.now();
+}
 
   async function showPremium() {
     const currentRequest = ++requestId;
