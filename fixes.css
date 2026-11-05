@@ -1,16 +1,262 @@
-/* Ajustes adicionais sem alterar o tema existente. */
-#qrcode { max-width: 100%; width: fit-content; }
-#qrcode canvas, #qrcode img { max-width: 100%; height: auto; }
-.modal { max-width: 100%; overscroll-behavior: contain; }
-.admin-tabs { overflow-x: auto; }
-.admin-tabs button { flex-shrink: 0; }
-.tool-card:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--purple); outline-offset: 3px; }
+
+/* AJUSTES GERAIS */
+
+#qrcode {
+  max-width: 100%;
+  width: fit-content;
+}
+
+#qrcode canvas,
+#qrcode img {
+  max-width: 100%;
+  height: auto;
+}
+
+.modal {
+  max-width: 100%;
+  overscroll-behavior: contain;
+}
+
+.admin-tabs {
+  overflow-x: auto;
+}
+
+.admin-tabs button {
+  flex-shrink: 0;
+}
+
+.tool-card:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 3px;
+}
+
+/* ÁREA DE DOAÇÕES */
+
+.donation-section {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 45px 20px 100px;
+  scroll-margin-top: 30px;
+}
+
+.donation-card {
+  background: #14131d;
+  border: 1px solid #302b3d;
+  border-radius: 20px;
+  padding: 36px;
+}
+
+.donation-label {
+  color: #a78bfa;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.donation-card h2 {
+  color: #ffffff;
+  font-size: 29px;
+  letter-spacing: -1px;
+  line-height: 1.25;
+  margin: 18px 0;
+}
+
+.donation-description {
+  color: #aaa5b8;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.donation-divider {
+  height: 1px;
+  background: #302b3d;
+  margin: 28px 0;
+}
+
+.donation-card h3 {
+  color: #ffffff;
+  font-size: 15px;
+  margin: 0 0 18px;
+}
+
+.donation-values {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 24px;
+}
+
+.donation-values button {
+  background: #211d2c;
+  border: 1px solid #383046;
+  border-radius: 10px;
+  padding: 14px 5px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.donation-values button:hover,
+.donation-values button.selected {
+  background: #392b55;
+  border-color: #a78bfa;
+}
+
+.donation-card label {
+  display: block;
+  color: #bcb5cc;
+  font-size: 12px;
+  margin-bottom: 9px;
+}
+
+#donationAmount {
+  display: block;
+  width: 100%;
+  background: #0e0d15;
+  border: 1px solid #383046;
+  border-radius: 10px;
+  padding: 14px;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+#donationAmount:focus {
+  border-color: #a78bfa;
+}
+
+.donation-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #211d2c;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 22px 0;
+  color: #bcb5cc;
+  font-size: 13px;
+}
+
+.donation-total strong {
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.donation-submit {
+  display: block;
+  width: 100%;
+  background: #a78bfa;
+  color: #110c1e;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: 0.2s;
+}
+
+.donation-submit:hover {
+  background: #b9a5ff;
+}
+
+.donation-card .donation-footer {
+  color: #888297;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 18px 0 0;
+}
+
+.donation-message {
+  color: #c4b5fd;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+  margin: 12px 0 0;
+}
+
+.donation-message:empty {
+  display: none;
+}
+
+/* CELULARES */
+
+@media (max-width: 760px) {
+  .topbar {
+    gap: 8px;
+  }
+
+  .topbar .brand {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .topbar nav {
+    gap: 7px;
+  }
+
+  .topbar nav a {
+    display: inline;
+    font-size: 11px;
+  }
+
+  .admin-trigger {
+    font-size: 10px;
+    padding: 8px;
+  }
+
+  .hero h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .modal-backdrop {
+    padding: 8px;
+  }
+
+  .modal {
+    padding: 15px;
+  }
+
+  .donation-card {
+    padding: 24px;
+  }
+
+  .donation-card h2 {
+    font-size: 24px;
+  }
+
+  .donation-values {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 420px) {
-  .topbar { gap: 8px; }
-  .topbar .brand { font-size: 12px; letter-spacing: .5px; }
-  .topbar nav { gap: 5px; }
-  .admin-trigger { font-size: 10px; padding: 8px; }
-  .hero h1 { overflow-wrap: anywhere; }
-  .modal-backdrop { padding: 8px; }
-  .modal { padding: 15px; }
+  .topbar nav {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .topbar nav a {
+    font-size: 10px;
+  }
+
+  .donation-card {
+    padding: 19px;
+  }
+
+  .donation-values {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .donation-total strong {
+    font-size: 18px;
+  }
 }
