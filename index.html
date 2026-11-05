@@ -16,13 +16,11 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" type="image/png" href="https://aohhacasirnzkchbyzlw.supabase.co/storage/v1/object/public/site-assets/favicon.png">
-
   <title>PD Tools — Ferramentas inteligentes</title>
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="fixes.css">
 </head>
-
 <body>
   <div class="ambient" aria-hidden="true"></div>
 
@@ -47,26 +45,71 @@
       <div class="eyebrow">
         <i></i> SIMPLES, ÚTIL E GRATUITO
       </div>
-
-      <h1>
-        Suas ferramentas.<br>
-        <span>Sem complicação.</span>
-      </h1>
-
-      <p>
-        Uma coleção de ferramentas online para facilitar tarefas
-        do dia a dia, tudo em um só lugar.
-      </p>
-
+      <h1>Suas ferramentas.<br><span>Sem complicação.</span></h1>
+      <p>Uma coleção de ferramentas online para facilitar tarefas do dia a dia, tudo em um só lugar.</p>
       <a class="primary-btn" href="#ferramentas">
         Explorar ferramentas <b>→</b>
       </a>
-
       <div class="hero-note">
         <span>✦</span> Developer Kraz &amp; HZ
       </div>
     </section>
 
+    <!-- DOAÇÕES ACIMA DAS FERRAMENTAS -->
+    <section class="donation-section" id="doacoes">
+      <div class="donation-card">
+        <div class="donation-label">♡ APOIE O PROJETO</div>
+
+        <h2>Ajude o Tools a se manter 💜</h2>
+
+        <p class="donation-description">
+          Todos os desenvolvedores trabalham de graça pra ajudar você,
+          que não tem tempo ou acesso às ferramentas pagas.
+          Até 10 centavos já ajudam a manter tudo funcionando.
+          Obrigado e fique bem!
+        </p>
+
+        <div class="donation-divider"></div>
+
+        <h3>Escolha um valor para contribuir</h3>
+
+        <div class="donation-values">
+          <button type="button" data-donation-value="0.10">R$ 0,10</button>
+          <button type="button" data-donation-value="1">R$ 1</button>
+          <button type="button" data-donation-value="2">R$ 2</button>
+          <button type="button" data-donation-value="5" class="selected">R$ 5</button>
+          <button type="button" data-donation-value="10">R$ 10</button>
+        </div>
+
+        <label for="donationAmount">Ou digite outro valor (R$)</label>
+        <input
+          id="donationAmount"
+          type="number"
+          min="0.10"
+          max="100000"
+          step="0.01"
+          value="5"
+          inputmode="decimal"
+        >
+
+        <div class="donation-total">
+          <span>Sua contribuição</span>
+          <strong id="donationTotal">R$ 5,00</strong>
+        </div>
+
+        <button class="donation-submit" id="donationSubmit" type="button">
+          ♡ Fazer uma doação
+        </button>
+
+        <p class="donation-footer">
+          Doação voluntária · Um projeto da Platform Destroyer
+        </p>
+
+        <p class="donation-message" id="donationMessage" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- FERRAMENTAS -->
     <section class="tools-section" id="ferramentas">
       <div class="section-head">
         <div>
@@ -85,106 +128,14 @@
         </label>
       </div>
 
-      <div
-        class="filters"
-        id="filters"
-        aria-label="Categorias de ferramentas"
-      ></div>
-
+      <div class="filters" id="filters" aria-label="Categorias de ferramentas"></div>
       <div class="tool-grid" id="toolGrid"></div>
-    </section>
-
-    <!-- ÁREA DE DOAÇÕES -->
-    <section class="donation-section" id="doacoes">
-      <div class="donation-card">
-        <div class="donation-label">
-          ♡ APOIE O PROJETO
-        </div>
-
-        <h2>Ajude o Tools a se manter 💜</h2>
-
-        <p class="donation-description">
-          Todos os desenvolvedores trabalham de graça pra ajudar você,
-          que não tem tempo ou acesso às ferramentas pagas.
-          Até 10 centavos já ajudam a manter tudo funcionando.
-          Obrigado e fique bem!
-        </p>
-
-        <div class="donation-divider"></div>
-
-        <h3>Escolha um valor para contribuir</h3>
-
-        <div class="donation-values">
-          <button type="button" data-donation-value="0.10">
-            R$ 0,10
-          </button>
-
-          <button type="button" data-donation-value="1">
-            R$ 1
-          </button>
-
-          <button type="button" data-donation-value="2">
-            R$ 2
-          </button>
-
-          <button type="button" data-donation-value="5" class="selected">
-            R$ 5
-          </button>
-
-          <button type="button" data-donation-value="10">
-            R$ 10
-          </button>
-        </div>
-
-        <label for="donationAmount">
-          Ou digite outro valor (R$)
-        </label>
-
-        <input
-          id="donationAmount"
-          type="number"
-          min="0.10"
-          max="100000"
-          step="0.01"
-          value="5"
-          inputmode="decimal"
-        >
-
-        <div class="donation-total">
-          <span>Sua contribuição</span>
-          <strong id="donationTotal">R$ 5,00</strong>
-        </div>
-
-        <button
-          class="donation-submit"
-          id="donationSubmit"
-          type="button"
-        >
-          ♡ Fazer uma doação
-        </button>
-
-        <p class="donation-footer">
-          Doação voluntária · Um projeto da Platform Destroyer
-        </p>
-
-        <p
-          class="donation-message"
-          id="donationMessage"
-          role="status"
-          aria-live="polite"
-        ></p>
-      </div>
     </section>
 
     <!-- SOBRE -->
     <section class="about" id="sobre">
       <div class="eyebrow">SOBRE O PROJETO</div>
-
-      <h2>
-        Menos complicação.<br>
-        <span>Mais produtividade.</span>
-      </h2>
-
+      <h2>Menos complicação.<br><span>Mais produtividade.</span></h2>
       <p>
         O PD Tools reúne ferramentas práticas, gratuitas e fáceis
         de usar para ajudar você nas tarefas do dia a dia.
@@ -192,22 +143,71 @@
     </section>
   </main>
 
-  <!-- RODAPÉ -->
   <footer>
     <a class="brand" href="#inicio">
       <span class="brand-mark">PD</span>
       <span>PD <b>TOOLS</b></span>
     </a>
-
-    <span>
-      © <span id="year"></span> PD Tools.
-      Todos os direitos reservados.
-    </span>
-
-    <span>
-      Desenvolvido por <b>Kraz e Hz</b>
-    </span>
+    <span>© <span id="year"></span> PD Tools. Todos os direitos reservados.</span>
+    <span>Desenvolvido por <b>Kraz e Hz</b></span>
   </footer>
+
+  <!-- ANÚNCIO INICIAL -->
+  <div class="donation-popup-overlay" id="donationPopup" hidden>
+    <div
+      class="donation-popup"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="donationPopupTitle"
+    >
+      <button
+        class="donation-popup-close"
+        id="closeDonationPopup"
+        type="button"
+        aria-label="Fechar anúncio"
+      >✕</button>
+
+      <div class="donation-popup-header">
+        <div class="donation-popup-logo">
+          PD <span>TOOLS</span>
+        </div>
+        <div class="donation-popup-subtitle">APOIADOR</div>
+      </div>
+
+      <div class="donation-popup-content">
+        <h2 id="donationPopupTitle">💜 Apoie o PD Tools</h2>
+
+        <p>
+          Nosso projeto é gratuito e desenvolvido
+          com dedicação para ajudar você.
+        </p>
+
+        <div class="donation-popup-benefits">
+          <div>↳ Ferramentas 100% gratuitas</div>
+          <div>↳ Sem necessidade de cadastro</div>
+          <div>↳ Novas ferramentas e melhorias</div>
+          <div>↳ Ajude a manter o projeto online</div>
+        </div>
+
+        <p class="donation-popup-highlight">
+          Qualquer valor faz a diferença.<br>
+          Até R$ 0,10 já ajuda!
+        </p>
+
+        <button
+          class="donation-popup-action"
+          id="goToDonations"
+          type="button"
+        >
+          ♡ Fazer uma doação
+        </button>
+
+        <div class="donation-popup-note">
+          Um projeto da Platform Destroyer
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- JANELA DAS FERRAMENTAS -->
   <div
@@ -220,23 +220,16 @@
     <div class="modal">
       <div class="modal-head">
         <div>
-          <div class="eyebrow" id="modalCategory">
-            FERRAMENTA
-          </div>
-
+          <div class="eyebrow" id="modalCategory">FERRAMENTA</div>
           <h3 id="modalTitle">Ferramenta</h3>
         </div>
-
         <button
           class="icon-btn"
           type="button"
           data-close="toolModal"
           aria-label="Fechar"
-        >
-          ✕
-        </button>
+        >✕</button>
       </div>
-
       <div id="toolContent"></div>
     </div>
   </div>
@@ -255,70 +248,48 @@
           <div class="eyebrow">PD TOOLS</div>
           <h3>Administração</h3>
         </div>
-
         <button
           class="icon-btn"
           type="button"
           data-close="adminModal"
           aria-label="Fechar"
-        >
-          ✕
-        </button>
+        >✕</button>
       </div>
 
       <div class="admin-warning">
-        Área restrita. Entre com sua conta administrativa
-        para gerenciar as ferramentas e a aparência do site.
+        Área restrita. Entre com sua conta administrativa para gerenciar
+        as ferramentas e a aparência do site.
       </div>
 
-      <div
-        class="admin-tabs"
-        role="tablist"
-        aria-label="Seções administrativas"
-      >
-        <button
-          class="active"
-          type="button"
-          data-tab="overview"
-        >
-          Visão geral
-        </button>
-
-        <button type="button" data-tab="toolsAdmin">
-          Ferramentas
-        </button>
-
-        <button type="button" data-tab="appearance">
-          Aparência
-        </button>
+      <div class="admin-tabs" role="tablist" aria-label="Seções administrativas">
+        <button class="active" type="button" data-tab="overview">Visão geral</button>
+        <button type="button" data-tab="toolsAdmin">Ferramentas</button>
+        <button type="button" data-tab="appearance">Aparência</button>
       </div>
 
       <div id="adminContent"></div>
     </div>
   </div>
 
-  <div
-    class="toast"
-    id="toast"
-    role="status"
-    aria-live="polite"
-  ></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- BIBLIOTECAS -->
+  <!-- BIBLIOTECAS ORIGINAIS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- SISTEMA ORIGINAL -->
   <script src="app.js"></script>
 
-  <!-- SISTEMA DE DOAÇÕES -->
+  <!-- SISTEMA DE DOAÇÕES E ANÚNCIO -->
   <script>
     (() => {
       const amountInput = document.getElementById("donationAmount");
       const total = document.getElementById("donationTotal");
       const message = document.getElementById("donationMessage");
       const submit = document.getElementById("donationSubmit");
-      const buttons = document.querySelectorAll("[data-donation-value]");
+      const valueButtons = document.querySelectorAll("[data-donation-value]");
+
+      const popup = document.getElementById("donationPopup");
+      const closeButton = document.getElementById("closeDonationPopup");
+      const donateButton = document.getElementById("goToDonations");
 
       const formatBRL = value =>
         value.toLocaleString("pt-BR", {
@@ -334,7 +305,7 @@
             ? formatBRL(value)
             : "R$ 0,00";
 
-        buttons.forEach(button => {
+        valueButtons.forEach(button => {
           const selected =
             Number(button.dataset.donationValue) === value;
 
@@ -345,7 +316,7 @@
         message.textContent = "";
       }
 
-      buttons.forEach(button => {
+      valueButtons.forEach(button => {
         button.addEventListener("click", () => {
           amountInput.value = button.dataset.donationValue;
           updateDonation();
@@ -368,11 +339,81 @@
         }
 
         message.textContent =
-          "Obrigado pelo apoio! 💜 O pagamento por Pix " +
-          "ainda está sendo configurado.";
+          "Obrigado pelo apoio! 💜 O pagamento por Pix ainda está sendo configurado.";
       });
 
       updateDonation();
+
+      let previousFocus = null;
+
+      function closePopup() {
+        if (popup.hidden) return;
+
+        popup.hidden = true;
+        document.body.classList.remove("donation-popup-open");
+
+        try {
+          sessionStorage.setItem("pdtoolsDonationPopupSeen", "1");
+        } catch (error) {
+          // O anúncio também funciona sem armazenamento.
+        }
+
+        previousFocus?.focus?.();
+      }
+
+      closeButton.addEventListener("click", closePopup);
+
+      donateButton.addEventListener("click", () => {
+        closePopup();
+
+        document.getElementById("doacoes").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      });
+
+      popup.addEventListener("click", event => {
+        if (event.target === popup) closePopup();
+      });
+
+      document.addEventListener("keydown", event => {
+        if (popup.hidden) return;
+
+        if (event.key === "Escape") {
+          closePopup();
+        }
+
+        if (event.key === "Tab") {
+          const focusable = [closeButton, donateButton];
+
+          if (event.shiftKey && document.activeElement === closeButton) {
+            event.preventDefault();
+            donateButton.focus();
+          } else if (
+            !event.shiftKey &&
+            document.activeElement === donateButton
+          ) {
+            event.preventDefault();
+            closeButton.focus();
+          }
+        }
+      });
+
+      let alreadySeen = false;
+
+      try {
+        alreadySeen =
+          sessionStorage.getItem("pdtoolsDonationPopupSeen") === "1";
+      } catch (error) {
+        alreadySeen = false;
+      }
+
+      if (!alreadySeen) {
+        previousFocus = document.activeElement;
+        popup.hidden = false;
+        document.body.classList.add("donation-popup-open");
+        closeButton.focus();
+      }
     })();
   </script>
 </body>
