@@ -542,9 +542,29 @@ footer{text-align:center;padding:30px;color:#999}
 
           const lib = await pdfLib();
           const doc = await lib.PDFDocument.create();
-          const font = await doc.embedFont(lib.StandardFonts.Helvetica);
-          const bold = await doc.embedFont(lib.StandardFonts.HelveticaBold);
+const fontkitModule = await import(
+  "https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/+esm"
+);
 
+const fontkit = fontkitModule.default || fontkitModule;
+doc.registerFontkit(fontkit);
+
+const [regularResponse, boldResponse] = await Promise.all([
+  fetch("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-400-normal.ttf"),
+  fetch("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-700-normal.ttf")
+]);
+
+if (!regularResponse.ok || !boldResponse.ok) {
+  throw new Error("Não foi possível carregar as fontes do currículo.");
+}
+
+const font = await doc.embedFont(
+  await regularResponse.arrayBuffer()
+);
+
+const bold = await doc.embedFont(
+  await boldResponse.arrayBuffer()
+);
           let page = doc.addPage([595,842]);
           let y = 795;
 
