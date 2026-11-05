@@ -1,6 +1,8 @@
 
 /* ==========================================
-   PD TOOLS — SISTEMA DE FILTRO PREMIUM
+   PD TOOLS — PREMIUM FUNCIONAL
+   5 ferramentas disponíveis
+   10 ferramentas em desenvolvimento
    ========================================== */
 
 (() => {
@@ -9,9 +11,11 @@
   const filters = document.getElementById("filters");
   const grid = document.getElementById("toolGrid");
   const search = document.getElementById("search");
+  const modal = document.getElementById("toolModal");
+  const content = document.getElementById("toolContent");
 
-  if (!filters || !grid) {
-    console.error("PD Tools: filtros não encontrados.");
+  if (!filters || !grid || !modal || !content) {
+    console.error("PD Tools: elementos não encontrados.");
     return;
   }
 
@@ -23,35 +27,43 @@
   const client = supabaseClient;
 
   const premiumTools = [
-    ["Removedor de fundo", "Remova fundos de imagens.", "✂️"],
-    ["PDF Studio", "Organize arquivos PDF.", "📄"],
-    ["Extrator de texto OCR", "Extraia textos de imagens.", "🔎"],
-    ["HTML Studio", "Edite e visualize HTML.", "💻"],
-    ["Criador de banners", "Crie banners personalizados.", "🎨"],
-    ["Conversor de imagens em lote", "Converta várias imagens.", "🔄"],
-    ["QR Code avançado", "Personalize QR Codes.", "▦"],
-    ["JSON Studio", "Analise arquivos JSON.", "{}"],
-    ["Marca d'água em lote", "Proteja suas imagens.", "◈"],
-    ["Compressor de PDF", "Reduza arquivos PDF.", "📦"],
-    ["Criador de currículos", "Monte currículos.", "📋"],
-    ["Editor de imagens", "Edite suas imagens.", "🖼️"],
-    ["Criador de legendas SRT", "Crie legendas.", "≡"],
-    ["Minificador avançado", "Otimize códigos.", "⌘"],
-    ["Criador de sites", "Monte páginas personalizadas.", "🌐"]
+    { id: "remove-bg", name: "Removedor de fundo", desc: "Remova fundos de imagens.", icon: "✂️" },
+    { id: "pdf-studio", name: "PDF Studio", desc: "Organize arquivos PDF.", icon: "📄" },
+    { id: "ocr", name: "Extrator de texto OCR", desc: "Extraia textos de imagens.", icon: "🔎" },
+    { id: "html-studio", name: "HTML Studio", desc: "Edite e visualize HTML.", icon: "💻", ready: true },
+    { id: "banner", name: "Criador de banners", desc: "Crie banners personalizados.", icon: "🎨", ready: true },
+    { id: "image-batch", name: "Conversor de imagens em lote", desc: "Converta várias imagens.", icon: "🔄" },
+    { id: "qr-advanced", name: "QR Code avançado", desc: "Personalize QR Codes.", icon: "▦" },
+    { id: "json-studio", name: "JSON Studio", desc: "Analise e formate JSON.", icon: "{}", ready: true },
+    { id: "watermark", name: "Marca d'água em lote", desc: "Proteja suas imagens.", icon: "◈" },
+    { id: "pdf-compress", name: "Compressor de PDF", desc: "Reduza arquivos PDF.", icon: "📦" },
+    { id: "resume", name: "Criador de currículos", desc: "Monte currículos.", icon: "📋" },
+    { id: "image-editor", name: "Editor de imagens", desc: "Edite suas imagens.", icon: "🖼️" },
+    { id: "srt", name: "Criador de legendas SRT", desc: "Crie legendas para vídeos.", icon: "≡", ready: true },
+    { id: "minifier", name: "Minificador avançado", desc: "Compacte códigos HTML, CSS e JavaScript.", icon: "⌘", ready: true },
+    { id: "site-builder", name: "Criador de sites", desc: "Monte páginas personalizadas.", icon: "🌐" }
   ];
 
   let premiumSelected = false;
   let requestVersion = 0;
+  let premiumVerified = false;
 
-  // ==========================================
-  // ESTILOS
-  // ==========================================
+  const $ = selector => document.querySelector(selector);
+
+  const escapeHTML = value =>
+    String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
 
   const style = document.createElement("style");
 
   style.textContent = `
-    .premium-section,
-    #premium {
+    #premium,
+    .premium-section {
       display: none !important;
     }
 
@@ -61,60 +73,111 @@
     }
 
     .filter[data-cat="Premium"].active {
-      color: #e0d7ff;
       background: #9b7bff1a;
       border-color: #9b7bff;
+      color: #e0d7ff;
     }
 
     .pd-premium-message {
       grid-column: 1 / -1;
-      width: 100%;
-      padding: 32px 20px;
+      padding: 30px 20px;
       text-align: center;
       background: #11111b;
       border: 1px solid #252538;
       border-radius: 16px;
-      color: #9998ad;
-      line-height: 1.7;
+      color: #aaa;
     }
 
     .pd-premium-message h3 {
       color: #c3b4ff;
-      margin: 0 0 10px;
+      margin-bottom: 10px;
     }
 
-    .pd-premium-message p {
-      margin: 8px 0;
+    .pd-premium-status {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #b9a5ff;
+    }
+
+    .pd-premium-status.pending {
+      color: #999;
+    }
+
+    .pd-premium-field {
+      margin: 14px 0;
+    }
+
+    .pd-premium-field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #c3b4ff;
+      font-size: 13px;
+    }
+
+    .pd-premium-field input,
+    .pd-premium-field textarea,
+    .pd-premium-field select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: 9px;
+      border: 1px solid #363044;
+      background: #111018;
+      color: #fff;
+      font: inherit;
+    }
+
+    .pd-premium-field textarea {
+      min-height: 140px;
+      resize: vertical;
+      font-family: monospace;
+    }
+
+    .pd-premium-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .pd-premium-actions button {
+      cursor: pointer;
+    }
+
+    .pd-premium-result {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #302a3c;
+      border-radius: 10px;
+      background: #111018;
+      color: #ddd;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .pd-premium-preview {
+      width: 100%;
+      height: 260px;
+      border: 1px solid #363044;
+      border-radius: 10px;
+      background: white;
+      margin-top: 14px;
+    }
+
+    #pdBannerCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 15px 0;
     }
   `;
 
   document.head.appendChild(style);
 
-  // ==========================================
-  // SEGURANÇA DO TEXTO
-  // ==========================================
-
-  function escapeHTML(value) {
-    return String(value).replace(
-      /[&<>"']/g,
-      character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[character]
-    );
-  }
-
-  // ==========================================
-  // BOTÃO PREMIUM
-  // ==========================================
-
   function addPremiumButton() {
-    let button = filters.querySelector(
-      '[data-cat="Premium"]'
-    );
+    let button = filters.querySelector('[data-cat="Premium"]');
 
     if (!button) {
       button = document.createElement("button");
@@ -124,52 +187,36 @@
       button.textContent = "🔒 Premium";
     }
 
-    const allButton = filters.querySelector(
-      '[data-cat="Todas"]'
-    );
+    const all = filters.querySelector('[data-cat="Todas"]');
 
-    if (allButton) {
-      allButton.insertAdjacentElement("afterend", button);
-    } else {
+    if (all) {
+      if (all.nextElementSibling !== button) {
+        all.insertAdjacentElement("afterend", button);
+      }
+    } else if (!button.parentElement) {
       filters.prepend(button);
     }
 
     button.classList.toggle("active", premiumSelected);
 
     if (premiumSelected) {
-      filters.querySelectorAll("button[data-cat]")
-        .forEach(item => {
-          if (item !== button) {
-            item.classList.remove("active");
-          }
-        });
+      filters.querySelectorAll("button").forEach(item => {
+        if (item !== button) item.classList.remove("active");
+      });
     }
   }
-
-  // ==========================================
-  // CONSULTA PREMIUM NO SUPABASE
-  // ==========================================
 
   async function hasPremium() {
     const { data: sessionData, error: sessionError } =
       await client.auth.getSession();
 
-    if (sessionError) {
-      console.error("Erro de sessão:", sessionError);
-      return false;
-    }
-
-    if (!sessionData?.session?.user) {
-      return false;
-    }
+    if (sessionError) throw sessionError;
+    if (!sessionData?.session?.user) return false;
 
     const { data: userData, error: userError } =
       await client.auth.getUser();
 
-    if (userError || !userData?.user) {
-      console.error("Erro de autenticação:", userError);
-      return false;
-    }
+    if (userError || !userData?.user) return false;
 
     const { data, error } = await client
       .from("premium_access")
@@ -177,23 +224,12 @@
       .eq("user_id", userData.user.id)
       .maybeSingle();
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
-    if (!data?.expires_at) {
-      return false;
-    }
+    const expires = Date.parse(data?.expires_at || "");
 
-    const expires = Date.parse(data.expires_at);
-
-    return Number.isFinite(expires) &&
-      expires > Date.now();
+    return Number.isFinite(expires) && expires > Date.now();
   }
-
-  // ==========================================
-  // MENSAGENS
-  // ==========================================
 
   function showMessage(title, description) {
     grid.innerHTML = `
@@ -204,14 +240,45 @@
     `;
   }
 
-  // ==========================================
-  // EXIBIR PREMIUM
-  // ==========================================
+  function renderPremiumCards() {
+    if (!premiumSelected || !premiumVerified) return;
+
+    const query = (search?.value || "").trim().toLowerCase();
+
+    const visible = premiumTools.filter(tool =>
+      `${tool.name} ${tool.desc}`.toLowerCase().includes(query)
+    );
+
+    if (!visible.length) {
+      showMessage("Nenhuma ferramenta encontrada", "Tente outra pesquisa.");
+      return;
+    }
+
+    grid.innerHTML = visible.map(tool => `
+      <article
+        class="tool-card"
+        data-premium-tool="${escapeHTML(tool.id)}"
+        role="button"
+        tabindex="0"
+        aria-label="${escapeHTML(tool.name)}"
+        style="cursor:pointer"
+      >
+        <span class="tool-arrow">↗</span>
+        <div class="tool-icon">${escapeHTML(tool.icon)}</div>
+        <h3>${escapeHTML(tool.name)}</h3>
+        <p>${escapeHTML(tool.desc)}</p>
+        <span class="pd-premium-status ${tool.ready ? "" : "pending"}">
+          ${tool.ready ? "💜 Disponível" : "Em desenvolvimento"}
+        </span>
+      </article>
+    `).join("");
+  }
 
   async function showPremium() {
-    const currentVersion = ++requestVersion;
+    const version = ++requestVersion;
 
     premiumSelected = true;
+    premiumVerified = false;
 
     addPremiumButton();
 
@@ -223,12 +290,9 @@
     try {
       const active = await hasPremium();
 
-      if (
-        currentVersion !== requestVersion ||
-        !premiumSelected
-      ) {
-        return;
-      }
+      if (version !== requestVersion || !premiumSelected) return;
+
+      premiumVerified = active;
 
       if (!active) {
         showMessage(
@@ -238,42 +302,12 @@
         return;
       }
 
-      const query = (search?.value || "")
-        .trim()
-        .toLowerCase();
-
-      const visible = premiumTools.filter(tool =>
-        (tool[0] + " " + tool[1])
-          .toLowerCase()
-          .includes(query)
-      );
-
-      if (!visible.length) {
-        showMessage(
-          "Nenhuma ferramenta encontrada",
-          "Tente pesquisar outro nome."
-        );
-        return;
-      }
-
-      grid.innerHTML = visible.map(tool => `
-        <article class="tool-card">
-          <span class="tool-arrow">💜</span>
-          <div class="tool-icon">
-            ${escapeHTML(tool[2])}
-          </div>
-          <h3>${escapeHTML(tool[0])}</h3>
-          <p>${escapeHTML(tool[1])}</p>
-        </article>
-      `).join("");
+      renderPremiumCards();
 
     } catch (error) {
       console.error("Erro Premium:", error);
 
-      if (
-        currentVersion === requestVersion &&
-        premiumSelected
-      ) {
+      if (version === requestVersion && premiumSelected) {
         showMessage(
           "Erro ao verificar Premium",
           "Não foi possível consultar seu acesso. Tente novamente."
@@ -282,102 +316,618 @@
     }
   }
 
-  // ==========================================
-  // VOLTAR ÀS FERRAMENTAS GRATUITAS
-  // ==========================================
-
   function showFreeTools(selectedCategory) {
     ++requestVersion;
 
     premiumSelected = false;
+    premiumVerified = false;
 
     if (typeof category !== "undefined") {
       category = selectedCategory;
     }
 
-    if (typeof render === "function") {
-      render();
-    }
+    if (typeof render === "function") render();
 
     addPremiumButton();
   }
 
-  // ==========================================
-  // CLIQUES NOS FILTROS
-  // ==========================================
+  function field(label, id, value = "", type = "text") {
+    return `
+      <div class="pd-premium-field">
+        <label for="${escapeHTML(id)}">${escapeHTML(label)}</label>
+        <input
+          id="${escapeHTML(id)}"
+          type="${escapeHTML(type)}"
+          value="${escapeHTML(value)}"
+        >
+      </div>
+    `;
+  }
 
-  filters.addEventListener("click", event => {
-    const button = event.target.closest(
-      "button[data-cat]"
+  function textarea(label, id, value = "") {
+    return `
+      <div class="pd-premium-field">
+        <label for="${escapeHTML(id)}">${escapeHTML(label)}</label>
+        <textarea id="${escapeHTML(id)}">${escapeHTML(value)}</textarea>
+      </div>
+    `;
+  }
+
+  function actions(buttons) {
+    return `
+      <div class="pd-premium-actions">
+        ${buttons.map(([id, label], index) => `
+          <button
+            type="button"
+            class="${index === 0 ? "action" : "secondary"}"
+            id="${escapeHTML(id)}"
+          >${escapeHTML(label)}</button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function setResult(id, message) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = message;
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadText(text, filename, type = "text/plain") {
+    downloadBlob(
+      new Blob([text], { type: `${type};charset=utf-8` }),
+      filename
+    );
+  }
+
+  function toolHTML(id) {
+    switch (id) {
+      case "html-studio":
+        return `
+          ${textarea(
+            "Código HTML",
+            "pdHtmlInput",
+            "<h1>Olá, PD Tools!</h1>\n<p>Minha primeira página.</p>"
+          )}
+          ${actions([
+            ["pdHtmlPreviewBtn", "Visualizar"],
+            ["pdHtmlDownload", "Baixar HTML"]
+          ])}
+          <iframe
+            id="pdHtmlPreview"
+            class="pd-premium-preview"
+            sandbox=""
+            title="Prévia HTML"
+          ></iframe>
+        `;
+
+      case "json-studio":
+        return `
+          ${textarea(
+            "Cole seu JSON",
+            "pdJsonInput",
+            '{"projeto":"PD Tools","premium":true}'
+          )}
+          ${actions([
+            ["pdJsonFormat", "Formatar e validar"],
+            ["pdJsonCompact", "Compactar"],
+            ["pdJsonDownload", "Baixar JSON"]
+          ])}
+          <div class="pd-premium-result" id="pdJsonResult">
+            Aguardando JSON...
+          </div>
+        `;
+
+      case "srt":
+        return `
+          <p style="color:#aaa">
+            Adicione uma legenda por linha no formato:
+            início | fim | texto
+          </p>
+          <p style="color:#aaa;font-size:12px">
+            Exemplo: 00:00:01 | 00:00:04 | Olá, pessoal!
+          </p>
+          ${textarea(
+            "Legendas",
+            "pdSrtInput",
+            "00:00:01 | 00:00:04 | Olá, pessoal!\n00:00:05 | 00:00:08 | Bem-vindos ao PD Tools!"
+          )}
+          ${actions([
+            ["pdSrtGenerate", "Gerar legendas"],
+            ["pdSrtDownload", "Baixar SRT"]
+          ])}
+          <div class="pd-premium-result" id="pdSrtResult">
+            Suas legendas aparecerão aqui.
+          </div>
+        `;
+
+      case "minifier":
+        return `
+          <div class="pd-premium-field">
+            <label for="pdMinType">Tipo de código</label>
+            <select id="pdMinType">
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+              <option value="js">JavaScript (compactação básica)</option>
+            </select>
+          </div>
+          ${textarea("Código original", "pdMinInput")}
+          ${actions([
+            ["pdMinRun", "Minificar"],
+            ["pdMinCopy", "Copiar resultado"],
+            ["pdMinDownload", "Baixar código"]
+          ])}
+          ${textarea("Resultado", "pdMinOutput")}
+          <p style="color:#999;font-size:12px">
+            Compactação conservadora. Não substitui um
+            minificador profissional e deve ser testada
+            antes de publicar código em produção.
+          </p>
+        `;
+
+      case "banner":
+        return `
+          ${field("Título do banner", "pdBannerTitle", "PD TOOLS")}
+          ${field(
+            "Subtítulo",
+            "pdBannerSubtitle",
+            "Um projeto da Platform Destroyer"
+          )}
+          ${field("Cor de fundo", "pdBannerBg", "#09090f", "color")}
+          ${field("Cor de destaque", "pdBannerAccent", "#a78bfa", "color")}
+          ${actions([
+            ["pdBannerMake", "Gerar banner"],
+            ["pdBannerDownload", "Baixar PNG"]
+          ])}
+          <canvas
+            id="pdBannerCanvas"
+            width="1200"
+            height="630"
+          ></canvas>
+        `;
+
+      default:
+        return `
+          <div class="pd-premium-result">
+            Esta ferramenta ainda está em desenvolvimento.
+            Estamos preparando sua funcionalidade.
+          </div>
+        `;
+    }
+  }
+
+  function wireHTMLStudio() {
+    const input = $("#pdHtmlInput");
+    const frame = $("#pdHtmlPreview");
+
+    $("#pdHtmlPreviewBtn").onclick = () => {
+      frame.srcdoc = input.value;
+    };
+
+    $("#pdHtmlDownload").onclick = () => {
+      downloadText(input.value, "pdtools-pagina.html", "text/html");
+    };
+
+    frame.srcdoc = input.value;
+  }
+
+  function wireJSONStudio() {
+    const input = $("#pdJsonInput");
+
+    function process(compact = false) {
+      try {
+        const parsed = JSON.parse(input.value);
+        const output = JSON.stringify(
+          parsed,
+          null,
+          compact ? 0 : 2
+        );
+
+        input.value = output;
+
+        setResult(
+          "pdJsonResult",
+          "✓ JSON válido\n\n" + output
+        );
+
+        return output;
+      } catch (error) {
+        setResult("pdJsonResult", "JSON inválido: " + error.message);
+        return null;
+      }
+    }
+
+    $("#pdJsonFormat").onclick = () => process(false);
+    $("#pdJsonCompact").onclick = () => process(true);
+
+    $("#pdJsonDownload").onclick = () => {
+      const output = process(false);
+      if (output !== null) {
+        downloadText(output, "pdtools-dados.json", "application/json");
+      }
+    };
+  }
+
+  function parseTime(value) {
+    const match = value.trim().match(
+      /^(\d{1,2}):([0-5]\d):([0-5]\d)(?:[,.](\d{1,3}))?$/
     );
 
-    if (!button || !filters.contains(button)) {
+    if (!match) return null;
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    const seconds = Number(match[3]);
+    const millis = Number((match[4] || "0").padEnd(3, "0"));
+
+    const total =
+      ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis;
+
+    const formatted =
+      String(hours).padStart(2, "0") + ":" +
+      String(minutes).padStart(2, "0") + ":" +
+      String(seconds).padStart(2, "0") + "," +
+      String(millis).padStart(3, "0");
+
+    return { total, formatted };
+  }
+
+  function wireSRT() {
+    const input = $("#pdSrtInput");
+    let generated = "";
+
+    function generate() {
+      const lines = input.value.split(/\r?\n/).filter(line => line.trim());
+      const entries = [];
+
+      for (const [index, line] of lines.entries()) {
+        const parts = line.split("|");
+
+        if (parts.length < 3) {
+          setResult(
+            "pdSrtResult",
+            `Erro na linha ${index + 1}: use início | fim | texto`
+          );
+          generated = "";
+          return false;
+        }
+
+        const start = parseTime(parts[0]);
+        const end = parseTime(parts[1]);
+        const caption = parts.slice(2).join("|").trim();
+
+        if (!start || !end || end.total <= start.total || !caption) {
+          setResult(
+            "pdSrtResult",
+            `Erro na linha ${index + 1}: confira os horários e o texto.`
+          );
+          generated = "";
+          return false;
+        }
+
+        entries.push(
+          `${index + 1}\n${start.formatted} --> ${end.formatted}\n${caption}`
+        );
+      }
+
+      if (!entries.length) {
+        setResult("pdSrtResult", "Adicione pelo menos uma legenda.");
+        generated = "";
+        return false;
+      }
+
+      generated = entries.join("\n\n") + "\n";
+
+      setResult("pdSrtResult", generated);
+      return true;
+    }
+
+    $("#pdSrtGenerate").onclick = generate;
+
+    $("#pdSrtDownload").onclick = () => {
+      if (generate()) {
+        downloadText(generated, "pdtools-legendas.srt");
+      }
+    };
+  }
+
+  function wireMinifier() {
+    const input = $("#pdMinInput");
+    const output = $("#pdMinOutput");
+    const type = $("#pdMinType");
+
+    function minify() {
+      let result = input.value;
+
+      if (type.value === "html") {
+        result = result
+          .replace(/>\s+</g, "><")
+          .trim();
+      }
+
+      if (type.value === "css") {
+        result = result
+          .replace(/\s+/g, " ")
+          .replace(/\s*([{};:,])\s*/g, "$1")
+          .replace(/;}/g, "}")
+          .trim();
+      }
+
+      if (type.value === "js") {
+        // Compactação básica sem remover espaços
+        // que poderiam alterar o funcionamento.
+        result = result
+          .split("\n")
+          .map(line => line.trim())
+          .filter(Boolean)
+          .join("\n");
+      }
+
+      output.value = result;
+      return result;
+    }
+
+    $("#pdMinRun").onclick = minify;
+
+    $("#pdMinCopy").onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(output.value);
+        if (typeof toast === "function") toast("Código copiado!");
+      } catch {
+        output.select();
+        if (typeof toast === "function") {
+          toast("Selecione e copie o resultado.");
+        }
+      }
+    };
+
+    $("#pdMinDownload").onclick = () => {
+      const result = minify();
+
+      const extensions = {
+        html: "html",
+        css: "css",
+        js: "js"
+      };
+
+      downloadText(
+        result,
+        `pdtools-minificado.${extensions[type.value]}`
+      );
+    };
+  }
+
+  function wireBanner() {
+    const canvas = $("#pdBannerCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function draw() {
+      const title = $("#pdBannerTitle").value || "PD TOOLS";
+      const subtitle = $("#pdBannerSubtitle").value || "";
+      const background = $("#pdBannerBg").value;
+      const accent = $("#pdBannerAccent").value;
+
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = accent;
+      ctx.fillRect(90, 115, 8, 400);
+
+      ctx.textBaseline = "middle";
+
+      let fontSize = 82;
+
+      do {
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        if (ctx.measureText(title).width <= 990) break;
+        fontSize -= 2;
+      } while (fontSize > 22);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(title, 130, 270, 990);
+
+      ctx.font = "32px Arial, sans-serif";
+      ctx.fillStyle = accent;
+
+      // Quebra o subtítulo em linhas quando necessário.
+      const words = subtitle.split(/\s+/);
+      const lines = [];
+      let line = "";
+
+      for (const word of words) {
+        const candidate = line ? line + " " + word : word;
+
+        if (ctx.measureText(candidate).width > 950 && line) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = candidate;
+        }
+      }
+
+      if (line) lines.push(line);
+
+      lines.slice(0, 3).forEach((text, index) => {
+        ctx.fillText(text, 130, 355 + index * 44, 950);
+      });
+
+      ctx.fillStyle = "#77717f";
+      ctx.font = "22px Arial, sans-serif";
+      ctx.fillText("PD TOOLS", 130, 545);
+    }
+
+    $("#pdBannerMake").onclick = draw;
+
+    $("#pdBannerDownload").onclick = () => {
+      draw();
+
+      canvas.toBlob(blob => {
+        if (blob) downloadBlob(blob, "pdtools-banner.png");
+      }, "image/png");
+    };
+
+    draw();
+  }
+
+  async function openPremiumTool(id) {
+    const tool = premiumTools.find(item => item.id === id);
+
+    if (!tool || !premiumSelected || !premiumVerified) return;
+
+    // Revalida o acesso antes de abrir.
+    try {
+      const allowed = await hasPremium();
+
+      if (!allowed) {
+        premiumVerified = false;
+        showMessage(
+          "🔒 Premium bloqueado",
+          "Seu acesso Premium não está ativo."
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Erro ao validar Premium:", error);
+      showMessage(
+        "Erro ao verificar Premium",
+        "Tente novamente."
+      );
       return;
     }
+
+    $("#modalTitle").textContent = tool.name;
+    $("#modalCategory").textContent = "PD TOOLS PREMIUM";
+
+    if (typeof activeToolInterval !== "undefined" && activeToolInterval) {
+      clearInterval(activeToolInterval);
+      activeToolInterval = null;
+    }
+
+    content.innerHTML = toolHTML(id);
+    modal.classList.add("show");
+
+    switch (id) {
+      case "html-studio":
+        wireHTMLStudio();
+        break;
+
+      case "json-studio":
+        wireJSONStudio();
+        break;
+
+      case "srt":
+        wireSRT();
+        break;
+
+      case "minifier":
+        wireMinifier();
+        break;
+
+      case "banner":
+        wireBanner();
+        break;
+    }
+  }
+
+  // Intercepta os filtros antes dos eventos do app.js.
+  filters.addEventListener("click", event => {
+    const button = event.target.closest("button[data-cat]");
+
+    if (!button || !filters.contains(button)) return;
+
+    event.stopPropagation();
+    event.preventDefault();
 
     if (button.dataset.cat === "Premium") {
-      event.stopPropagation();
       showPremium();
-      return;
+    } else {
+      showFreeTools(button.dataset.cat);
     }
-
-    showFreeTools(button.dataset.cat);
   }, true);
 
-  // ==========================================
-  // PESQUISA
-  // ==========================================
+  // Abre ferramentas Premium.
+  grid.addEventListener("click", event => {
+    const card = event.target.closest("[data-premium-tool]");
 
+    if (!card || !grid.contains(card)) return;
+
+    openPremiumTool(card.dataset.premiumTool);
+  });
+
+  grid.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    const card = event.target.closest("[data-premium-tool]");
+
+    if (!card) return;
+
+    event.preventDefault();
+    openPremiumTool(card.dataset.premiumTool);
+  });
+
+  // Mantém o Premium na pesquisa.
   if (search) {
     search.addEventListener("input", () => {
-      if (premiumSelected) {
-        showPremium();
+      if (premiumSelected && premiumVerified) {
+        renderPremiumCards();
       }
     });
   }
 
-  // ==========================================
-  // MANTER O BOTÃO VISÍVEL
-  // ==========================================
-
+  // O app.js recria os filtros ao carregar dados.
   const observer = new MutationObserver(() => {
-    if (!filters.querySelector(
-      '[data-cat="Premium"]'
-    )) {
+    if (!filters.querySelector('[data-cat="Premium"]')) {
       addPremiumButton();
     }
   });
 
-  observer.observe(filters, {
-    childList: true
+  observer.observe(filters, { childList: true });
+
+  // Se o app.js renderizar novamente enquanto Premium
+  // estiver selecionado, restaura a visualização correta.
+  const gridObserver = new MutationObserver(() => {
+    if (!premiumSelected) return;
+
+    if (!premiumVerified) {
+      if (grid.querySelector("[data-tool]")) {
+        showMessage(
+          "💜 PD Tools Premium",
+          "Verificando seu acesso..."
+        );
+      }
+      return;
+    }
+
+    if (grid.querySelector("[data-tool]")) {
+      renderPremiumCards();
+    }
   });
 
-  // ==========================================
-  // ATUALIZAR APÓS LOGIN / LOGOUT
-  // ==========================================
+  gridObserver.observe(grid, { childList: true });
 
   client.auth.onAuthStateChange(event => {
     if (
       premiumSelected &&
-      (
-        event === "SIGNED_IN" ||
-        event === "SIGNED_OUT"
-      )
+      (event === "SIGNED_IN" || event === "SIGNED_OUT")
     ) {
-      setTimeout(() => {
-        showPremium();
-      }, 0);
+      setTimeout(showPremium, 0);
     }
   });
 
-  // ==========================================
-  // INICIALIZAÇÃO
-  // ==========================================
-
   addPremiumButton();
 
-  console.log(
-    "PD Tools: filtro Premium inicializado."
-  );
-
+  console.log("PD Tools Premium: 5 ferramentas disponíveis.");
 })();
