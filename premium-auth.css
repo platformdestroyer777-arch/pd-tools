@@ -1,0 +1,139 @@
+
+/* PD Tools — Login de membros */
+
+.pd-account-trigger {
+  background: #241c34;
+  color: #c4b5fd;
+  border: 1px solid #51406b;
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pd-account-overlay[hidden],
+.pd-account-profile[hidden],
+#pdAccountForm[hidden],
+#pdAccountSwitch[hidden] {
+  display: none !important;
+}
+
+.pd-account-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, .82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  backdrop-filter: blur(6px);
+}
+
+.pd-account-dialog {
+  position: relative;
+  width: min(100%, 440px);
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid #3d3050;
+  border-radius: 18px;
+  background: #15121e;
+  padding: 30px;
+  color: #fff;
+  box-shadow: 0 20px 70px #0009;
+}
+
+.pd-account-x {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  background: #282133;
+  color: #fff;
+  border: 0;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.pd-account-tag {
+  color: #b79bff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.pd-account-dialog h2 {
+  margin: 15px 0 8px;
+  font-size: 27px;
+}
+
+.pd-account-desc,
+.pd-account-profile p {
+  color: #b7afc3;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#pdAccountForm label {
+  display: block;
+  margin: 17px 0 7px;
+  font-size: 13px;
+  color: #d8d1e1;
+}
+
+#pdAccountForm input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  background: #0d0b13;
+  border: 1px solid #493a5b;
+  border-radius: 9px;
+  color: #fff;
+  font: inherit;
+}
+
+.pd-account-primary {
+  width: 100%;
+  margin-top: 20px;
+  background: #a78bfa;
+  color: #120c20;
+  border: 0;
+  border-radius: 10px;
+  padding: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pd-account-primary:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.pd-account-switch {
+  display: block;
+  margin: 18px auto 0;
+  background: transparent;
+  border: 0;
+  color: #c4b5fd;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pd-account-message {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c4b5fd;
+  min-height: 1em;
+}
+
+@media (max-width: 760px) {
+  .pd-account-trigger {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .pd-account-dialog {
+    padding: 24px;
+  }
+}
