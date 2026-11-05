@@ -19,9 +19,13 @@
   if (!grid || !modal || !content || !title || !category) return;
 
   const $ = id => document.getElementById(id);
+
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
   })[c]);
 
   const box = (label, html) =>
@@ -53,34 +57,46 @@
   function download(blob, name) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
     a.download = name;
+
     document.body.appendChild(a);
     a.click();
     a.remove();
+
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
   function toBlob(canvas, type = "image/png", quality = 0.9) {
     return new Promise((resolve, reject) => {
-      canvas.toBlob(blob => blob ? resolve(blob) :
-        reject(new Error("Não foi possível exportar a imagem.")), type, quality);
+      canvas.toBlob(
+        blob => blob
+          ? resolve(blob)
+          : reject(new Error("Não foi possível exportar a imagem.")),
+        type,
+        quality
+      );
     });
   }
 
   function imageFromFile(f) {
     return new Promise((resolve, reject) => {
       if (!f) return reject(new Error("Selecione uma imagem."));
+
       const url = URL.createObjectURL(f);
       const img = new Image();
+
       img.onload = () => {
         URL.revokeObjectURL(url);
         resolve(img);
       };
+
       img.onerror = () => {
         URL.revokeObjectURL(url);
         reject(new Error("Imagem inválida."));
       };
+
       img.src = url;
     });
   }
@@ -94,10 +110,14 @@
     const promise = new Promise((resolve, reject) => {
       const s = document.createElement("script");
       s.src = url;
+
       s.onload = () => check()
         ? resolve()
         : reject(new Error("Biblioteca não inicializada."));
-      s.onerror = () => reject(new Error("Falha ao carregar biblioteca externa."));
+
+      s.onerror = () =>
+        reject(new Error("Falha ao carregar biblioteca externa."));
+
       document.head.appendChild(s);
     });
 
@@ -110,6 +130,7 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
       () => !!window.PDFLib
     );
+
     return window.PDFLib;
   }
 
@@ -118,8 +139,10 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
       () => !!window.pdfjsLib
     );
+
     window.pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
     return window.pdfjsLib;
   }
 
@@ -138,6 +161,7 @@
       .maybeSingle();
 
     if (error) throw error;
+
     return Date.parse(data?.expires_at || "") > Date.now();
   }
 
@@ -248,6 +272,7 @@
             style="width:100%;height:360px;background:white;border:0;border-radius:10px;margin-top:14px"></iframe>
           ${output()}`;
     }
+
     return output();
   }
 
@@ -268,10 +293,15 @@
         throw new Error(`As páginas precisam estar entre 1 e ${total}.`);
       }
 
-      for (let p = start; p <= end; p++) pages.add(p - 1);
+      for (let p = start; p <= end; p++) {
+        pages.add(p - 1);
+      }
     }
 
-    if (!pages.size) throw new Error("Informe pelo menos uma página.");
+    if (!pages.size) {
+      throw new Error("Informe pelo menos uma página.");
+    }
+
     return [...pages];
   }
 
@@ -284,9 +314,12 @@
     const rawLink = $("pxLink").value.trim();
 
     let link = "#";
+
     try {
       const parsed = new URL(rawLink);
-      if (["http:", "https:"].includes(parsed.protocol)) link = parsed.href;
+      if (["http:", "https:"].includes(parsed.protocol)) {
+        link = parsed.href;
+      }
     } catch (_) {}
 
     return `<!DOCTYPE html>
@@ -322,6 +355,7 @@ footer{text-align:center;padding:30px;color:#999}
     if (id === "remove-bg") {
       $("pxRun").onclick = async () => {
         const f = $("pxFile").files[0];
+
         if (!f) return status("Selecione uma imagem.");
 
         try {
@@ -333,7 +367,9 @@ footer{text-align:center;padding:30px;color:#999}
           );
 
           const removeBackground =
-            mod.removeBackground || mod.default?.removeBackground || mod.default;
+            mod.removeBackground ||
+            mod.default?.removeBackground ||
+            mod.default;
 
           if (typeof removeBackground !== "function") {
             throw new Error("Biblioteca de remoção indisponível.");
@@ -342,23 +378,29 @@ footer{text-align:center;padding:30px;color:#999}
           const result = await removeBackground(f, {
             progress: (key, current, total) => {
               if (total) {
-                status(`Carregando modelo: ${Math.round(current / total * 100)}%`);
+                status(
+                  `Carregando modelo: ${Math.round(current / total * 100)}%`
+                );
               }
             }
           });
 
           const image = await imageFromFile(result);
           const canvas = $("pxCanvas");
+
           canvas.width = image.naturalWidth;
           canvas.height = image.naturalHeight;
+
           canvas.getContext("2d").drawImage(image, 0, 0);
 
           download(result, "pdtools-sem-fundo.png");
           status("Fundo removido. PNG baixado.");
         } catch (e) {
           console.error(e);
-          status("Falha na remoção: " + e.message +
-            ". Verifique a conexão e a compatibilidade do navegador.");
+          status(
+            "Falha na remoção: " + e.message +
+            ". Verifique a conexão e a compatibilidade do navegador."
+          );
         } finally {
           $("pxRun").disabled = false;
         }
@@ -368,6 +410,7 @@ footer{text-align:center;padding:30px;color:#999}
     if (id === "pdf-studio") {
       $("pxRun").onclick = async () => {
         const files = [...$("pxFiles").files];
+
         if (!files.length) return status("Selecione um PDF.");
 
         try {
@@ -383,10 +426,12 @@ footer{text-align:center;padding:30px;color:#999}
               const source = await lib.PDFDocument.load(
                 await f.arrayBuffer()
               );
+
               const pages = await result.copyPages(
                 source,
                 source.getPageIndices()
               );
+
               pages.forEach(p => result.addPage(p));
             }
           } else {
@@ -402,6 +447,7 @@ footer{text-align:center;padding:30px;color:#999}
 
             pages.forEach(p => {
               result.addPage(p);
+
               if (operation === "rotate") {
                 const angle = (p.getRotation().angle + 90) % 360;
                 p.setRotation(lib.degrees(angle));
@@ -410,13 +456,19 @@ footer{text-align:center;padding:30px;color:#999}
           }
 
           const bytes = await result.save();
-          download(new Blob([bytes], {type:"application/pdf"}),
-            "pdtools-pdf.pdf");
+
+          download(
+            new Blob([bytes], { type: "application/pdf" }),
+            "pdtools-pdf.pdf"
+          );
+
           status("PDF gerado com sucesso.");
         } catch (e) {
           console.error(e);
-          status("Erro: " + e.message +
-            ". PDFs protegidos ou danificados podem não abrir.");
+          status(
+            "Erro: " + e.message +
+            ". PDFs protegidos ou danificados podem não abrir."
+          );
         } finally {
           $("pxRun").disabled = false;
         }
@@ -426,6 +478,7 @@ footer{text-align:center;padding:30px;color:#999}
     if (id === "ocr") {
       $("pxRun").onclick = async () => {
         const f = $("pxFile").files[0];
+
         if (!f) return status("Selecione uma imagem.");
 
         try {
@@ -443,8 +496,12 @@ footer{text-align:center;padding:30px;color:#999}
 
           try {
             const result = await worker.recognize(f);
+
             $("pxText").value = result.data.text || "";
-            status("Texto extraído. Confira possíveis erros de leitura.");
+
+            status(
+              "Texto extraído. Confira possíveis erros de leitura."
+            );
           } finally {
             await worker.terminate();
           }
@@ -458,7 +515,10 @@ footer{text-align:center;padding:30px;color:#999}
 
       $("pxSave").onclick = () => {
         download(
-          new Blob([$("pxText").value], {type:"text/plain;charset=utf-8"}),
+          new Blob(
+            [$("pxText").value],
+            { type: "text/plain;charset=utf-8" }
+          ),
           "pdtools-texto.txt"
         );
       };
@@ -467,6 +527,7 @@ footer{text-align:center;padding:30px;color:#999}
     if (id === "pdf-compress") {
       $("pxRun").onclick = async () => {
         const f = $("pxFile").files[0];
+
         if (!f) return status("Selecione um PDF.");
 
         try {
@@ -475,6 +536,7 @@ footer{text-align:center;padding:30px;color:#999}
 
           const lib = await pdfLib();
           const pdfjs = await pdfJS();
+
           const source = await pdfjs.getDocument({
             data: new Uint8Array(await f.arrayBuffer())
           }).promise;
@@ -483,47 +545,66 @@ footer{text-align:center;padding:30px;color:#999}
           const quality = Number($("pxQuality").value);
 
           for (let i = 1; i <= source.numPages; i++) {
-            status(`Otimizando página ${i} de ${source.numPages}...`);
+            status(
+              `Otimizando página ${i} de ${source.numPages}...`
+            );
 
             const page = await source.getPage(i);
-            const original = page.getViewport({scale:1});
+            const original = page.getViewport({ scale: 1 });
             const scale = Math.min(1.5, 1400 / original.width);
-            const view = page.getViewport({scale});
+            const view = page.getViewport({ scale });
 
             const canvas = document.createElement("canvas");
+
             canvas.width = Math.ceil(view.width);
             canvas.height = Math.ceil(view.height);
 
             await page.render({
-              canvasContext: canvas.getContext("2d", {alpha:false}),
+              canvasContext: canvas.getContext("2d", {
+                alpha: false
+              }),
               viewport: view
             }).promise;
 
-            const jpeg = await toBlob(canvas, "image/jpeg", quality);
-            const img = await result.embedJpg(await jpeg.arrayBuffer());
+            const jpeg = await toBlob(
+              canvas,
+              "image/jpeg",
+              quality
+            );
+
+            const img = await result.embedJpg(
+              await jpeg.arrayBuffer()
+            );
 
             const outPage = result.addPage([
-              original.width, original.height
+              original.width,
+              original.height
             ]);
 
             outPage.drawImage(img, {
-              x:0, y:0,
-              width:original.width,
-              height:original.height
+              x: 0,
+              y: 0,
+              width: original.width,
+              height: original.height
             });
           }
 
           const bytes = await result.save();
-          const blob = new Blob([bytes], {type:"application/pdf"});
+          const blob = new Blob(
+            [bytes],
+            { type: "application/pdf" }
+          );
+
           download(blob, "pdtools-otimizado.pdf");
 
           const difference = Math.round(
             (1 - blob.size / f.size) * 100
           );
 
-          status(difference >= 0
-            ? `PDF gerado. Redução aproximada: ${difference}%.`
-            : `PDF gerado, mas ficou ${Math.abs(difference)}% maior.`
+          status(
+            difference >= 0
+              ? `PDF gerado. Redução aproximada: ${difference}%.`
+              : `PDF gerado, mas ficou ${Math.abs(difference)}% maior.`
           );
         } catch (e) {
           console.error(e);
@@ -534,6 +615,7 @@ footer{text-align:center;padding:30px;color:#999}
       };
     }
 
+    // CRIADOR DE CURRÍCULOS — ACENTOS CORRIGIDOS
     if (id === "resume") {
       $("pxRun").onclick = async () => {
         try {
@@ -542,37 +624,41 @@ footer{text-align:center;padding:30px;color:#999}
 
           const lib = await pdfLib();
           const doc = await lib.PDFDocument.create();
-const fontkitModule = await import(
-  "https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/+esm"
-);
 
-const fontkit = fontkitModule.default || fontkitModule;
-doc.registerFontkit(fontkit);
+          // Carrega suporte a fontes Unicode.
+          const fontkitModule = await import(
+            "https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/+esm"
+          );
 
-const [regularResponse, boldResponse] = await Promise.all([
-  fetch("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-400-normal.ttf"),
-  fetch("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-700-normal.ttf")
-]);
+          doc.registerFontkit(
+            fontkitModule.default || fontkitModule
+          );
 
-if (!regularResponse.ok || !boldResponse.ok) {
-  throw new Error("Não foi possível carregar as fontes do currículo.");
-}
+          // Fonte Noto Sans com suporte a acentos.
+          const fontUrl =
+            "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf";
 
-const font = await doc.embedFont(
-  await regularResponse.arrayBuffer()
-);
+          const fontResponse = await fetch(fontUrl);
 
-const bold = await doc.embedFont(
-  await boldResponse.arrayBuffer()
-);
-          let page = doc.addPage([595,842]);
+          if (!fontResponse.ok) {
+            throw new Error(
+              "Não foi possível carregar a fonte do currículo."
+            );
+          }
+
+          const fontBytes = await fontResponse.arrayBuffer();
+
+          const font = await doc.embedFont(fontBytes);
+          const bold = font;
+
+          let page = doc.addPage([595, 842]);
           let y = 795;
 
           function write(text, size = 11, strong = false) {
+            // Preserva os acentos e caracteres do português.
             const safe = String(text || "")
-              .normalize("NFD")
-              .replace(/[\u0300-\u036f]/g, "")
-              .replace(/[^\x20-\x7E]/g, " ");
+              .normalize("NFC")
+              .replace(/[\u0000-\u001F\u007F]/g, " ");
 
             const face = strong ? bold : font;
             const maxWidth = 495;
@@ -581,19 +667,30 @@ const bold = await doc.embedFont(
 
             function put(s) {
               if (y < 65) {
-                page = doc.addPage([595,842]);
+                page = doc.addPage([595, 842]);
                 y = 790;
               }
+
               page.drawText(s, {
-                x:50, y, size, font:face,
-                color:lib.rgb(0.15,0.12,0.2)
+                x: 50,
+                y,
+                size,
+                font: face,
+                color: lib.rgb(0.15, 0.12, 0.2)
               });
+
               y -= size + 7;
             }
 
             for (const word of words) {
-              const next = line ? line + " " + word : word;
-              if (face.widthOfTextAtSize(next,size) > maxWidth && line) {
+              const next = line
+                ? line + " " + word
+                : word;
+
+              if (
+                face.widthOfTextAtSize(next, size) > maxWidth &&
+                line
+              ) {
                 put(line);
                 line = word;
               } else {
@@ -604,36 +701,61 @@ const bold = await doc.embedFont(
             if (line) put(line);
           }
 
-          write($("pxName").value || "Nome completo", 23, true);
-          write([
-            $("pxEmail").value,
-            $("pxPhone").value,
-            $("pxCity").value
-          ].filter(Boolean).join(" | "), 10);
+          write(
+            $("pxName").value || "Nome completo",
+            23,
+            true
+          );
+
+          write(
+            [
+              $("pxEmail").value,
+              $("pxPhone").value,
+              $("pxCity").value
+            ].filter(Boolean).join(" | "),
+            10
+          );
 
           y -= 18;
-          write($("pxRole").value || "Objetivo profissional", 15, true);
+
+          write(
+            $("pxRole").value || "Objetivo profissional",
+            15,
+            true
+          );
+
           y -= 14;
 
           const sections = [
             ["RESUMO", "pxSummary"],
-            ["EXPERIENCIA", "pxExperience"],
-            ["FORMACAO", "pxEducation"],
+            ["EXPERIÊNCIA", "pxExperience"],
+            ["FORMAÇÃO", "pxEducation"],
             ["HABILIDADES", "pxSkills"]
           ];
 
           for (const [heading, fieldId] of sections) {
             const value = $(fieldId).value.trim();
+
             if (!value) continue;
+
             write(heading, 12, true);
             y -= 4;
+
             value.split("\n").forEach(line => write(line));
+
             y -= 16;
           }
 
           const bytes = await doc.save();
-          download(new Blob([bytes], {type:"application/pdf"}),
-            "pdtools-curriculo.pdf");
+
+          download(
+            new Blob(
+              [bytes],
+              { type: "application/pdf" }
+            ),
+            "pdtools-curriculo.pdf"
+          );
+
           status("Currículo gerado.");
         } catch (e) {
           console.error(e);
@@ -649,16 +771,24 @@ const bold = await doc.embedFont(
 
       $("pxRun").onclick = async () => {
         try {
-          const img = await imageFromFile($("pxFile").files[0]);
+          const img = await imageFromFile(
+            $("pxFile").files[0]
+          );
+
           const canvas = $("pxCanvas");
           const ctx = canvas.getContext("2d");
 
-          let sx = 0, sy = 0;
-          let sw = img.naturalWidth, sh = img.naturalHeight;
+          let sx = 0;
+          let sy = 0;
+          let sw = img.naturalWidth;
+          let sh = img.naturalHeight;
+
           const crop = $("pxCrop").value;
 
           if (crop !== "original") {
-            const ratio = crop === "square" ? 1 : 16 / 9;
+            const ratio = crop === "square"
+              ? 1
+              : 16 / 9;
 
             if (sw / sh > ratio) {
               const newWidth = sh * ratio;
@@ -671,28 +801,56 @@ const bold = await doc.embedFont(
             }
           }
 
-          const rotation = Number($("pxRotate").value);
-          const swap = rotation === 90 || rotation === 270;
+          const rotation = Number(
+            $("pxRotate").value
+          );
 
-          canvas.width = Math.round(swap ? sh : sw);
-          canvas.height = Math.round(swap ? sw : sh);
+          const swap =
+            rotation === 90 || rotation === 270;
+
+          canvas.width = Math.round(
+            swap ? sh : sw
+          );
+
+          canvas.height = Math.round(
+            swap ? sw : sh
+          );
 
           ctx.save();
-          ctx.translate(canvas.width / 2, canvas.height / 2);
-          ctx.rotate(rotation * Math.PI / 180);
+
+          ctx.translate(
+            canvas.width / 2,
+            canvas.height / 2
+          );
+
+          ctx.rotate(
+            rotation * Math.PI / 180
+          );
 
           ctx.filter =
             `brightness(${$("pxBrightness").value}%) ` +
             `contrast(${$("pxContrast").value}%) ` +
             `saturate(${$("pxSaturation").value}%)`;
 
-          ctx.drawImage(img, sx, sy, sw, sh,
-            -sw / 2, -sh / 2, sw, sh);
+          ctx.drawImage(
+            img,
+            sx,
+            sy,
+            sw,
+            sh,
+            -sw / 2,
+            -sh / 2,
+            sw,
+            sh
+          );
 
           ctx.restore();
 
           lastBlob = await toBlob(canvas);
-          status("Imagem editada. Pronta para baixar.");
+
+          status(
+            "Imagem editada. Pronta para baixar."
+          );
         } catch (e) {
           console.error(e);
           status("Erro: " + e.message);
@@ -700,8 +858,16 @@ const bold = await doc.embedFont(
       };
 
       $("pxSave").onclick = () => {
-        if (!lastBlob) return status("Aplique os ajustes primeiro.");
-        download(lastBlob, "pdtools-imagem-editada.png");
+        if (!lastBlob) {
+          return status(
+            "Aplique os ajustes primeiro."
+          );
+        }
+
+        download(
+          lastBlob,
+          "pdtools-imagem-editada.png"
+        );
       };
     }
 
@@ -713,9 +879,13 @@ const bold = await doc.embedFont(
 
       $("pxSave").onclick = () => {
         download(
-          new Blob([buildSite()], {type:"text/html;charset=utf-8"}),
+          new Blob(
+            [buildSite()],
+            { type: "text/html;charset=utf-8" }
+          ),
           "pdtools-meu-site.html"
         );
+
         status("Arquivo HTML gerado.");
       };
 
@@ -728,48 +898,67 @@ const bold = await doc.embedFont(
       const allowed = await checkPremium();
 
       if (!allowed) {
-        alert("Entre com uma conta Premium ativa para continuar.");
+        alert(
+          "Entre com uma conta Premium ativa para continuar."
+        );
         return;
       }
 
       const names = {
-        "remove-bg":"Removedor de fundo",
-        "pdf-studio":"PDF Studio",
-        "ocr":"Extrator de texto OCR",
-        "pdf-compress":"Compressor de PDF",
-        "resume":"Criador de currículos",
-        "image-editor":"Editor de imagens",
-        "site-builder":"Criador de sites"
+        "remove-bg": "Removedor de fundo",
+        "pdf-studio": "PDF Studio",
+        "ocr": "Extrator de texto OCR",
+        "pdf-compress": "Compressor de PDF",
+        "resume": "Criador de currículos",
+        "image-editor": "Editor de imagens",
+        "site-builder": "Criador de sites"
       };
 
       title.textContent = names[id];
       category.textContent = "PD TOOLS PREMIUM";
+
       content.innerHTML = render(id);
       modal.classList.add("show");
+
       wire(id);
     } catch (e) {
       console.error(e);
-      alert("Erro ao verificar o acesso Premium: " + e.message);
+
+      alert(
+        "Erro ao verificar o acesso Premium: " +
+        e.message
+      );
     }
   }
 
   function handle(event) {
-    const card = event.target.closest("[data-premium-tool]");
+    const card = event.target.closest(
+      "[data-premium-tool]"
+    );
+
     if (!card || !grid.contains(card)) return;
 
     const id = card.dataset.premiumTool;
+
     if (!IDS.has(id)) return;
 
-    if (event.type === "keydown" &&
-        !["Enter", " "].includes(event.key)) return;
+    if (
+      event.type === "keydown" &&
+      !["Enter", " "].includes(event.key)
+    ) {
+      return;
+    }
 
     event.preventDefault();
     event.stopImmediatePropagation();
+
     open(id);
   }
 
   grid.addEventListener("click", handle, true);
   grid.addEventListener("keydown", handle, true);
 
-  console.log("PD Tools Premium: 7 ferramentas extras carregadas.");
+  console.log(
+    "PD Tools Premium: 7 ferramentas extras carregadas."
+  );
 })();
