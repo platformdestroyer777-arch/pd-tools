@@ -540,6 +540,8 @@
   <!-- DOAÇÕES E ANÚNCIO -->
   <script>
     (() => {
+      "use strict";
+
       const amountInput = document.getElementById("donationAmount");
       const total = document.getElementById("donationTotal");
       const message = document.getElementById("donationMessage");
@@ -586,8 +588,203 @@
 
       amountInput.addEventListener("input", updateDonation);
 
-      submit.addEventListener("click", () => {
-        const value = Number(amountInput.value);
+      // JANELA DE PAGAMENTO PIX
+      const pixOverlay = document.createElement("div");
+
+      pixOverlay.hidden = true;
+      pixOverlay.setAttribute("role", "dialog");
+      pixOverlay.setAttribute("aria-modal", "true");
+      pixOverlay.setAttribute("aria-label", "Pagamento por Pix");
+
+      pixOverlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0,0,0,.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      `;
+
+      const pixBox = document.createElement("div");
+
+      pixBox.style.cssText = `
+        width: 100%;
+        max-width: 420px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #14111d;
+        color: #fff;
+        border: 1px solid #342744;
+        border-radius: 18px;
+        padding: 25px;
+        text-align: center;
+        box-sizing: border-box;
+      `;
+
+      pixOverlay.appendChild(pixBox);
+      document.body.appendChild(pixOverlay);
+
+      function closePix() {
+        pixOverlay.hidden = true;
+        pixOverlay.style.display = "none";
+        pixBox.replaceChildren();
+        submit.focus();
+      }
+
+      pixOverlay.addEventListener("click", event => {
+        if (event.target === pixOverlay) {
+          closePix();
+        }
+      });
+
+      function addPixText(tag, content, css = "") {
+        const element = document.createElement(tag);
+        element.textContent = content;
+        element.style.cssText = css;
+        pixBox.appendChild(element);
+        return element;
+      }
+
+      function addPixButton(label, onClick) {
+        const button = addPixText("button", label, `
+          display: block;
+          width: 100%;
+          margin-top: 12px;
+          padding: 13px;
+          border: 0;
+          border-radius: 10px;
+          background: #a78bfa;
+          color: #100b18;
+          font-weight: 700;
+          cursor: pointer;
+        `);
+
+        button.type = "button";
+        button.addEventListener("click", onClick);
+
+        return button;
+      }
+
+      function showPix(data) {
+        pixBox.replaceChildren();
+
+        addPixText("h2", "💜 Apoie o PD Tools");
+
+        addPixText(
+          "p",
+          `Valor: ${formatBRL(Number(data.valor))}`
+        );
+
+        if (data.qr_code_base64) {
+          const img = document.createElement("img");
+
+          img.src = data.qr_code_base64.startsWith("data:")
+            ? data.qr_code_base64
+            : `data:image/png;base64,${data.qr_code_base64}`;
+
+          img.alt = "QR Code Pix";
+
+          img.style.cssText = `
+            display: block;
+            width: 220px;
+            max-width: 100%;
+            margin: 15px auto;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+          `;
+
+          pixBox.appendChild(img);
+        }
+
+        if (data.qr_code) {
+          addPixText("p", "Pix copia e cola:");
+
+          const code = document.createElement("textarea");
+
+          code.readOnly = true;
+          code.value = data.qr_code;
+
+          code.style.cssText = `
+            width: 100%;
+            height: 90px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #55446a;
+            border-radius: 10px;
+            background: #0b0910;
+            color: white;
+            resize: none;
+          `;
+
+          pixBox.appendChild(code);
+
+          addPixButton("Copiar código Pix", async () => {
+            try {
+              await navigator.clipboard.writeText(data.qr_code);
+
+              addPixText(
+                "p",
+                "Código copiado! 💜"
+              );
+            } catch {
+              code.focus();
+              code.select();
+            }
+          });
+        }
+
+        if (data.ticket_url) {
+          addPixButton("Abrir pagamento", () => {
+            try {
+              const url = new URL(data.ticket_url);
+
+              if (url.protocol === "https:") {
+                window.open(
+                  url.href,
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }
+            } catch {
+              // URL de pagamento indisponível.
+            }
+          });
+        }
+
+        addPixText(
+          "p",
+          data.premium_elegivel
+            ? "💜 Doações a partir de R$ 5,00 dão direito a 30 dias de Premium após a confirmação."
+            : "Obrigado por apoiar o projeto! 💜",
+          "margin-top:18px;color:#c4b5fd"
+        );
+
+        addPixText(
+          "p",
+          "O pagamento precisa ser confirmado pelo servidor. Consulte seu acesso em Minha conta.",
+          "margin-top:15px;font-size:13px;color:#b5afc0"
+        );
+
+        addPixButton("Fechar", closePix);
+
+        pixOverlay.hidden = false;
+        pixOverlay.style.display = "flex";
+      }
+
+      // BOTÃO FAZER UMA DOAÇÃO
+      submit.addEventListener("click", async () => {
+        const valorTexto = amountInput.value.trim();
+
+        if (!/^\d+(?:\.\d{1,2})?$/.test(valorTexto)) {
+          message.textContent =
+            "Digite um valor válido com até duas casas decimais.";
+          return;
+        }
+
+        const value = Number(valorTexto);
 
         if (
           !Number.isFinite(value) ||
@@ -599,12 +796,82 @@
           return;
         }
 
-        message.textContent =
-          "Obrigado pelo apoio! 💜 O pagamento por Pix ainda está sendo configurado.";
+        const client =
+          typeof supabaseClient !== "undefined"
+            ? supabaseClient
+            : null;
+
+        if (!client) {
+          message.textContent =
+            "Sistema de contas indisponível.";
+          return;
+        }
+
+        submit.disabled = true;
+        submit.textContent = "Gerando Pix...";
+        message.textContent = "Preparando seu pagamento...";
+
+        try {
+          const { data, error } =
+            await client.auth.getSession();
+
+          if (error) throw error;
+
+          const token = data.session?.access_token;
+
+          if (!token) {
+            message.textContent =
+              "Entre na sua conta para realizar a doação.";
+
+            document.getElementById("pdAccountOpen")?.click();
+            return;
+          }
+
+          const response = await fetch("/api/criar-pix", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              valor: value
+            })
+          });
+
+          const result = await response.json();
+
+          if (!response.ok || !result.sucesso) {
+            throw new Error(
+              result.erro || "Não foi possível gerar o Pix."
+            );
+          }
+
+          if (!result.qr_code && !result.ticket_url) {
+            throw new Error(
+              "Pix criado, mas o código não está disponível."
+            );
+          }
+
+          message.textContent =
+            "Pix gerado. Confira os dados do pagamento.";
+
+          showPix(result);
+
+        } catch (error) {
+          console.error("Erro ao gerar Pix:", error);
+
+          message.textContent =
+            error.message ||
+            "Não foi possível gerar o Pix agora.";
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "♡ Fazer uma doação";
+        }
       });
 
       updateDonation();
 
+      // ANÚNCIO ORIGINAL DE DOAÇÕES
       let previousFocus = null;
 
       function closePopup() {
@@ -618,7 +885,7 @@
             "pdtoolsDonationPopupSeen",
             "1"
           );
-        } catch (error) {
+        } catch {
           // Funciona sem armazenamento.
         }
 
@@ -641,6 +908,14 @@
       });
 
       document.addEventListener("keydown", event => {
+        if (
+          !pixOverlay.hidden &&
+          event.key === "Escape"
+        ) {
+          closePix();
+          return;
+        }
+
         if (popup.hidden) return;
 
         if (event.key === "Escape") {
@@ -671,7 +946,7 @@
           sessionStorage.getItem(
             "pdtoolsDonationPopupSeen"
           ) === "1";
-      } catch (error) {
+      } catch {
         alreadySeen = false;
       }
 
