@@ -2204,13 +2204,36 @@ function wireTool(id) {
       $("#imgCompGo").onclick=safeRun(async()=>{if(!canvas)throw new Error("Selecione uma imagem.");const mime=$("#imgCompFormat").value,q=Number($("#imgCompQuality").value)/100;canvas.toBlob(blob=>{if(!blob)return toast("Falha ao comprimir.");window.__pdCompressedBlob=blob;$("#imgCompResult").textContent=`Novo tamanho: ${blob.size>1048576?(blob.size/1048576).toFixed(2)+" MB":(blob.size/1024).toFixed(1)+" KB"}`;$("#imgCompDownload").hidden=false;$("#imgCompDownload").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pd-tools-comprimida."+(mime==="image/webp"?"webp":"jpg");a.click();};},mime,q);});
     }
     if(id==="image-resizer"){
-      let source=null;bindFile("imgResizeFile",async f=>{source=(await loadImage(f)).img;$("#imgResizeWidth").value=source.naturalWidth;$("#imgResizeHeight").value=source.naturalHeight;});
-      $("#imgResizeWidth").oninput=()=>{if(source&&$("#imgResizeKeep").checked)$("#imgResizeHeight").value=Math.max(1,Math.round(Number($("#imgResizeWidth").value)*source.naturalHeight/source.naturalWidth));};
-      $("#imgResizeGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const w=Number($("#imgResizeWidth").value),h=Number($("#imgResizeHeight").value);if(!w||!h||w>12000||h>12000)throw new Error("Informe dimensões válidas (até 12.000 px).");const c=makeCanvas(w,h);c.getContext("2d").drawImage(source,0,0,w,h);showCanvas(c,"imgResizeResult");$("#imgResizeDownload").hidden=false;$("#imgResizeDownload").onclick=()=>downloadCanvas(c,"imgResizeDownload","pd-tools-redimensionada.png");});
+      let source=null;
+      const widthInput=$("#imgResizeWidth"),heightInput=$("#imgResizeHeight"),keepInput=$("#imgResizeKeep");
+      bindFile("imgResizeFile",async f=>{source=(await loadImage(f)).img;widthInput.value=source.naturalWidth;heightInput.value=source.naturalHeight;});
+      widthInput.oninput=()=>{if(source&&keepInput.checked){const width=Number(widthInput.value);if(width>0)heightInput.value=Math.max(1,Math.round(width*source.naturalHeight/source.naturalWidth));}};
+      heightInput.oninput=()=>{if(source&&keepInput.checked){const height=Number(heightInput.value);if(height>0)widthInput.value=Math.max(1,Math.round(height*source.naturalWidth/source.naturalHeight));}};
+      keepInput.onchange=()=>{if(source&&keepInput.checked){const width=Number(widthInput.value);if(width>0)heightInput.value=Math.max(1,Math.round(width*source.naturalHeight/source.naturalWidth));}};
+      $("#imgResizeGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const w=Number(widthInput.value),h=Number(heightInput.value);if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w>12000||h>12000)throw new Error("Informe dimensões válidas (de 1 até 12.000 px).");const c=makeCanvas(w,h);c.getContext("2d").drawImage(source,0,0,w,h);showCanvas(c,"imgResizeResult");$("#imgResizeDownload").hidden=false;$("#imgResizeDownload").onclick=()=>downloadCanvas(c,"imgResizeDownload","pd-tools-redimensionada.png");});
     }
     if(id==="image-converter"){
-      let source=null;bindFile("imgConvertFile",async f=>source=(await loadImage(f)).img);
-      $("#imgConvertGo").onclick=safeRun(async()=>{if(!source)throw new Error("Selecione uma imagem.");const mime=$("#imgConvertFormat").value,c=makeCanvas(source.naturalWidth,source.naturalHeight);c.getContext("2d").drawImage(source,0,0);c.toBlob(blob=>{if(!blob)return toast("Falha na conversão.");const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pd-tools-convertida."+({"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}[mime]);a.click();$("#imgConvertResult").textContent="Imagem convertida com sucesso!";},mime,0.92);});
+      let source=null,convertedBlob=null;
+      bindFile("imgConvertFile",async f=>{source=(await loadImage(f)).img;convertedBlob=null;$("#imgConvertDownload").hidden=true;$("#imgConvertResult").textContent="Imagem pronta para conversão.";});
+      $("#imgConvertFormat").onchange=()=>{convertedBlob=null;$("#imgConvertDownload").hidden=true;};
+      $("#imgConvertGo").onclick=safeRun(async()=>{
+        if(!source)throw new Error("Selecione uma imagem.");
+        const mime=$("#imgConvertFormat").value,c=makeCanvas(source.naturalWidth,source.naturalHeight);
+        c.getContext("2d").drawImage(source,0,0);
+        c.toBlob(blob=>{
+          if(!blob){toast("Falha na conversão. Tente outro formato.");return;}
+          convertedBlob=blob;
+          const extension={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}[mime];
+          $("#imgConvertResult").textContent=`Imagem convertida com sucesso! Formato: ${extension.toUpperCase()} • ${(blob.size/1024).toFixed(1)} KB`;
+          $("#imgConvertDownload").hidden=false;
+        },mime,0.92);
+      });
+      $("#imgConvertDownload").onclick=()=>{
+        if(!convertedBlob)return toast("Converta a imagem antes de baixar.");
+        const url=URL.createObjectURL(convertedBlob),a=document.createElement("a");
+        a.href=url;a.download="pd-tools-convertida."+({"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}[$("#imgConvertFormat").value]);
+        a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+      };
     }
     if(id==="image-crop"){
       let source=null;bindFile("imgCropFile",async f=>{source=(await loadImage(f)).img;$("#imgCropW").value=source.naturalWidth;$("#imgCropH").value=source.naturalHeight;});
