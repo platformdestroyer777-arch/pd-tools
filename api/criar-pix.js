@@ -1,5 +1,6 @@
 
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
@@ -13,9 +14,9 @@ export default async function handler(req, res) {
   try {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const mercadoPagoToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
 
-    if (!supabaseUrl || !supabaseKey || !mercadoPagoToken) {
+    if (!supabaseUrl || !supabaseKey || !mpToken) {
       return res.status(500).json({
         erro: "Configuração do servidor incompleta"
       });
@@ -25,15 +26,7 @@ export default async function handler(req, res) {
 
     if (!authorization.startsWith("Bearer ")) {
       return res.status(401).json({
-        erro: "Você precisa estar logado para gerar um Pix"
-      });
-    }
-
-    const accessToken = authorization.slice(7).trim();
-
-    if (!accessToken) {
-      return res.status(401).json({
-        erro: "Sessão inválida"
+        erro: "Faça login para gerar o Pix"
       });
     }
 
@@ -44,29 +37,124 @@ export default async function handler(req, res) {
       }
     });
 
-    const { data, error } = await supabase.auth.getUser(accessToken);
+    const accessToken = authorization.slice(7).trim();
+
+    const { data, error } =
+      await supabase.auth.getUser(accessToken);
 
     if (error || !data?.user) {
       return res.status(401).json({
-        erro: "Sua sessão expirou. Entre novamente"
+        erro: "Sessão inválida ou expirada"
       });
     }
 
-    // Login validado pelo Supabase.
-    // Ainda não criamos cobranças nesta etapa.
-    return res.status(503).json({
-      erro: "Pix em preparação",
-      autenticado: true,
+    const user = data.user;
+    const paymentId = randomUUID();
+
+    // Registra a tentativa antes de criar a cobrança.
+    const { error: dbError } = await supabase
+      .from("premium_payments")
+      .insert({
+        id: paymentId,
+        user_id: user.id,
+        amount: 5,
+        currency: "BRL",
+        status: "pending"
+      });
+
+    if (dbError) {
+      console.error("Erro ao registrar pagamento:", dbError.message);
+
+      return res.status(500).json({
+        erro: "Não foi possível preparar o pagamento"
+      });
+    }
+
+    const mpResponse = await fetch(
+      "https://api.mercadopago.com/v1/orders",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${mpToken}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-Idempotency-Key": paymentId
+        },
+        body: JSON.stringify({
+          type: "online",
+          total_amount: "5.00",
+          external_reference: paymentId,
+          processing_mode: "automatic",
+          transactions: {
+            payments: [
+              {
+                amount: "5.00",
+                payment_method: {
+                  id: "pix",
+                  type: "bank_transfer"
+                }
+              }
+            ]
+          },
+          payer: {
+            email: user.email
+          }
+        })
+      }
+    );
+
+    const mpData = await mpResponse.json();
+
+    if (!mpResponse.ok || !mpData.id) {
+      console.error("Mercado Pago:", {
+        status: mpResponse.status,
+        message: mpData.message,
+        errors: mpData.errors
+      });
+
+      return res.status(502).json({
+        erro: "Mercado Pago não conseguiu gerar o Pix",
+        codigo: mpResponse.status
+      });
+    }
+
+    const payment = mpData.transactions?.payments?.[0];
+
+    const { error: updateError } = await supabase
+      .from("premium_payments")
+      .update({
+        provider_order_id: mpData.id,
+        provider_payment_id: payment?.id || null
+      })
+      .eq("id", paymentId)
+      .eq("user_id", user.id);
+
+    if (updateError) {
+      console.error("Erro ao salvar order:", updateError.message);
+
+      return res.status(500).json({
+        erro: "Pagamento criado, mas não foi possível registrá-lo"
+      });
+    }
+
+    return res.status(200).json({
+      sucesso: true,
+      pagamento_id: paymentId,
       valor: 5,
       moeda: "BRL",
-      duracao_dias: 30
+      qr_code: payment?.payment_method?.qr_code || null,
+      qr_code_base64:
+        payment?.payment_method?.qr_code_base64 || null,
+      ticket_url:
+        payment?.payment_method?.ticket_url || null,
+      status: mpData.status
     });
 
   } catch (error) {
-    console.error("Erro na API Pix:", error.message);
+    console.error("Erro ao criar Pix:", error.message);
 
     return res.status(500).json({
-      erro: "Erro interno ao preparar o Pix"
+      erro: "Erro interno ao gerar o Pix"
     });
   }
 }
