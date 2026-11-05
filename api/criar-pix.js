@@ -22,6 +22,40 @@ export default async function handler(req, res) {
       });
     }
 
+    // Validar o valor recebido.
+    const valor = req.body?.valor;
+
+    if (
+      typeof valor !== "number" &&
+      typeof valor !== "string"
+    ) {
+      return res.status(400).json({
+        erro: "Informe um valor válido"
+      });
+    }
+
+    const valorTexto = String(valor);
+
+    if (!/^\d+(?:\.\d{1,2})?$/.test(valorTexto)) {
+      return res.status(400).json({
+        erro: "Informe um valor com até duas casas decimais"
+      });
+    }
+
+    const valorCentavos = Math.round(Number(valorTexto) * 100);
+
+    if (
+      !Number.isSafeInteger(valorCentavos) ||
+      valorCentavos < 10 ||
+      valorCentavos > 10000000
+    ) {
+      return res.status(400).json({
+        erro: "O valor deve estar entre R$ 0,10 e R$ 100.000,00"
+      });
+    }
+
+    const valorFormatado = (valorCentavos / 100).toFixed(2);
+
     const authorization = req.headers.authorization || "";
 
     if (!authorization.startsWith("Bearer ")) {
@@ -51,13 +85,12 @@ export default async function handler(req, res) {
     const user = data.user;
     const paymentId = randomUUID();
 
-    // Registra a tentativa antes de criar a cobrança.
     const { error: dbError } = await supabase
       .from("premium_payments")
       .insert({
         id: paymentId,
         user_id: user.id,
-        amount: 5,
+        amount: valorFormatado,
         currency: "BRL",
         status: "pending"
       });
@@ -75,20 +108,20 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${mpToken}`,
+          Authorization: `Bearer ${mpToken}`,
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
           "X-Idempotency-Key": paymentId
         },
         body: JSON.stringify({
           type: "online",
-          total_amount: "5.00",
+          total_amount: valorFormatado,
           external_reference: paymentId,
           processing_mode: "automatic",
           transactions: {
             payments: [
               {
-                amount: "5.00",
+                amount: valorFormatado,
                 payment_method: {
                   id: "pix",
                   type: "bank_transfer"
@@ -123,8 +156,10 @@ export default async function handler(req, res) {
     const { error: updateError } = await supabase
       .from("premium_payments")
       .update({
-        provider_order_id: mpData.id,
-        provider_payment_id: payment?.id || null
+        provider_order_id: String(mpData.id),
+        provider_payment_id: payment?.id
+          ? String(payment.id)
+          : null
       })
       .eq("id", paymentId)
       .eq("user_id", user.id);
@@ -140,8 +175,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       sucesso: true,
       pagamento_id: paymentId,
-      valor: 5,
+      valor: valorCentavos / 100,
       moeda: "BRL",
+      premium_elegivel: valorCentavos >= 500,
       qr_code: payment?.payment_method?.qr_code || null,
       qr_code_base64:
         payment?.payment_method?.qr_code_base64 || null,
