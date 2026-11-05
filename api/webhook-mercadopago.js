@@ -2,6 +2,21 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
+const centavos = valor => {
+  if (typeof valor !== "number" && typeof valor !== "string") {
+    return null;
+  }
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(String(valor))) {
+    return null;
+  }
+
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) return null;
+
+  return Math.round(numero * 100);
+};
+
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
@@ -18,7 +33,6 @@ export default async function handler(req, res) {
     return res.status(503).json({ erro: "Configuração incompleta" });
   }
 
-  // 1. Validar a assinatura da notificação.
   const signature = req.headers["x-signature"];
   const requestId = req.headers["x-request-id"];
   const queryId = req.query["data.id"];
@@ -34,7 +48,7 @@ export default async function handler(req, res) {
   }
 
   const parts = Object.fromEntries(
-    signature.split(",").map((part) => {
+    signature.split(",").map(part => {
       const index = part.indexOf("=");
       return [
         part.slice(0, index).trim(),
@@ -70,7 +84,6 @@ export default async function handler(req, res) {
     return res.status(401).json({ erro: "Assinatura inválida" });
   }
 
-  // 2. Consultar a order diretamente no Mercado Pago.
   try {
     const response = await fetch(
       `https://api.mercadopago.com/v1/orders/${encodeURIComponent(dataId)}`,
@@ -93,7 +106,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ erro: "Order divergente" });
     }
 
-    // Somente pagamentos creditados são aprovados.
     if (
       order.status !== "processed" ||
       order.status_detail !== "accredited"
@@ -104,43 +116,38 @@ export default async function handler(req, res) {
       });
     }
 
+    const payments = order.transactions?.payments;
+
+    if (!Array.isArray(payments) || payments.length !== 1) {
+      return res.status(400).json({ erro: "Transações inválidas" });
+    }
+
+    const payment = payments[0];
+
+    const valorOrder = centavos(order.total_amount);
+    const valorPagoOrder = centavos(order.total_paid_amount);
+    const valorPayment = centavos(payment.amount);
+    const valorPagoPayment = centavos(payment.paid_amount);
+
     if (
-      Number(order.total_amount) !== 5 ||
-      Number(order.total_paid_amount) !== 5 ||
+      valorOrder === null ||
+      valorOrder < 10 ||
+      valorOrder > 10000000 ||
+      valorPagoOrder !== valorOrder ||
+      valorPayment !== valorOrder ||
+      valorPagoPayment !== valorOrder ||
+      payment.status !== "processed" ||
+      payment.status_detail !== "accredited" ||
+      payment.payment_method?.id !== "pix" ||
+      !payment.id ||
       typeof order.external_reference !== "string" ||
-      !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(
-        order.external_reference
-      )
+      !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(order.external_reference)
     ) {
       return res.status(400).json({
         erro: "Dados do pagamento divergentes"
       });
     }
 
-    const payments = order.transactions?.payments;
-
-    if (!Array.isArray(payments) || payments.length !== 1) {
-      return res.status(400).json({
-        erro: "Transações inválidas"
-      });
-    }
-
-    const payment = payments[0];
-
-    if (
-      payment.status !== "processed" ||
-      payment.status_detail !== "accredited" ||
-      payment.payment_method?.id !== "pix" ||
-      Number(payment.amount) !== 5 ||
-      Number(payment.paid_amount) !== 5 ||
-      !payment.id
-    ) {
-      return res.status(400).json({
-        erro: "Pagamento Pix não confirmado"
-      });
-    }
-
-    // 3. Conferir o pagamento registrado no Supabase.
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: false,
@@ -150,10 +157,9 @@ export default async function handler(req, res) {
 
     const { data: registro, error: consultaErro } = await supabase
       .from("premium_payments")
-      .select("id, status, provider_order_id, provider_payment_id")
+      .select("id, status, amount, provider_order_id, provider_payment_id")
       .eq("id", order.external_reference)
       .eq("provider", "mercadopago")
-      .eq("amount", 5)
       .eq("currency", "BRL")
       .maybeSingle();
 
@@ -164,6 +170,7 @@ export default async function handler(req, res) {
 
     if (
       !registro ||
+      centavos(registro.amount) !== valorOrder ||
       registro.provider_order_id !== String(order.id) ||
       registro.provider_payment_id !== String(payment.id)
     ) {
@@ -185,7 +192,31 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4. Confirmar e liberar 30 dias de forma atômica.
+    if (valorOrder < 500) {
+      const { data: confirmado, error: erroDoacao } = await supabase
+        .from("premium_payments")
+        .update({
+          status: "approved",
+          paid_at: new Date().toISOString()
+        })
+        .eq("id", registro.id)
+        .eq("status", "pending")
+        .select("id");
+
+      if (erroDoacao) {
+        console.error("Erro ao confirmar doação:", erroDoacao.message);
+        return res.status(503).json({
+          erro: "Não foi possível confirmar a doação"
+        });
+      }
+
+      return res.status(200).json({
+        sucesso: true,
+        doacao_confirmada: confirmado?.length === 1,
+        premium_liberado: false
+      });
+    }
+
     const { data: liberado, error: rpcErro } = await supabase.rpc(
       "confirmar_pagamento_premium",
       {
