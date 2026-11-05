@@ -25,3 +25,4 @@ export default async function handler(req, res) {
     moeda: "BRL"
   });
 }
+// Teste de deploy Preview - PD Tools
