@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#08080c">
-  <meta name="description" content="PD Tools — ferramentas inteligentes, gratuitas e Premium. Um projeto da Platform Destroyer.">
+  <meta name="description" content="PD Tools — ferramentas gratuitas e Premium. Um projeto da Platform Destroyer.">
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="PD Tools — Ferramentas inteligentes">
@@ -25,30 +25,82 @@
   <link rel="stylesheet" href="premium-tools.css">
 
   <style>
-    /* Ajustes específicos da nova estrutura Obsidian */
+    .hero {
+      padding-bottom: 75px;
+      border-bottom: 1px solid rgba(167,139,250,.08);
+    }
+
+    .hero::after {
+      content: "PD / 01";
+      position: absolute;
+      right: 28px;
+      bottom: 25px;
+      color: #777087;
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    .premium-section,
+    .donation-section,
+    #assinar-premium,
+    .tools-section {
+      scroll-margin-top: 100px;
+    }
+
+    .premium-section {
+      padding-top: 65px;
+      padding-bottom: 30px;
+    }
+
+    .donation-section {
+      padding-top: 25px;
+      padding-bottom: 55px;
+    }
+
+    .tools-section {
+      padding-top: 85px;
+      border-top: 1px solid #25212e;
+    }
+
+    .tools-section::before {
+      content: "EXPLORE / CRIE / RESOLVA";
+      display: block;
+      margin-bottom: 30px;
+      color: #777087;
+      font-size: 10px;
+      letter-spacing: 2.3px;
+    }
+
+    .tool-card:nth-child(6n + 1) {
+      border-color: #453357;
+    }
+
+    .tool-card:nth-child(6n + 1) .tool-icon {
+      background: #332345;
+    }
 
     #assinar-premium {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 30px 28px 65px;
+      padding: 20px 28px 30px;
     }
 
     #assinar-premium > div {
       position: relative;
       overflow: hidden;
-      padding: 45px;
+      padding: 40px;
       background: #15121d;
       border: 1px solid #493b61;
       border-radius: 22px;
     }
 
     #assinar-premium h2 {
-      max-width: 720px;
+      max-width: 740px;
       margin: 20px 0;
       font-family: "Space Grotesk", sans-serif;
-      font-size: clamp(30px, 4vw, 46px);
-      line-height: 1.15;
+      font-size: clamp(30px,4vw,46px);
       letter-spacing: -2px;
+      line-height: 1.15;
     }
 
     #assinar-premium > div > p {
@@ -57,16 +109,11 @@
       line-height: 1.8;
     }
 
-    #assinar-premium h3 {
-      margin-top: 28px;
-      font-size: 16px;
-    }
-
     .premium-benefits {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2,minmax(0,1fr));
       gap: 12px;
-      margin: 24px 0;
+      margin: 25px 0;
     }
 
     .premium-benefits div {
@@ -95,27 +142,213 @@
     }
 
     #premiumBannerMessage {
-      margin-top: 12px;
       color: #c4b5fd;
       font-size: 13px;
       text-align: center;
     }
 
-    .premium-plan-card {
-      margin-bottom: 30px;
+    .pd-ad-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,.88);
+      backdrop-filter: blur(12px);
     }
 
-    @media (max-width: 760px) {
+    .pd-ad-overlay.open {
+      display: flex;
+    }
+
+    .pd-ad-box {
+      position: relative;
+      width: min(430px,100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 34px 27px;
+      background: #15121d;
+      border: 1px solid #51416b;
+      border-radius: 22px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 30px 90px #0009;
+    }
+
+    .pd-ad-close {
+      position: absolute;
+      top: 14px;
+      right: 15px;
+      width: 32px;
+      height: 32px;
+      background: #292233;
+      border: 1px solid #473851;
+      border-radius: 9px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .pd-ad-tag {
+      margin: 8px 0 18px;
+      color: #bda9ff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .pd-ad-box h2 {
+      margin: 0 0 16px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 29px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    .pd-ad-box p {
+      color: #bcb3cc;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .pd-ad-price {
+      margin: 24px 0 4px;
+      color: #bda9ff;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+    }
+
+    .pd-ad-button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 18px;
+      background: #a78bfa;
+      border: 0;
+      border-radius: 11px;
+      color: #130d1c;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .pd-ad-button:hover {
+      background: #c0adff;
+    }
+
+    .pd-ad-small {
+      margin-top: 17px;
+      font-size: 11px !important;
+    }
+
+    .pd-ad-benefits {
+      display: grid;
+      gap: 9px;
+      margin: 22px 0;
+      text-align: left;
+    }
+
+    .pd-ad-benefits div {
+      padding: 11px 14px;
+      background: #211b2d;
+      border: 1px solid #392e4a;
+      border-radius: 9px;
+      color: #d8cfe5;
+      font-size: 12px;
+    }
+
+    .pd-pix-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100005;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,.9);
+    }
+
+    .pd-pix-overlay.open {
+      display: flex;
+    }
+
+    .pd-pix-box {
+      width: min(430px,100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 27px;
+      background: #15121d;
+      border: 1px solid #51416b;
+      border-radius: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    .pd-pix-box h2 {
+      font-size: 23px;
+    }
+
+    .pd-pix-box p {
+      color: #c5bad4;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .pd-pix-box img {
+      display: block;
+      width: 220px;
+      max-width: 100%;
+      margin: 20px auto;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
+    }
+
+    .pd-pix-box textarea {
+      width: 100%;
+      height: 95px;
+      padding: 12px;
+      background: #09080e;
+      border: 1px solid #51416b;
+      border-radius: 10px;
+      color: white;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    .pd-pix-box button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 13px;
+      background: #a78bfa;
+      border: 0;
+      border-radius: 10px;
+      color: #130d1c;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media(max-width:760px) {
+      .hero::after {
+        right: 17px;
+      }
+
       #assinar-premium {
-        padding: 20px 17px 50px;
+        padding: 20px 17px 30px;
       }
 
       #assinar-premium > div {
-        padding: 27px 21px;
+        padding: 26px 20px;
       }
 
       .premium-benefits {
         grid-template-columns: 1fr;
+      }
+
+      .pd-ad-box {
+        padding: 30px 21px;
       }
     }
   </style>
@@ -124,21 +357,18 @@
 <body>
   <div class="ambient" aria-hidden="true"></div>
 
-  <!-- =====================================
-       CABEÇALHO
-       ===================================== -->
-
+  <!-- CABEÇALHO -->
   <header class="topbar">
-    <a class="brand" href="#inicio" aria-label="PD Tools - início">
+    <a class="brand" href="#inicio">
       <span class="brand-mark">PD</span>
       <span>PD <b>TOOLS</b></span>
     </a>
 
     <nav aria-label="Navegação principal">
-      <a href="#ferramentas">Ferramentas</a>
       <a href="#premium">Premium</a>
-      <a href="#sobre">Sobre</a>
       <a href="#doacoes">Doações</a>
+      <a href="#ferramentas">Ferramentas</a>
+      <a href="#sobre">Sobre</a>
 
       <button class="pd-account-trigger" id="pdAccountOpen" type="button">
         Entrar / Criar conta
@@ -152,100 +382,54 @@
 
   <main>
 
-    <!-- =====================================
-         PÁGINA INICIAL
-         ===================================== -->
-
+    <!-- INÍCIO -->
     <section class="hero" id="inicio">
       <div class="eyebrow">
         <i></i> UM PROJETO DA PLATFORM DESTROYER
       </div>
 
       <h1>
-        Tudo que você precisa.<br>
+        Tudo o que você precisa.<br>
         <span>Em um só lugar.</span>
       </h1>
 
       <p>
-        Ferramentas inteligentes para simplificar sua rotina.
-        Crie, converta, edite e resolva tarefas sem complicação.
+        Ferramentas inteligentes, práticas e acessíveis.
+        Crie, converta, organize e resolva tarefas sem complicação.
       </p>
 
-      <a class="primary-btn" href="#ferramentas">
-        Explorar ferramentas <b>→</b>
+      <a class="primary-btn" href="#premium">
+        Conhecer o PD Tools <b>↗</b>
       </a>
 
       <div class="hero-note">
-        <span>✦</span>
-        Desenvolvido por <b>Kraz &amp; HZ</b>
+        <span>✦</span> Developer <b>Kraz &amp; HZ</b>
       </div>
     </section>
 
-    <!-- =====================================
-         FERRAMENTAS GRATUITAS
-         ===================================== -->
-
-    <section class="tools-section" id="ferramentas">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">EXPLORE O PD TOOLS</div>
-          <h2>Seu espaço de ferramentas.</h2>
-        </div>
-
-        <label class="search-wrap" for="search">
-          <span aria-hidden="true">⌕</span>
-          <input
-            id="search"
-            type="search"
-            placeholder="Buscar ferramenta..."
-            autocomplete="off"
-          >
-        </label>
-      </div>
-
-      <div
-        class="filters"
-        id="filters"
-        aria-label="Categorias de ferramentas"
-      ></div>
-
-      <div class="tool-grid" id="toolGrid"></div>
-    </section>
-
-    <!-- =====================================
-         FERRAMENTAS PREMIUM
-         ===================================== -->
-
-    <section
-      class="premium-section"
-      id="premium"
-      aria-labelledby="premiumTitle"
-    >
+    <!-- PREMIUM EM DESTAQUE -->
+    <section class="premium-section" id="premium" aria-labelledby="premiumTitle">
       <div class="premium-header">
-        <div class="premium-label">
-          ✦ EXPERIÊNCIA PREMIUM
-        </div>
+        <div class="premium-label">✦ PD TOOLS PREMIUM</div>
 
         <h2 id="premiumTitle">
-          Mais possibilidades. Mais liberdade.
+          Desbloqueie mais possibilidades.
         </h2>
 
         <p>
-          Amplie sua experiência com as ferramentas exclusivas
-          do PD Tools Premium.
+          Tenha acesso às ferramentas exclusivas disponíveis
+          no PD Tools Premium por apenas R$ 5,00.
         </p>
       </div>
 
       <div class="donation-card premium-plan-card" id="premiumPlan">
-        <div class="donation-label">
-          ✦ PD TOOLS PREMIUM
-        </div>
+        <div class="donation-label">✦ PLANO PREMIUM</div>
 
-        <h2>Eleve sua produtividade.</h2>
+        <h2>Mais ferramentas. Mais liberdade.</h2>
 
         <p class="donation-description">
-          Tenha acesso às ferramentas Premium disponíveis
-          por 30 dias após a confirmação do pagamento.
+          Aproveite os recursos Premium por 30 dias
+          após a confirmação do pagamento.
           Sem renovação automática.
         </p>
 
@@ -275,17 +459,16 @@
       </div>
 
       <div class="premium-grid" id="premiumGrid">
-
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Removedor de fundo</h3>
-          <p>Remova o fundo de imagens automaticamente.</p>
+          <p>Remova fundos de imagens automaticamente.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>PDF Studio</h3>
-          <p>Organize, una e divida arquivos PDF.</p>
+          <p>Una, divida e organize documentos PDF.</p>
         </article>
 
         <article class="premium-card">
@@ -303,7 +486,7 @@
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Criador de banners</h3>
-          <p>Crie banners personalizados para seus projetos.</p>
+          <p>Crie banners personalizados.</p>
         </article>
 
         <article class="premium-card">
@@ -315,13 +498,13 @@
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>QR Code avançado</h3>
-          <p>Crie QR Codes com personalização adicional.</p>
+          <p>Personalize seus QR Codes.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>JSON Studio</h3>
-          <p>Analise, compare e organize arquivos JSON.</p>
+          <p>Organize e analise arquivos JSON.</p>
         </article>
 
         <article class="premium-card">
@@ -333,65 +516,59 @@
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Compressor de PDF</h3>
-          <p>Otimize arquivos PDF para reduzir seu tamanho.</p>
+          <p>Reduza o tamanho dos seus PDFs.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Criador de currículos</h3>
-          <p>Monte currículos com modelos profissionais.</p>
+          <p>Crie currículos profissionais.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Editor de imagens</h3>
-          <p>Ajuste, recorte e personalize suas imagens.</p>
+          <p>Edite e personalize suas imagens.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Criador de legendas SRT</h3>
-          <p>Crie e organize legendas para vídeos.</p>
+          <p>Crie legendas para seus vídeos.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Minificador avançado</h3>
-          <p>Otimize códigos HTML, CSS e JavaScript.</p>
+          <p>Otimize HTML, CSS e JavaScript.</p>
         </article>
 
         <article class="premium-card">
           <span class="premium-lock">🔒 Premium</span>
           <h3>Criador de sites</h3>
-          <p>Monte páginas usando modelos personalizáveis.</p>
+          <p>Crie páginas usando modelos.</p>
         </article>
-
       </div>
     </section>
 
-    <!-- =====================================
-         BANNER PREMIUM
-         ===================================== -->
-
+    <!-- BANNER PREMIUM -->
     <section id="assinar-premium">
       <div>
-        <div class="premium-label">
-          ✦ ACESSO EXCLUSIVO
-        </div>
+        <div class="premium-label">✦ ACESSO EXCLUSIVO</div>
 
-        <h2>Desbloqueie o melhor do PD Tools.</h2>
+        <h2>
+          O próximo nível da sua produtividade.
+        </h2>
 
         <p>
-          Tenha acesso às ferramentas Premium disponíveis,
-          novos recursos e mais possibilidades.
+          Desbloqueie os recursos Premium disponíveis
+          e tenha mais possibilidades em um único lugar.
         </p>
-
-        <h3>O que está incluído:</h3>
 
         <div class="premium-benefits">
           <div>✦ Ferramentas Premium disponíveis</div>
           <div>✦ Recursos exclusivos</div>
-          <div>✦ 30 dias após confirmação do Pix</div>
+          <div>✦ Acesso durante 30 dias</div>
           <div>✦ Sem renovação automática</div>
         </div>
 
@@ -404,35 +581,26 @@
           ✦ Quero virar Premium — R$ 5,00
         </button>
 
-        <p
-          id="premiumBannerMessage"
-          role="status"
-          aria-live="polite"
-        ></p>
+        <p id="premiumBannerMessage" role="status"></p>
 
         <p class="donation-footer">
-          Pagamento via Pix • Um projeto da Platform Destroyer
+          Pagamento via Pix • Platform Destroyer
         </p>
       </div>
     </section>
 
-    <!-- =====================================
-         DOAÇÕES
-         ===================================== -->
-
+    <!-- DOAÇÕES EM DESTAQUE -->
     <section class="donation-section" id="doacoes">
       <div class="donation-card">
-        <div class="donation-label">
-          ♡ APOIE O PROJETO
-        </div>
+        <div class="donation-label">♡ APOIE O PD TOOLS</div>
 
-        <h2>Ajude o PD Tools a continuar crescendo.</h2>
+        <h2>Faça parte do crescimento do projeto.</h2>
 
         <p class="donation-description">
-          O PD Tools é um projeto da Platform Destroyer.
-          Sua contribuição ajuda a manter as ferramentas
-          gratuitas disponíveis para todos.
-          Doações são voluntárias e não incluem acesso Premium.
+          O PD Tools oferece ferramentas gratuitas
+          para toda a comunidade. Sua contribuição
+          ajuda a manter e melhorar o projeto.
+          Doações não incluem acesso Premium.
         </p>
 
         <div class="donation-divider"></div>
@@ -440,29 +608,11 @@
         <h3>Escolha um valor para contribuir</h3>
 
         <div class="donation-values">
-          <button type="button" data-donation-value="0.10">
-            R$ 0,10
-          </button>
-
-          <button type="button" data-donation-value="1">
-            R$ 1
-          </button>
-
-          <button type="button" data-donation-value="2">
-            R$ 2
-          </button>
-
-          <button
-            type="button"
-            data-donation-value="5"
-            class="selected"
-          >
-            R$ 5
-          </button>
-
-          <button type="button" data-donation-value="10">
-            R$ 10
-          </button>
+          <button type="button" data-donation-value="0.10">R$ 0,10</button>
+          <button type="button" data-donation-value="1">R$ 1</button>
+          <button type="button" data-donation-value="2">R$ 2</button>
+          <button type="button" data-donation-value="5" class="selected">R$ 5</button>
+          <button type="button" data-donation-value="10">R$ 10</button>
         </div>
 
         <label for="donationAmount">
@@ -493,7 +643,7 @@
         </button>
 
         <p class="donation-footer">
-          Doação voluntária · Um projeto da Platform Destroyer
+          Doação voluntária • Platform Destroyer
         </p>
 
         <p
@@ -505,10 +655,35 @@
       </div>
     </section>
 
-    <!-- =====================================
-         SOBRE
-         ===================================== -->
+    <!-- FERRAMENTAS GRATUITAS -->
+    <section class="tools-section" id="ferramentas">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">EXPLORE O PD TOOLS</div>
+          <h2>Encontre sua próxima ferramenta.</h2>
+        </div>
 
+        <label class="search-wrap" for="search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            id="search"
+            type="search"
+            placeholder="Buscar ferramenta..."
+            autocomplete="off"
+          >
+        </label>
+      </div>
+
+      <div
+        class="filters"
+        id="filters"
+        aria-label="Categorias de ferramentas"
+      ></div>
+
+      <div class="tool-grid" id="toolGrid"></div>
+    </section>
+
+    <!-- SOBRE -->
     <section class="about" id="sobre">
       <div class="eyebrow">NOSSA IDENTIDADE</div>
 
@@ -518,18 +693,15 @@
       </h2>
 
       <p>
-        Criado pela Platform Destroyer, o PD Tools reúne
-        ferramentas práticas em uma experiência simples,
-        moderna e acessível.
+        Criado pela Platform Destroyer, o PD Tools
+        reúne ferramentas práticas em uma experiência
+        simples, moderna e acessível.
       </p>
     </section>
 
   </main>
 
-  <!-- =====================================
-       RODAPÉ
-       ===================================== -->
-
+  <!-- RODAPÉ -->
   <footer>
     <a class="brand" href="#inicio">
       <span class="brand-mark">PD</span>
@@ -544,75 +716,119 @@
     <span>Desenvolvido por <b>Kraz e Hz</b></span>
   </footer>
 
-  <!-- =====================================
-       ANÚNCIO DE DOAÇÕES
-       ===================================== -->
-
-  <div class="donation-popup-overlay" id="donationPopup" hidden>
+  <!-- ANÚNCIO PREMIUM -->
+  <div
+    class="pd-ad-overlay"
+    id="premiumPopupOverlay"
+    role="presentation"
+    hidden
+  >
     <div
-      class="donation-popup"
+      class="pd-ad-box"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="premiumPopupTitle"
+    >
+      <button
+        class="pd-ad-close"
+        id="premiumPopupClose"
+        type="button"
+        aria-label="Fechar anúncio Premium"
+      >✕</button>
+
+      <div class="pd-ad-tag">✦ PD TOOLS PREMIUM</div>
+
+      <h2 id="premiumPopupTitle">
+        Desbloqueie ainda mais possibilidades!
+      </h2>
+
+      <p>
+        Tenha acesso às ferramentas Premium disponíveis
+        por um preço acessível.
+      </p>
+
+      <div class="pd-ad-price">R$ 5,00</div>
+
+      <p>30 dias de acesso • Sem renovação automática</p>
+
+      <div class="pd-ad-benefits">
+        <div>✦ Ferramentas exclusivas</div>
+        <div>✦ Mais recursos e possibilidades</div>
+        <div>✦ Pagamento via Pix</div>
+      </div>
+
+      <button
+        class="pd-ad-button"
+        id="premiumPopupGo"
+        type="button"
+      >
+        Conhecer o Premium
+      </button>
+
+      <p class="pd-ad-small">
+        Um projeto da Platform Destroyer
+      </p>
+    </div>
+  </div>
+
+  <!-- ANÚNCIO DE DOAÇÕES -->
+  <div
+    class="pd-ad-overlay donation-popup-overlay"
+    id="donationPopup"
+    role="presentation"
+    hidden
+  >
+    <div
+      class="pd-ad-box donation-popup"
       role="dialog"
       aria-modal="true"
       aria-labelledby="donationPopupTitle"
     >
       <button
-        class="donation-popup-close"
+        class="pd-ad-close donation-popup-close"
         id="closeDonationPopup"
         type="button"
-        aria-label="Fechar anúncio"
+        aria-label="Fechar anúncio de doações"
       >✕</button>
 
-      <div class="donation-popup-header">
-        <div class="donation-popup-logo">
-          PD <span>TOOLS</span>
-        </div>
+      <div class="pd-ad-tag">♡ APOIE O PROJETO</div>
 
-        <div class="donation-popup-subtitle">
-          APOIADOR
-        </div>
+      <h2 id="donationPopupTitle">
+        Ajude o PD Tools a continuar crescendo!
+      </h2>
+
+      <p>
+        Nosso projeto oferece ferramentas gratuitas
+        para toda a comunidade.
+      </p>
+
+      <div class="pd-ad-benefits">
+        <div>♡ Ferramentas gratuitas</div>
+        <div>♡ Novidades e melhorias</div>
+        <div>♡ Contribua com qualquer valor</div>
       </div>
 
-      <div class="donation-popup-content">
-        <h2 id="donationPopupTitle">
-          💜 Apoie o PD Tools
-        </h2>
+      <div class="pd-ad-price">A partir de R$ 0,10</div>
 
-        <p>
-          Nosso projeto é gratuito e desenvolvido
-          com dedicação para ajudar você.
-        </p>
+      <p>
+        Toda contribuição ajuda a manter o projeto.
+      </p>
 
-        <div class="donation-popup-benefits">
-          <div>↳ Ferramentas 100% gratuitas</div>
-          <div>↳ Sem necessidade de cadastro</div>
-          <div>↳ Novas ferramentas e melhorias</div>
-          <div>↳ Ajude a manter o projeto online</div>
-        </div>
+      <button
+        class="pd-ad-button donation-popup-action"
+        id="goToDonations"
+        type="button"
+      >
+        ♡ Fazer uma doação
+      </button>
 
-        <p class="donation-popup-highlight">
-          Qualquer valor faz a diferença.
-          Até R$ 0,10 já ajuda!
-        </p>
-
-        <button
-          class="donation-popup-action"
-          id="goToDonations"
-          type="button"
-        >
-          ♡ Fazer uma doação
-        </button>
-
-        <div class="donation-popup-note">
-          Um projeto da Platform Destroyer
-        </div>
-      </div>
+      <p class="pd-ad-small">
+        Doação voluntária • Platform Destroyer
+      </p>
     </div>
   </div>
 
-  <!-- =====================================
-       LOGIN E CONTA PREMIUM
-       ===================================== -->
-
+  <!-- LOGIN -->
   <div class="pd-account-overlay" id="pdAccountOverlay" hidden>
     <div
       class="pd-account-dialog"
@@ -627,9 +843,7 @@
         aria-label="Fechar"
       >✕</button>
 
-      <div class="pd-account-tag">
-        PD TOOLS PREMIUM
-      </div>
+      <div class="pd-account-tag">PD TOOLS PREMIUM</div>
 
       <h2 id="pdAccountTitle">Entrar</h2>
 
@@ -638,10 +852,7 @@
       </p>
 
       <form id="pdAccountForm">
-        <label for="pdAccountEmail">
-          E-mail
-        </label>
-
+        <label for="pdAccountEmail">E-mail</label>
         <input
           id="pdAccountEmail"
           type="email"
@@ -649,10 +860,7 @@
           required
         >
 
-        <label for="pdAccountPassword">
-          Senha
-        </label>
-
+        <label for="pdAccountPassword">Senha</label>
         <input
           id="pdAccountPassword"
           type="password"
@@ -670,11 +878,7 @@
         </button>
       </form>
 
-      <div
-        class="pd-account-profile"
-        id="pdAccountProfile"
-        hidden
-      >
+      <div class="pd-account-profile" id="pdAccountProfile" hidden>
         <p id="pdAccountUser"></p>
         <p id="pdAccountStatus"></p>
 
@@ -704,10 +908,7 @@
     </div>
   </div>
 
-  <!-- =====================================
-       MODAL DAS FERRAMENTAS
-       ===================================== -->
-
+  <!-- MODAL DAS FERRAMENTAS -->
   <div
     class="modal-backdrop"
     id="toolModal"
@@ -721,7 +922,6 @@
           <div class="eyebrow" id="modalCategory">
             FERRAMENTA
           </div>
-
           <h3 id="modalTitle">Ferramenta</h3>
         </div>
 
@@ -737,10 +937,7 @@
     </div>
   </div>
 
-  <!-- =====================================
-       PAINEL ADMINISTRATIVO
-       ===================================== -->
-
+  <!-- PAINEL ADMINISTRATIVO -->
   <div
     class="modal-backdrop"
     id="adminModal"
@@ -773,25 +970,15 @@
         role="tablist"
         aria-label="Seções administrativas"
       >
-        <button
-          class="active"
-          type="button"
-          data-tab="overview"
-        >
+        <button class="active" type="button" data-tab="overview">
           Visão geral
         </button>
 
-        <button
-          type="button"
-          data-tab="toolsAdmin"
-        >
+        <button type="button" data-tab="toolsAdmin">
           Ferramentas
         </button>
 
-        <button
-          type="button"
-          data-tab="appearance"
-        >
+        <button type="button" data-tab="appearance">
           Aparência
         </button>
       </div>
@@ -800,10 +987,7 @@
     </div>
   </div>
 
-  <!-- =====================================
-       AVISOS
-       ===================================== -->
-
+  <!-- AVISOS -->
   <div
     class="toast"
     id="toast"
@@ -811,59 +995,70 @@
     aria-live="polite"
   ></div>
 
-  <!-- =====================================
-       BIBLIOTECAS E SCRIPTS ORIGINAIS
-       ===================================== -->
+  <!-- MODAL PIX -->
+  <div
+    class="pd-pix-overlay"
+    id="pdPixOverlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Pagamento via Pix"
+    hidden
+  >
+    <div class="pd-pix-box" id="pdPixBox"></div>
+  </div>
 
+  <!-- BIBLIOTECAS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+  <!-- SISTEMA ORIGINAL -->
   <script src="app.js"></script>
+
+  <!-- LOGIN PREMIUM -->
   <script src="premium-auth.js"></script>
   <script src="premium-filter.js"></script>
 
+  <!-- FERRAMENTAS PREMIUM -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
   <script src="premium-image-batch.js"></script>
   <script src="premium-qrcode.js"></script>
   <script src="premium-watermark.js"></script>
   <script src="premium-extras.js"></script>
 
-  <!-- =====================================
-       SISTEMA DE ASSINATURA E DOAÇÕES
-       ===================================== -->
-
+  <!-- PAGAMENTOS -->
   <script>
     (() => {
       "use strict";
 
-      const amountInput = document.getElementById("donationAmount");
-      const total = document.getElementById("donationTotal");
-      const message = document.getElementById("donationMessage");
-      const donationSubmit = document.getElementById("donationSubmit");
+      const $ = id => document.getElementById(id);
 
-      const subscribeButton = document.getElementById("subscribePremium");
-      const premiumMessage = document.getElementById("premiumMessage");
+      const amountInput = $("donationAmount");
+      const donationTotal = $("donationTotal");
+      const donationMessage = $("donationMessage");
+      const donationSubmit = $("donationSubmit");
 
-      const bannerButton = document.getElementById("premiumBannerSubscribe");
-      const bannerMessage = document.getElementById("premiumBannerMessage");
+      const subscribePremium = $("subscribePremium");
+      const premiumMessage = $("premiumMessage");
 
-      const valueButtons = document.querySelectorAll("[data-donation-value]");
+      const premiumBannerSubscribe = $("premiumBannerSubscribe");
+      const premiumBannerMessage = $("premiumBannerMessage");
 
-      const popup = document.getElementById("donationPopup");
-      const closeButton = document.getElementById("closeDonationPopup");
-      const donateButton = document.getElementById("goToDonations");
+      const pixOverlay = $("pdPixOverlay");
+      const pixBox = $("pdPixBox");
 
-      const formatBRL = value => value.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      });
+      const valueButtons =
+        document.querySelectorAll("[data-donation-value]");
+
+      const formatBRL = value =>
+        Number(value).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
 
       function updateDonation() {
         const value = Number(amountInput.value);
 
-        total.textContent =
+        donationTotal.textContent =
           Number.isFinite(value) && value > 0
             ? formatBRL(value)
             : "R$ 0,00";
@@ -876,7 +1071,7 @@
           button.setAttribute("aria-pressed", String(selected));
         });
 
-        message.textContent = "";
+        donationMessage.textContent = "";
       }
 
       valueButtons.forEach(button => {
@@ -888,50 +1083,11 @@
 
       amountInput.addEventListener("input", updateDonation);
 
-      /* JANELA PIX */
-
-      const pixOverlay = document.createElement("div");
-
-      pixOverlay.hidden = true;
-      pixOverlay.setAttribute("role", "dialog");
-      pixOverlay.setAttribute("aria-modal", "true");
-      pixOverlay.setAttribute("aria-label", "Pagamento por Pix");
-
-      pixOverlay.style.cssText = `
-        position:fixed;
-        inset:0;
-        z-index:99999;
-        background:rgba(0,0,0,.85);
-        display:none;
-        align-items:center;
-        justify-content:center;
-        padding:20px;
-      `;
-
-      const pixBox = document.createElement("div");
-
-      pixBox.style.cssText = `
-        width:100%;
-        max-width:420px;
-        max-height:90vh;
-        overflow-y:auto;
-        background:#14111d;
-        color:#fff;
-        border:1px solid #493b61;
-        border-radius:20px;
-        padding:26px;
-        text-align:center;
-        box-sizing:border-box;
-      `;
-
-      pixOverlay.appendChild(pixBox);
-      document.body.appendChild(pixOverlay);
-
       let pixReturnFocus = null;
 
       function closePix() {
+        pixOverlay.classList.remove("open");
         pixOverlay.hidden = true;
-        pixOverlay.style.display = "none";
         pixBox.replaceChildren();
         pixReturnFocus?.focus?.();
       }
@@ -942,107 +1098,73 @@
         }
       });
 
-      function addPixText(tag, content, css = "") {
+      function addText(tag, text, parent = pixBox) {
         const element = document.createElement(tag);
-        element.textContent = content;
-        element.style.cssText = css;
-        pixBox.appendChild(element);
+        element.textContent = text;
+        parent.appendChild(element);
         return element;
       }
 
-      function addPixButton(label, onClick) {
-        const button = addPixText("button", label, `
-          display:block;
-          width:100%;
-          margin-top:12px;
-          padding:14px;
-          border:0;
-          border-radius:11px;
-          background:#a78bfa;
-          color:#100b18;
-          font-weight:800;
-          cursor:pointer;
-        `);
-
+      function addButton(text, callback) {
+        const button = addText("button", text);
         button.type = "button";
-        button.addEventListener("click", onClick);
+        button.addEventListener("click", callback);
         return button;
       }
 
       function showPix(data, tipo) {
         pixBox.replaceChildren();
 
-        const isSubscription = tipo === "subscription";
+        const isPremium = tipo === "subscription";
 
-        addPixText(
+        addText(
           "h2",
-          isSubscription
-            ? "💜 Assinatura PD Tools Premium"
-            : "💜 Apoie o PD Tools"
+          isPremium
+            ? "✦ Assinatura PD Tools Premium"
+            : "♡ Doação para o PD Tools"
         );
 
-        addPixText(
+        addText(
           "p",
-          `Valor: ${formatBRL(Number(data.valor))}`
+          "Valor: " + formatBRL(data.valor)
         );
 
         if (data.qr_code_base64) {
-          const img = document.createElement("img");
+          const image = document.createElement("img");
 
-          img.src = data.qr_code_base64.startsWith("data:")
+          image.src = data.qr_code_base64.startsWith("data:")
             ? data.qr_code_base64
-            : `data:image/png;base64,${data.qr_code_base64}`;
+            : "data:image/png;base64," + data.qr_code_base64;
 
-          img.alt = "QR Code Pix";
-
-          img.style.cssText = `
-            display:block;
-            width:220px;
-            max-width:100%;
-            margin:15px auto;
-            background:white;
-            padding:10px;
-            border-radius:10px;
-          `;
-
-          pixBox.appendChild(img);
+          image.alt = "QR Code do pagamento Pix";
+          pixBox.appendChild(image);
         }
 
         if (data.qr_code) {
-          addPixText("p", "Pix copia e cola:");
+          addText("p", "Pix copia e cola:");
 
-          const code = document.createElement("textarea");
+          const textarea = document.createElement("textarea");
+          textarea.value = data.qr_code;
+          textarea.readOnly = true;
+          pixBox.appendChild(textarea);
 
-          code.readOnly = true;
-          code.value = data.qr_code;
-
-          code.style.cssText = `
-            width:100%;
-            height:90px;
-            padding:10px;
-            box-sizing:border-box;
-            border:1px solid #55446a;
-            border-radius:10px;
-            background:#0b0910;
-            color:white;
-            resize:none;
-          `;
-
-          pixBox.appendChild(code);
-
-          addPixButton("Copiar código Pix", async () => {
+          addButton("Copiar código Pix", async () => {
             try {
               await navigator.clipboard.writeText(data.qr_code);
-              addPixText("p", "Código copiado! 💜");
+              copyStatus.textContent = "Código Pix copiado!";
             } catch {
-              code.focus();
-              code.select();
+              textarea.focus();
+              textarea.select();
+              copyStatus.textContent =
+                "Selecione e copie o código acima.";
             }
           });
+
+          const copyStatus = addText("p", "");
         }
 
         if (data.ticket_url) {
-          addPixButton("Abrir pagamento", () => {
+          addButton("Abrir pagamento", () => {
             try {
               const url = new URL(data.ticket_url);
 
@@ -1054,56 +1176,44 @@
                 );
               }
             } catch {
-              // Link indisponível.
+              // Link de pagamento inválido.
             }
           });
         }
 
-        addPixText(
+        addText(
           "p",
-          isSubscription
-            ? "Sua assinatura de 30 dias será ativada somente após a confirmação do pagamento pelo Mercado Pago."
-            : "Esta contribuição é voluntária e não libera ferramentas Premium.",
-          "margin-top:18px;color:#c4b5fd"
+          isPremium
+            ? "O acesso Premium será liberado após a confirmação do pagamento pelo Mercado Pago."
+            : "Esta é uma doação voluntária e não libera o Premium."
         );
 
-        addPixText(
-          "p",
-          "Você pode acompanhar seu acesso em Minha conta após a confirmação.",
-          "margin-top:15px;font-size:13px;color:#b5afc0"
-        );
-
-        addPixButton("Fechar", closePix);
+        addButton("Fechar", closePix);
 
         pixOverlay.hidden = false;
-        pixOverlay.style.display = "flex";
+        pixOverlay.classList.add("open");
       }
 
-      /* CRIAÇÃO DO PIX */
-
       async function createPixPayment(tipo, valor = null) {
+        const isPremium = tipo === "subscription";
+
+        const button = isPremium
+          ? subscribePremium
+          : donationSubmit;
+
+        const message = isPremium
+          ? premiumMessage
+          : donationMessage;
+
+        const originalText = button.textContent;
+
         const client =
           typeof supabaseClient !== "undefined"
             ? supabaseClient
             : null;
 
-        const statusElement =
-          tipo === "subscription"
-            ? premiumMessage
-            : message;
-
-        const button =
-          tipo === "subscription"
-            ? subscribeButton
-            : donationSubmit;
-
-        const originalText =
-          tipo === "subscription"
-            ? "✦ Assinar Premium — R$ 5,00 / 30 dias"
-            : "♡ Fazer uma doação";
-
         if (!client) {
-          statusElement.textContent =
+          message.textContent =
             "Sistema de contas indisponível.";
           return;
         }
@@ -1111,41 +1221,37 @@
         button.disabled = true;
         button.textContent = "Gerando Pix...";
 
-        statusElement.textContent =
-          "Preparando seu pagamento...";
-
-        if (tipo === "subscription") {
-          bannerButton.disabled = true;
-          bannerButton.textContent = "Gerando Pix...";
-          bannerMessage.textContent = "";
+        if (isPremium) {
+          premiumBannerSubscribe.disabled = true;
+          premiumBannerSubscribe.textContent = "Gerando Pix...";
         }
+
+        message.textContent = "Preparando pagamento...";
 
         try {
           const { data, error } =
             await client.auth.getSession();
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           const token = data.session?.access_token;
 
           if (!token) {
-            statusElement.textContent =
+            message.textContent =
               "Entre na sua conta para continuar.";
 
-            if (tipo === "subscription") {
-              bannerMessage.textContent =
+            if (isPremium) {
+              premiumBannerMessage.textContent =
                 "Entre na sua conta para continuar.";
             }
 
-            document.getElementById("pdAccountOpen")?.click();
+            $("pdAccountOpen")?.click();
             return;
           }
 
           const payload = { tipo };
 
-          if (tipo === "donation") {
+          if (!isPremium) {
             payload.valor = valor;
           }
 
@@ -1153,7 +1259,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
+              Authorization: "Bearer " + token
             },
             body: JSON.stringify(payload)
           });
@@ -1172,470 +1278,254 @@
             !result.ticket_url
           ) {
             throw new Error(
-              "Pix criado, mas os dados do código não estão disponíveis."
+              "O pagamento foi criado, mas os dados Pix não estão disponíveis."
             );
           }
 
-          statusElement.textContent =
-            "Pix gerado. Confira os dados do pagamento.";
+          message.textContent =
+            "Pix gerado. Confira a janela de pagamento.";
 
-          if (tipo === "subscription") {
-            bannerMessage.textContent =
+          if (isPremium) {
+            premiumBannerMessage.textContent =
               "Pix gerado. Confira a janela de pagamento.";
           }
 
-          pixReturnFocus =
-            tipo === "subscription"
-              ? document.activeElement
-              : button;
-
+          pixReturnFocus = document.activeElement;
           showPix(result, tipo);
 
         } catch (error) {
-          console.error("Erro ao gerar Pix:", error);
+          console.error("Erro no Pix:", error);
 
-          statusElement.textContent =
-            error.message ||
-            "Não foi possível gerar o Pix agora.";
+          message.textContent =
+            error.message || "Erro ao gerar o Pix.";
 
-          if (tipo === "subscription") {
-            bannerMessage.textContent =
-              statusElement.textContent;
+          if (isPremium) {
+            premiumBannerMessage.textContent =
+              message.textContent;
           }
 
         } finally {
           button.disabled = false;
           button.textContent = originalText;
 
-          if (tipo === "subscription") {
-            bannerButton.disabled = false;
-            bannerButton.textContent =
+          if (isPremium) {
+            premiumBannerSubscribe.disabled = false;
+            premiumBannerSubscribe.textContent =
               "✦ Quero virar Premium — R$ 5,00";
           }
         }
       }
 
-      /* DOAÇÕES */
-
       donationSubmit.addEventListener("click", () => {
         const valorTexto = amountInput.value.trim();
 
         if (!/^\d+(?:\.\d{1,2})?$/.test(valorTexto)) {
-          message.textContent =
+          donationMessage.textContent =
             "Digite um valor válido com até duas casas decimais.";
           return;
         }
 
-        const value = Number(valorTexto);
+        const valor = Number(valorTexto);
 
         if (
-          !Number.isFinite(value) ||
-          value < 0.10 ||
-          value > 100000
+          !Number.isFinite(valor) ||
+          valor < 0.10 ||
+          valor > 100000
         ) {
-          message.textContent =
+          donationMessage.textContent =
             "Digite um valor entre R$ 0,10 e R$ 100.000,00.";
           return;
         }
 
-        createPixPayment("donation", value);
+        createPixPayment("donation", valor);
       });
 
-      /* PREMIUM */
-
-      subscribeButton.addEventListener("click", () => {
+      subscribePremium.addEventListener("click", () => {
         createPixPayment("subscription");
       });
 
-      bannerButton.addEventListener("click", () => {
-        if (subscribeButton.disabled) {
-          bannerMessage.textContent =
-            "Aguarde, estamos processando sua solicitação.";
-          return;
+      premiumBannerSubscribe.addEventListener("click", () => {
+        if (!subscribePremium.disabled) {
+          createPixPayment("subscription");
         }
-
-        createPixPayment("subscription");
       });
 
       updateDonation();
 
-      /* ANÚNCIO DE DOAÇÕES */
-
-      let previousFocus = null;
-
-      function closePopup() {
-        if (popup.hidden) return;
-
-        popup.hidden = true;
-
-        document.body.classList.remove(
-          "donation-popup-open"
-        );
-
-        try {
-          sessionStorage.setItem(
-            "pdtoolsDonationPopupSeen",
-            "1"
-          );
-        } catch {
-          // Funciona sem armazenamento.
-        }
-
-        previousFocus?.focus?.();
-      }
-
-      closeButton.addEventListener("click", closePopup);
-
-      donateButton.addEventListener("click", () => {
-        closePopup();
-
-        document.getElementById("doacoes")
-          .scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-      });
-
-      popup.addEventListener("click", event => {
-        if (event.target === popup) {
-          closePopup();
-        }
-      });
-
       document.addEventListener("keydown", event => {
         if (
-          !pixOverlay.hidden &&
-          event.key === "Escape"
+          event.key === "Escape" &&
+          pixOverlay.classList.contains("open")
         ) {
           closePix();
-          return;
-        }
-
-        if (popup.hidden) return;
-
-        if (event.key === "Escape") {
-          closePopup();
-        }
-
-        if (event.key === "Tab") {
-          if (
-            event.shiftKey &&
-            document.activeElement === closeButton
-          ) {
-            event.preventDefault();
-            donateButton.focus();
-
-          } else if (
-            !event.shiftKey &&
-            document.activeElement === donateButton
-          ) {
-            event.preventDefault();
-            closeButton.focus();
-          }
         }
       });
 
-      let alreadySeen = false;
-
-      try {
-        alreadySeen =
-          sessionStorage.getItem(
-            "pdtoolsDonationPopupSeen"
-          ) === "1";
-      } catch {
-        alreadySeen = false;
-      }
-
-      if (!alreadySeen) {
-        previousFocus = document.activeElement;
-        popup.hidden = false;
-
-        document.body.classList.add(
-          "donation-popup-open"
-        );
-
-        closeButton.focus();
-      }
-
+      $("year").textContent = new Date().getFullYear();
     })();
   </script>
 
-  <!-- =====================================
-       ANÚNCIO PREMIUM
-       ===================================== -->
-
-  <div
-    id="premiumPopupOverlay"
-    hidden
-    role="presentation"
-    style="
-      position:fixed;
-      inset:0;
-      z-index:100001;
-      background:rgba(0,0,0,.85);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      box-sizing:border-box;
-    "
-  >
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="premiumPopupTitle"
-      style="
-        position:relative;
-        width:100%;
-        max-width:420px;
-        background:#14111d;
-        color:#fff;
-        border:1px solid #49346d;
-        border-radius:20px;
-        padding:30px 24px;
-        text-align:center;
-        box-sizing:border-box;
-      "
-    >
-      <button
-        id="premiumPopupClose"
-        type="button"
-        aria-label="Fechar anúncio Premium"
-        style="
-          position:absolute;
-          right:15px;
-          top:12px;
-          border:0;
-          background:transparent;
-          color:#ddd;
-          font-size:22px;
-          cursor:pointer;
-        "
-      >✕</button>
-
-      <div
-        style="
-          font-size:12px;
-          letter-spacing:2px;
-          color:#b49aff;
-          font-weight:800;
-          margin:10px 0 18px;
-        "
-      >
-        ✦ PD TOOLS PREMIUM
-      </div>
-
-      <h2
-        id="premiumPopupTitle"
-        style="
-          font-size:27px;
-          line-height:1.2;
-          margin:0 0 14px;
-        "
-      >
-        Desbloqueie ainda mais possibilidades!
-      </h2>
-
-      <p
-        style="
-          color:#c9c2d4;
-          line-height:1.6;
-          margin:0 0 20px;
-        "
-      >
-        Conheça o plano Premium do PD Tools
-        e tenha acesso às ferramentas exclusivas disponíveis.
-      </p>
-
-      <div
-        style="
-          font-size:34px;
-          font-weight:800;
-          color:#b49aff;
-          margin-bottom:6px;
-        "
-      >
-        R$ 5,00
-      </div>
-
-      <p
-        style="
-          color:#aaa1b8;
-          font-size:13px;
-          margin:0 0 22px;
-        "
-      >
-        30 dias de acesso • Sem renovação automática
-      </p>
-
-      <button
-        id="premiumPopupGo"
-        type="button"
-        style="
-          width:100%;
-          background:#a78bfa;
-          color:#130e1b;
-          border:0;
-          border-radius:11px;
-          padding:14px;
-          font-size:15px;
-          font-weight:800;
-          cursor:pointer;
-        "
-      >
-        Conhecer o Premium
-      </button>
-
-      <p
-        style="
-          font-size:12px;
-          color:#a9a0b5;
-          margin:16px 0 0;
-        "
-      >
-        Pagamento via Pix • Um projeto da Platform Destroyer
-      </p>
-    </div>
-  </div>
-
-  <!-- =====================================
-       CONTROLE DO ANÚNCIO PREMIUM
-       ===================================== -->
-
+  <!-- DOIS ANÚNCIOS EM TODA VISITA E ATUALIZAÇÃO -->
   <script>
     (() => {
       "use strict";
 
-      const premiumSection =
-        document.getElementById("premium");
-
-      const firstPopup =
-        document.getElementById("donationPopup");
-
-      const secondPopup =
+      const premiumPopup =
         document.getElementById("premiumPopupOverlay");
 
-      const closeSecond =
+      const donationPopup =
+        document.getElementById("donationPopup");
+
+      const premiumClose =
         document.getElementById("premiumPopupClose");
 
-      const goPremium =
+      const donationClose =
+        document.getElementById("closeDonationPopup");
+
+      const premiumGo =
         document.getElementById("premiumPopupGo");
 
-      let secondShown = false;
-      let returnFocus = null;
+      const donationGo =
+        document.getElementById("goToDonations");
 
-      function navigatePremium() {
-        if (!premiumSection) return;
+      const popups = [premiumPopup, donationPopup];
 
-        premiumSection.hidden = false;
-        premiumSection.style.removeProperty("display");
+      let currentIndex = -1;
+      let previousFocus = null;
 
-        premiumSection.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
+      function closeCurrent() {
+        if (currentIndex < 0) return;
 
-        history.replaceState(
-          null,
-          "",
-          "#premium"
-        );
+        const popup = popups[currentIndex];
+
+        popup.classList.remove("open");
+        popup.hidden = true;
+
+        document.body.style.overflow = "";
+
+        const nextIndex = currentIndex + 1;
+
+        if (nextIndex < popups.length) {
+          openPopup(nextIndex);
+        } else {
+          currentIndex = -1;
+          previousFocus?.focus?.();
+        }
       }
 
-      document.querySelectorAll('a[href="#premium"]')
-        .forEach(link => {
-          link.addEventListener("click", event => {
-            event.preventDefault();
-            navigatePremium();
+      function openPopup(index) {
+        if (index < 0 || index >= popups.length) {
+          return;
+        }
+
+        currentIndex = index;
+
+        const popup = popups[index];
+
+        popup.hidden = false;
+        popup.classList.add("open");
+
+        document.body.style.overflow = "hidden";
+
+        const closeButton =
+          popup.querySelector(".pd-ad-close");
+
+        closeButton?.focus();
+      }
+
+      function goToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+
+        closeCurrent();
+
+        // Fecha também o anúncio seguinte quando
+        // a pessoa decide visitar uma seção.
+        if (currentIndex >= 0) {
+          const popup = popups[currentIndex];
+          popup.classList.remove("open");
+          popup.hidden = true;
+          currentIndex = -1;
+          document.body.style.overflow = "";
+        }
+
+        if (section) {
+          section.hidden = false;
+          section.style.removeProperty("display");
+
+          section.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
           });
-        });
-
-      function hideSecond() {
-        secondPopup.hidden = true;
-        secondPopup.style.display = "none";
-        returnFocus?.focus?.();
+        }
       }
 
-      function showSecond() {
-        if (secondShown || !firstPopup.hidden) return;
+      premiumClose.addEventListener("click", closeCurrent);
+      donationClose.addEventListener("click", closeCurrent);
 
-        secondShown = true;
+      premiumGo.addEventListener("click", () => {
+        goToSection("premium");
+      });
 
-        try {
-          sessionStorage.setItem(
-            "pdtoolsPremiumPopupSeen",
-            "1"
-          );
-        } catch {}
+      donationGo.addEventListener("click", () => {
+        goToSection("doacoes");
+      });
 
-        returnFocus = document.activeElement;
-
-        secondPopup.hidden = false;
-        secondPopup.style.display = "flex";
-        closeSecond.focus();
-      }
-
-      closeSecond.addEventListener("click", hideSecond);
-
-      secondPopup.addEventListener("click", event => {
-        if (event.target === secondPopup) {
-          hideSecond();
+      premiumPopup.addEventListener("click", event => {
+        if (event.target === premiumPopup) {
+          closeCurrent();
         }
       });
 
-      goPremium.addEventListener("click", () => {
-        hideSecond();
-        navigatePremium();
+      donationPopup.addEventListener("click", event => {
+        if (event.target === donationPopup) {
+          closeCurrent();
+        }
       });
 
       document.addEventListener("keydown", event => {
-        if (secondPopup.hidden) return;
+        if (currentIndex < 0) return;
 
         if (event.key === "Escape") {
-          event.stopImmediatePropagation();
-          hideSecond();
+          event.preventDefault();
+          closeCurrent();
         }
 
         if (event.key === "Tab") {
+          const popup = popups[currentIndex];
+
+          const controls = Array.from(
+            popup.querySelectorAll(
+              "button:not([disabled]),a[href]"
+            )
+          );
+
+          if (!controls.length) return;
+
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+
           if (
             event.shiftKey &&
-            document.activeElement === closeSecond
+            document.activeElement === first
           ) {
             event.preventDefault();
-            goPremium.focus();
-
+            last.focus();
           } else if (
             !event.shiftKey &&
-            document.activeElement === goPremium
+            document.activeElement === last
           ) {
             event.preventDefault();
-            closeSecond.focus();
+            first.focus();
           }
         }
       }, true);
 
-      let alreadySeen = false;
-
-      try {
-        alreadySeen =
-          sessionStorage.getItem(
-            "pdtoolsPremiumPopupSeen"
-          ) === "1";
-      } catch {}
-
-      if (!alreadySeen && firstPopup) {
-        const observer = new MutationObserver(() => {
-          if (firstPopup.hidden) {
-            observer.disconnect();
-            showSecond();
-          }
-        });
-
-        observer.observe(firstPopup, {
-          attributes: true,
-          attributeFilter: ["hidden"]
-        });
-      }
+      // Não usa sessionStorage:
+      // os dois anúncios reaparecem em todo carregamento.
+      window.addEventListener("load", () => {
+        previousFocus = document.activeElement;
+        openPopup(0);
+      });
     })();
   </script>
 
