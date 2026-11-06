@@ -5,11 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#09090f">
-  <meta name="description" content="PD Tools — ferramentas online gratuitas e simples para o seu dia a dia.">
+  <meta name="description" content="PD Tools — ferramentas online gratuitas e plano Premium opcional.">
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="PD Tools — Ferramentas inteligentes">
-  <meta property="og:description" content="Ferramentas online gratuitas e simples para o seu dia a dia.">
+  <meta property="og:description" content="Ferramentas gratuitas e mais de 30 recursos exclusivos no plano PD Tools Premium.">
   <meta property="og:image" content="https://aohhacasirnzkchbyzlw.supabase.co/storage/v1/object/public/site-assets/share.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -82,7 +82,7 @@
           Todos os desenvolvedores trabalham de graça pra ajudar você,
           que não tem tempo ou acesso às ferramentas pagas.
           Até 10 centavos já ajudam a manter tudo funcionando.
-          Obrigado e fique bem!
+          Doações são voluntárias e não incluem acesso Premium. Obrigado!
         </p>
 
         <div class="donation-divider"></div>
@@ -165,10 +165,35 @@
         <div class="premium-label">PD TOOLS PREMIUM</div>
         <h2 id="premiumTitle">Ferramentas Premium 🔒</h2>
         <p>
-          Recursos exclusivos para apoiadores do PD Tools.
-          Acesso por 30 dias após a confirmação de uma
-          doação de R$ 5,00 ou mais.
+          Mais de 30 ferramentas exclusivas e únicas da Platform Destroyer,
+          com acesso liberado por 30 dias após a confirmação da assinatura.
         </p>
+      </div>
+
+      <!-- PLANO PAGO PREMIUM -->
+      <div class="donation-card premium-plan-card" id="premiumPlan">
+        <div class="donation-label">✦ PLANO PAGO</div>
+        <h2>PD Tools Premium 💜</h2>
+
+        <p class="donation-description">
+          Tenha acesso exclusivo a mais de 30 ferramentas Premium da PD.
+          O plano é individual e fica ativo por 30 dias após a confirmação do Pix.
+        </p>
+
+        <div class="donation-total">
+          <span>Assinatura de 30 dias</span>
+          <strong>R$ 5,00</strong>
+        </div>
+
+        <button class="donation-submit" id="subscribePremium" type="button">
+          ✦ Assinar Premium — R$ 5,00 / 30 dias
+        </button>
+
+        <p class="donation-footer">
+          Acesso liberado automaticamente após a confirmação do pagamento.
+        </p>
+
+        <p class="donation-message" id="premiumMessage" role="status" aria-live="polite"></p>
       </div>
 
       <div class="premium-grid" id="premiumGrid">
@@ -537,7 +562,7 @@
   <script src="premium-watermark.js"></script>
   <script src="premium-extras.js"></script>
 
-  <!-- DOAÇÕES E ANÚNCIO -->
+  <!-- ASSINATURA PREMIUM, DOAÇÕES E ANÚNCIO -->
   <script>
     (() => {
       "use strict";
@@ -545,33 +570,28 @@
       const amountInput = document.getElementById("donationAmount");
       const total = document.getElementById("donationTotal");
       const message = document.getElementById("donationMessage");
-      const submit = document.getElementById("donationSubmit");
-
-      const valueButtons =
-        document.querySelectorAll("[data-donation-value]");
-
+      const donationSubmit = document.getElementById("donationSubmit");
+      const subscribeButton = document.getElementById("subscribePremium");
+      const premiumMessage = document.getElementById("premiumMessage");
+      const valueButtons = document.querySelectorAll("[data-donation-value]");
       const popup = document.getElementById("donationPopup");
       const closeButton = document.getElementById("closeDonationPopup");
       const donateButton = document.getElementById("goToDonations");
 
-      const formatBRL = value =>
-        value.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL"
-        });
+      const formatBRL = value => value.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
 
       function updateDonation() {
         const value = Number(amountInput.value);
 
-        total.textContent =
-          Number.isFinite(value) && value > 0
-            ? formatBRL(value)
-            : "R$ 0,00";
+        total.textContent = Number.isFinite(value) && value > 0
+          ? formatBRL(value)
+          : "R$ 0,00";
 
         valueButtons.forEach(button => {
-          const selected =
-            Number(button.dataset.donationValue) === value;
-
+          const selected = Number(button.dataset.donationValue) === value;
           button.classList.toggle("selected", selected);
           button.setAttribute("aria-pressed", String(selected));
         });
@@ -588,7 +608,7 @@
 
       amountInput.addEventListener("input", updateDonation);
 
-      // JANELA DE PAGAMENTO PIX
+      // Janela compartilhada de pagamento Pix.
       const pixOverlay = document.createElement("div");
 
       pixOverlay.hidden = true;
@@ -597,46 +617,46 @@
       pixOverlay.setAttribute("aria-label", "Pagamento por Pix");
 
       pixOverlay.style.cssText = `
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background: rgba(0,0,0,.85);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        background:rgba(0,0,0,.85);
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
       `;
 
       const pixBox = document.createElement("div");
 
       pixBox.style.cssText = `
-        width: 100%;
-        max-width: 420px;
-        max-height: 90vh;
-        overflow-y: auto;
-        background: #14111d;
-        color: #fff;
-        border: 1px solid #342744;
-        border-radius: 18px;
-        padding: 25px;
-        text-align: center;
-        box-sizing: border-box;
+        width:100%;
+        max-width:420px;
+        max-height:90vh;
+        overflow-y:auto;
+        background:#14111d;
+        color:#fff;
+        border:1px solid #342744;
+        border-radius:18px;
+        padding:25px;
+        text-align:center;
+        box-sizing:border-box;
       `;
 
       pixOverlay.appendChild(pixBox);
       document.body.appendChild(pixOverlay);
 
+      let pixReturnFocus = null;
+
       function closePix() {
         pixOverlay.hidden = true;
         pixOverlay.style.display = "none";
         pixBox.replaceChildren();
-        submit.focus();
+        pixReturnFocus?.focus?.();
       }
 
       pixOverlay.addEventListener("click", event => {
-        if (event.target === pixOverlay) {
-          closePix();
-        }
+        if (event.target === pixOverlay) closePix();
       });
 
       function addPixText(tag, content, css = "") {
@@ -649,28 +669,34 @@
 
       function addPixButton(label, onClick) {
         const button = addPixText("button", label, `
-          display: block;
-          width: 100%;
-          margin-top: 12px;
-          padding: 13px;
-          border: 0;
-          border-radius: 10px;
-          background: #a78bfa;
-          color: #100b18;
-          font-weight: 700;
-          cursor: pointer;
+          display:block;
+          width:100%;
+          margin-top:12px;
+          padding:13px;
+          border:0;
+          border-radius:10px;
+          background:#a78bfa;
+          color:#100b18;
+          font-weight:700;
+          cursor:pointer;
         `);
 
         button.type = "button";
         button.addEventListener("click", onClick);
-
         return button;
       }
 
-      function showPix(data) {
+      function showPix(data, tipo) {
         pixBox.replaceChildren();
 
-        addPixText("h2", "💜 Apoie o PD Tools");
+        const isSubscription = tipo === "subscription";
+
+        addPixText(
+          "h2",
+          isSubscription
+            ? "💜 Assinatura PD Tools Premium"
+            : "💜 Apoie o PD Tools"
+        );
 
         addPixText(
           "p",
@@ -687,13 +713,13 @@
           img.alt = "QR Code Pix";
 
           img.style.cssText = `
-            display: block;
-            width: 220px;
-            max-width: 100%;
-            margin: 15px auto;
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
+            display:block;
+            width:220px;
+            max-width:100%;
+            margin:15px auto;
+            background:white;
+            padding:10px;
+            border-radius:10px;
           `;
 
           pixBox.appendChild(img);
@@ -708,15 +734,15 @@
           code.value = data.qr_code;
 
           code.style.cssText = `
-            width: 100%;
-            height: 90px;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #55446a;
-            border-radius: 10px;
-            background: #0b0910;
-            color: white;
-            resize: none;
+            width:100%;
+            height:90px;
+            padding:10px;
+            box-sizing:border-box;
+            border:1px solid #55446a;
+            border-radius:10px;
+            background:#0b0910;
+            color:white;
+            resize:none;
           `;
 
           pixBox.appendChild(code);
@@ -724,11 +750,7 @@
           addPixButton("Copiar código Pix", async () => {
             try {
               await navigator.clipboard.writeText(data.qr_code);
-
-              addPixText(
-                "p",
-                "Código copiado! 💜"
-              );
+              addPixText("p", "Código copiado! 💜");
             } catch {
               code.focus();
               code.select();
@@ -749,22 +771,22 @@
                 );
               }
             } catch {
-              // URL de pagamento indisponível.
+              // Link de pagamento indisponível.
             }
           });
         }
 
         addPixText(
           "p",
-          data.premium_elegivel
-            ? "💜 Doações a partir de R$ 5,00 dão direito a 30 dias de Premium após a confirmação."
-            : "Obrigado por apoiar o projeto! 💜",
+          isSubscription
+            ? "Sua assinatura de 30 dias será ativada somente após a confirmação do pagamento pelo Mercado Pago."
+            : "Esta contribuição é voluntária e não libera ferramentas Premium.",
           "margin-top:18px;color:#c4b5fd"
         );
 
         addPixText(
           "p",
-          "O pagamento precisa ser confirmado pelo servidor. Consulte seu acesso em Minha conta.",
+          "Você pode acompanhar seu acesso em Minha conta após a confirmação.",
           "margin-top:15px;font-size:13px;color:#b5afc0"
         );
 
@@ -774,8 +796,100 @@
         pixOverlay.style.display = "flex";
       }
 
-      // BOTÃO FAZER UMA DOAÇÃO
-      submit.addEventListener("click", async () => {
+      // Cria uma cobrança informando explicitamente o tipo.
+      async function createPixPayment(tipo, valor = null) {
+        const client = typeof supabaseClient !== "undefined"
+          ? supabaseClient
+          : null;
+
+        const statusElement = tipo === "subscription"
+          ? premiumMessage
+          : message;
+
+        const button = tipo === "subscription"
+          ? subscribeButton
+          : donationSubmit;
+
+        const originalText = tipo === "subscription"
+          ? "✦ Assinar Premium — R$ 5,00 / 30 dias"
+          : "♡ Fazer uma doação";
+
+        if (!client) {
+          statusElement.textContent = "Sistema de contas indisponível.";
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Gerando Pix...";
+        statusElement.textContent = "Preparando seu pagamento...";
+
+        try {
+          const { data, error } = await client.auth.getSession();
+
+          if (error) throw error;
+
+          const token = data.session?.access_token;
+
+          if (!token) {
+            statusElement.textContent = "Entre na sua conta para continuar.";
+            document.getElementById("pdAccountOpen")?.click();
+            return;
+          }
+
+          const payload = { tipo };
+
+          if (tipo === "donation") {
+            payload.valor = valor;
+          }
+
+          const response = await fetch("/api/criar-pix", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+
+          if (!response.ok || !result.sucesso) {
+            throw new Error(
+              result.erro || "Não foi possível gerar o Pix."
+            );
+          }
+
+          if (
+            !result.qr_code &&
+            !result.qr_code_base64 &&
+            !result.ticket_url
+          ) {
+            throw new Error(
+              "Pix criado, mas os dados do código não estão disponíveis."
+            );
+          }
+
+          statusElement.textContent =
+            "Pix gerado. Confira os dados do pagamento.";
+
+          pixReturnFocus = button;
+          showPix(result, tipo);
+
+        } catch (error) {
+          console.error("Erro ao gerar Pix:", error);
+
+          statusElement.textContent =
+            error.message ||
+            "Não foi possível gerar o Pix agora.";
+
+        } finally {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      }
+
+      // Botão de doação: sempre registra como donation.
+      donationSubmit.addEventListener("click", () => {
         const valorTexto = amountInput.value.trim();
 
         if (!/^\d+(?:\.\d{1,2})?$/.test(valorTexto)) {
@@ -796,82 +910,17 @@
           return;
         }
 
-        const client =
-          typeof supabaseClient !== "undefined"
-            ? supabaseClient
-            : null;
+        createPixPayment("donation", value);
+      });
 
-        if (!client) {
-          message.textContent =
-            "Sistema de contas indisponível.";
-          return;
-        }
-
-        submit.disabled = true;
-        submit.textContent = "Gerando Pix...";
-        message.textContent = "Preparando seu pagamento...";
-
-        try {
-          const { data, error } =
-            await client.auth.getSession();
-
-          if (error) throw error;
-
-          const token = data.session?.access_token;
-
-          if (!token) {
-            message.textContent =
-              "Entre na sua conta para realizar a doação.";
-
-            document.getElementById("pdAccountOpen")?.click();
-            return;
-          }
-
-          const response = await fetch("/api/criar-pix", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              valor: value
-            })
-          });
-
-          const result = await response.json();
-
-          if (!response.ok || !result.sucesso) {
-            throw new Error(
-              result.erro || "Não foi possível gerar o Pix."
-            );
-          }
-
-          if (!result.qr_code && !result.ticket_url) {
-            throw new Error(
-              "Pix criado, mas o código não está disponível."
-            );
-          }
-
-          message.textContent =
-            "Pix gerado. Confira os dados do pagamento.";
-
-          showPix(result);
-
-        } catch (error) {
-          console.error("Erro ao gerar Pix:", error);
-
-          message.textContent =
-            error.message ||
-            "Não foi possível gerar o Pix agora.";
-        } finally {
-          submit.disabled = false;
-          submit.textContent = "♡ Fazer uma doação";
-        }
+      // Botão de assinatura: sempre R$ 5,00 e tipo subscription.
+      subscribeButton.addEventListener("click", () => {
+        createPixPayment("subscription");
       });
 
       updateDonation();
 
-      // ANÚNCIO ORIGINAL DE DOAÇÕES
+      // Anúncio original de doações.
       let previousFocus = null;
 
       function closePopup() {
@@ -904,7 +953,9 @@
       });
 
       popup.addEventListener("click", event => {
-        if (event.target === popup) closePopup();
+        if (event.target === popup) {
+          closePopup();
+        }
       });
 
       document.addEventListener("keydown", event => {
@@ -929,6 +980,7 @@
           ) {
             event.preventDefault();
             donateButton.focus();
+
           } else if (
             !event.shiftKey &&
             document.activeElement === donateButton
@@ -946,6 +998,7 @@
           sessionStorage.getItem(
             "pdtoolsDonationPopupSeen"
           ) === "1";
+
       } catch {
         alreadySeen = false;
       }
