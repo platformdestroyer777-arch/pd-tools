@@ -22,54 +22,76 @@ export default async function handler(req, res) {
       });
     }
 
-    // Validar o valor recebido.
-    const valor = req.body?.valor;
+    // Identificar a modalidade de pagamento.
+    const tipo = req.body?.tipo || "donation";
 
-    if (
-      typeof valor !== "number" &&
-      typeof valor !== "string"
-    ) {
+    if (!["subscription", "donation"].includes(tipo)) {
       return res.status(400).json({
-        erro: "Informe um valor válido"
+        erro: "Tipo de pagamento inválido"
       });
     }
 
-    const valorTexto = String(valor);
+    let valorCentavos;
 
-    if (!/^\d+(?:\.\d{1,2})?$/.test(valorTexto)) {
-      return res.status(400).json({
-        erro: "Informe um valor com até duas casas decimais"
-      });
+    if (tipo === "subscription") {
+      // Premium: valor fixo de R$ 5,00.
+      valorCentavos = 500;
+    } else {
+      // Doações: valor livre.
+      const valor = req.body?.valor;
+
+      if (
+        typeof valor !== "number" &&
+        typeof valor !== "string"
+      ) {
+        return res.status(400).json({
+          erro: "Informe um valor válido"
+        });
+      }
+
+      const valorTexto = String(valor);
+
+      if (!/^\d+(?:\.\d{1,2})?$/.test(valorTexto)) {
+        return res.status(400).json({
+          erro: "Informe um valor com até duas casas decimais"
+        });
+      }
+
+      valorCentavos = Math.round(Number(valorTexto) * 100);
+
+      if (
+        !Number.isSafeInteger(valorCentavos) ||
+        valorCentavos < 10 ||
+        valorCentavos > 10000000
+      ) {
+        return res.status(400).json({
+          erro: "O valor deve estar entre R$ 0,10 e R$ 100.000,00"
+        });
+      }
     }
 
-    const valorCentavos = Math.round(Number(valorTexto) * 100);
+    const valorFormatado =
+      (valorCentavos / 100).toFixed(2);
 
-    if (
-      !Number.isSafeInteger(valorCentavos) ||
-      valorCentavos < 10 ||
-      valorCentavos > 10000000
-    ) {
-      return res.status(400).json({
-        erro: "O valor deve estar entre R$ 0,10 e R$ 100.000,00"
-      });
-    }
-
-    const valorFormatado = (valorCentavos / 100).toFixed(2);
-
+    // Validar autenticação.
     const authorization = req.headers.authorization || "";
 
     if (!authorization.startsWith("Bearer ")) {
       return res.status(401).json({
-        erro: "Faça login para gerar o Pix"
+        erro: "Faça login para continuar"
       });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
+    const supabase = createClient(
+      supabaseUrl,
+      supabaseKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
       }
-    });
+    );
 
     const accessToken = authorization.slice(7).trim();
 
@@ -83,26 +105,40 @@ export default async function handler(req, res) {
     }
 
     const user = data.user;
+
+    if (!user.email) {
+      return res.status(400).json({
+        erro: "Sua conta precisa ter um e-mail válido"
+      });
+    }
+
     const paymentId = randomUUID();
 
+    // Registrar o pagamento com seu tipo correto.
     const { error: dbError } = await supabase
       .from("premium_payments")
       .insert({
         id: paymentId,
         user_id: user.id,
+        provider: "mercadopago",
         amount: valorFormatado,
         currency: "BRL",
-        status: "pending"
+        status: "pending",
+        payment_type: tipo
       });
 
     if (dbError) {
-      console.error("Erro ao registrar pagamento:", dbError.message);
+      console.error(
+        "Erro ao registrar pagamento:",
+        dbError.message
+      );
 
       return res.status(500).json({
         erro: "Não foi possível preparar o pagamento"
       });
     }
 
+    // Criar cobrança no Mercado Pago.
     const mpResponse = await fetch(
       "https://api.mercadopago.com/v1/orders",
       {
@@ -151,8 +187,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const payment = mpData.transactions?.payments?.[0];
+    const payment =
+      mpData.transactions?.payments?.[0];
 
+    // Salvar os identificadores da cobrança.
     const { error: updateError } = await supabase
       .from("premium_payments")
       .update({
@@ -165,7 +203,10 @@ export default async function handler(req, res) {
       .eq("user_id", user.id);
 
     if (updateError) {
-      console.error("Erro ao salvar order:", updateError.message);
+      console.error(
+        "Erro ao salvar order:",
+        updateError.message
+      );
 
       return res.status(500).json({
         erro: "Pagamento criado, mas não foi possível registrá-lo"
@@ -175,10 +216,12 @@ export default async function handler(req, res) {
     return res.status(200).json({
       sucesso: true,
       pagamento_id: paymentId,
+      tipo: tipo,
       valor: valorCentavos / 100,
       moeda: "BRL",
-      premium_elegivel: valorCentavos >= 500,
-      qr_code: payment?.payment_method?.qr_code || null,
+      premium_elegivel: tipo === "subscription",
+      qr_code:
+        payment?.payment_method?.qr_code || null,
       qr_code_base64:
         payment?.payment_method?.qr_code_base64 || null,
       ticket_url:
@@ -187,7 +230,10 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("Erro ao criar Pix:", error.message);
+    console.error(
+      "Erro ao criar Pix:",
+      error.message
+    );
 
     return res.status(500).json({
       erro: "Erro interno ao gerar o Pix"
