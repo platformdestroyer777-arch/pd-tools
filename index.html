@@ -1011,5 +1011,92 @@
       }
     })();
   </script>
+
+  <!-- ANÚNCIO PREMIUM: aparece após fechar o anúncio de doações -->
+  <div id="premiumPopupOverlay" hidden role="presentation" style="position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box">
+    <div role="dialog" aria-modal="true" aria-labelledby="premiumPopupTitle" style="position:relative;width:100%;max-width:420px;background:#14111d;color:#fff;border:1px solid #49346d;border-radius:18px;padding:30px 24px;text-align:center;box-sizing:border-box;box-shadow:0 20px 70px rgba(0,0,0,.5)">
+      <button id="premiumPopupClose" type="button" aria-label="Fechar anúncio Premium" style="position:absolute;right:15px;top:12px;border:0;background:transparent;color:#ddd;font-size:22px;cursor:pointer">✕</button>
+      <div style="font-size:12px;letter-spacing:2px;color:#b49aff;font-weight:800;margin:10px 0 18px">✦ PD TOOLS PREMIUM</div>
+      <h2 id="premiumPopupTitle" style="font-size:27px;line-height:1.2;margin:0 0 14px">Desbloqueie ainda mais possibilidades!</h2>
+      <p style="color:#c9c2d4;line-height:1.6;margin:0 0 20px">Conheça o plano Premium do PD Tools e tenha acesso às ferramentas exclusivas disponíveis.</p>
+      <div style="font-size:34px;font-weight:800;color:#b49aff;margin-bottom:6px">R$ 5,00</div>
+      <p style="color:#aaa1b8;font-size:13px;margin:0 0 22px">30 dias de acesso • Sem renovação automática</p>
+      <button id="premiumPopupGo" type="button" style="width:100%;background:#a78bfa;color:#130e1b;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:800;cursor:pointer">Conhecer o Premium</button>
+      <p style="font-size:12px;color:#a9a0b5;margin:16px 0 0">Pagamento via Pix • Um projeto da Platform Destroyer</p>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+      const premiumSection = document.getElementById("premium");
+      const firstPopup = document.getElementById("donationPopup");
+      const secondPopup = document.getElementById("premiumPopupOverlay");
+      const closeSecond = document.getElementById("premiumPopupClose");
+      const goPremium = document.getElementById("premiumPopupGo");
+      let secondShown = false;
+      let returnFocus = null;
+
+      function navigatePremium() {
+        if (!premiumSection) return;
+        premiumSection.hidden = false;
+        premiumSection.style.removeProperty("display");
+        premiumSection.scrollIntoView({behavior:"smooth",block:"start"});
+        history.replaceState(null,"","#premium");
+      }
+
+      document.querySelectorAll('a[href="#premium"]').forEach(link => {
+        link.addEventListener("click", event => {
+          event.preventDefault();
+          navigatePremium();
+        });
+      });
+
+      function hideSecond() {
+        secondPopup.hidden = true;
+        secondPopup.style.display = "none";
+        returnFocus?.focus?.();
+      }
+
+      function showSecond() {
+        if (secondShown || !firstPopup.hidden) return;
+        secondShown = true;
+        try { sessionStorage.setItem("pdtoolsPremiumPopupSeen", "1"); } catch {}
+        returnFocus = document.activeElement;
+        secondPopup.hidden = false;
+        secondPopup.style.display = "flex";
+        closeSecond.focus();
+      }
+
+      closeSecond.addEventListener("click", hideSecond);
+      secondPopup.addEventListener("click", event => {
+        if (event.target === secondPopup) hideSecond();
+      });
+      goPremium.addEventListener("click", () => {
+        hideSecond();
+        navigatePremium();
+      });
+      document.addEventListener("keydown", event => {
+        if (secondPopup.hidden) return;
+        if (event.key === "Escape") { event.stopImmediatePropagation(); hideSecond(); }
+        if (event.key === "Tab") {
+          if (event.shiftKey && document.activeElement === closeSecond) {
+            event.preventDefault(); goPremium.focus();
+          } else if (!event.shiftKey && document.activeElement === goPremium) {
+            event.preventDefault(); closeSecond.focus();
+          }
+        }
+      }, true);
+
+      let alreadySeen = false;
+      try { alreadySeen = sessionStorage.getItem("pdtoolsPremiumPopupSeen") === "1"; } catch {}
+      if (!alreadySeen && firstPopup) {
+        const observer = new MutationObserver(() => {
+          if (firstPopup.hidden) { observer.disconnect(); showSecond(); }
+        });
+        observer.observe(firstPopup,{attributes:true,attributeFilter:["hidden"]});
+      }
+    })();
+  </script>
 </body>
 </html>
