@@ -71,6 +71,130 @@
       </div>
     </section>
 
+<!-- BANNER DE ASSINATURA PREMIUM -->
+<section id="assinar-premium" style="padding:20px;max-width:1100px;margin:35px auto 0;">
+  <div style="
+    background:#15121d;
+    border:1px solid #392d4b;
+    border-radius:20px;
+    padding:30px 24px;
+    color:#fff;
+    box-sizing:border-box;
+  ">
+
+    <div style="
+      color:#b69aff;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:2px;
+      margin-bottom:20px;
+    ">
+      ✦ PD TOOLS PREMIUM
+    </div>
+
+    <h2 style="font-size:26px;margin:0 0 15px;">
+      Desbloqueie o melhor do PD Tools 💜
+    </h2>
+
+    <p style="color:#bdb5cc;line-height:1.8;margin-bottom:25px;">
+      Tenha acesso às ferramentas exclusivas do PD Tools Premium.
+      Mais recursos, novas possibilidades e ferramentas especiais
+      para facilitar seu dia a dia.
+    </p>
+
+    <div style="height:1px;background:#342b42;margin:25px 0;"></div>
+
+    <h3 style="margin-bottom:18px;font-size:16px;">
+      O que você recebe:
+    </h3>
+
+    <div style="color:#d5cbe5;line-height:2.2;margin-bottom:25px;">
+      <div>✦ Acesso às ferramentas Premium disponíveis</div>
+      <div>✦ Novos recursos e funcionalidades exclusivas</div>
+      <div>✦ 30 dias de acesso após confirmação do Pix</div>
+      <div>✦ Sem renovação automática</div>
+    </div>
+
+    <div style="
+      background:#211b2d;
+      border-radius:12px;
+      padding:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:20px;
+    ">
+      <span style="color:#c9b8ed;">Plano Premium — 30 dias</span>
+      <strong style="font-size:26px;white-space:nowrap;">R$ 5,00</strong>
+    </div>
+
+    <button
+      id="premiumBannerSubscribe"
+      type="button"
+      style="
+        width:100%;
+        background:#a78bfa;
+        color:#160f20;
+        border:0;
+        border-radius:11px;
+        padding:17px;
+        font-size:15px;
+        font-weight:800;
+        cursor:pointer;
+      "
+    >
+      ✦ Quero virar Premium — R$ 5,00
+    </button>
+
+    <p id="premiumBannerMessage" style="
+      text-align:center;
+      color:#c4b5fd;
+      margin:12px 0 0;
+    "></p>
+
+    <p style="
+      text-align:center;
+      color:#a9a0b5;
+      font-size:12px;
+      margin:18px 0 0;
+    ">
+      Pagamento via Pix • Um projeto da Platform Destroyer
+    </p>
+
+  </div>
+</section>
+
+<script>
+  document.getElementById("premiumBannerSubscribe")
+    .addEventListener("click", function () {
+      const originalButton = document.getElementById("subscribePremium");
+      const message = document.getElementById("premiumBannerMessage");
+
+      if (!originalButton) {
+        message.textContent = "Sistema Premium indisponível no momento.";
+        return;
+      }
+
+      if (originalButton.disabled) {
+        message.textContent = "Aguarde, estamos processando sua solicitação.";
+        return;
+      }
+
+      message.textContent = "";
+      originalButton.click();
+
+      const originalMessage = document.getElementById("premiumMessage");
+      if (originalMessage) {
+        setTimeout(() => {
+          if (originalMessage.textContent.trim()) {
+            message.textContent = originalMessage.textContent;
+          }
+        }, 500);
+      }
+    });
+</script>
+<!-- FIM DO BANNER PREMIUM -->
     <!-- DOAÇÕES -->
     <section class="donation-section" id="doacoes">
       <div class="donation-card">
