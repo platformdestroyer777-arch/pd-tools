@@ -75,11 +75,6 @@
   const style = document.createElement("style");
 
   style.textContent = `
-    #premium,
-    .premium-section {
-      display: none !important;
-    }
-
     .filter[data-cat="Premium"] {
       color: #c3b4ff;
       border-color: #9b7bff55;
