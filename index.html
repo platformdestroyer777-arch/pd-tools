@@ -40,16 +40,10 @@
       letter-spacing: 2px;
     }
 
-    .premium-section,
     .donation-section,
     #assinar-premium,
     .tools-section {
       scroll-margin-top: 100px;
-    }
-
-    .premium-section {
-      padding-top: 65px;
-      padding-bottom: 30px;
     }
 
     .donation-section {
@@ -82,7 +76,7 @@
     #assinar-premium {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 20px 28px 30px;
+      padding: 65px 28px 30px;
     }
 
     #assinar-premium > div {
@@ -147,6 +141,12 @@
       text-align: center;
     }
 
+    /* Elementos internos usados pelo pagamento */
+    #premiumPaymentControls {
+      display: none !important;
+    }
+
+    /* Anúncios */
     .pd-ad-overlay {
       position: fixed;
       inset: 0;
@@ -259,6 +259,7 @@
       font-size: 12px;
     }
 
+    /* Janela Pix */
     .pd-pix-overlay {
       position: fixed;
       inset: 0;
@@ -330,13 +331,13 @@
       cursor: pointer;
     }
 
-    @media(max-width:760px) {
+    @media (max-width:760px) {
       .hero::after {
         right: 17px;
       }
 
       #assinar-premium {
-        padding: 20px 17px 30px;
+        padding: 35px 17px 30px;
       }
 
       #assinar-premium > div {
@@ -365,16 +366,24 @@
     </a>
 
     <nav aria-label="Navegação principal">
-      <a href="#premium">Premium</a>
+      <a href="#assinar-premium">Premium</a>
       <a href="#doacoes">Doações</a>
       <a href="#ferramentas">Ferramentas</a>
       <a href="#sobre">Sobre</a>
 
-      <button class="pd-account-trigger" id="pdAccountOpen" type="button">
+      <button
+        class="pd-account-trigger"
+        id="pdAccountOpen"
+        type="button"
+      >
         Entrar / Criar conta
       </button>
 
-      <button class="admin-trigger" id="adminOpen" type="button">
+      <button
+        class="admin-trigger"
+        id="adminOpen"
+        type="button"
+      >
         Painel administrativo
       </button>
     </nav>
@@ -398,7 +407,7 @@
         Crie, converta, organize e resolva tarefas sem complicação.
       </p>
 
-      <a class="primary-btn" href="#premium">
+      <a class="primary-btn" href="#ferramentas">
         Conhecer o PD Tools <b>↗</b>
       </a>
 
@@ -407,151 +416,8 @@
       </div>
     </section>
 
-    <!-- PREMIUM EM DESTAQUE -->
-    <section class="premium-section" id="premium" aria-labelledby="premiumTitle">
-      <div class="premium-header">
-        <div class="premium-label">✦ PD TOOLS PREMIUM</div>
-
-        <h2 id="premiumTitle">
-          Desbloqueie mais possibilidades.
-        </h2>
-
-        <p>
-          Tenha acesso às ferramentas exclusivas disponíveis
-          no PD Tools Premium por apenas R$ 5,00.
-        </p>
-      </div>
-
-      <div class="donation-card premium-plan-card" id="premiumPlan">
-        <div class="donation-label">✦ PLANO PREMIUM</div>
-
-        <h2>Mais ferramentas. Mais liberdade.</h2>
-
-        <p class="donation-description">
-          Aproveite os recursos Premium por 30 dias
-          após a confirmação do pagamento.
-          Sem renovação automática.
-        </p>
-
-        <div class="donation-total">
-          <span>30 dias de acesso</span>
-          <strong>R$ 5,00</strong>
-        </div>
-
-        <button
-          class="donation-submit"
-          id="subscribePremium"
-          type="button"
-        >
-          ✦ Assinar Premium — R$ 5,00 / 30 dias
-        </button>
-
-        <p class="donation-footer">
-          Pagamento via Pix • Acesso após confirmação
-        </p>
-
-        <p
-          class="donation-message"
-          id="premiumMessage"
-          role="status"
-          aria-live="polite"
-        ></p>
-      </div>
-
-      <div class="premium-grid" id="premiumGrid">
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Removedor de fundo</h3>
-          <p>Remova fundos de imagens automaticamente.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>PDF Studio</h3>
-          <p>Una, divida e organize documentos PDF.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Extrator de texto OCR</h3>
-          <p>Extraia textos de imagens e documentos.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>HTML Studio</h3>
-          <p>Edite e visualize códigos HTML.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Criador de banners</h3>
-          <p>Crie banners personalizados.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Conversor de imagens em lote</h3>
-          <p>Converta várias imagens de uma só vez.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>QR Code avançado</h3>
-          <p>Personalize seus QR Codes.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>JSON Studio</h3>
-          <p>Organize e analise arquivos JSON.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Marca d'água em lote</h3>
-          <p>Adicione marcas d'água em várias imagens.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Compressor de PDF</h3>
-          <p>Reduza o tamanho dos seus PDFs.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Criador de currículos</h3>
-          <p>Crie currículos profissionais.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Editor de imagens</h3>
-          <p>Edite e personalize suas imagens.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Criador de legendas SRT</h3>
-          <p>Crie legendas para seus vídeos.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Minificador avançado</h3>
-          <p>Otimize HTML, CSS e JavaScript.</p>
-        </article>
-
-        <article class="premium-card">
-          <span class="premium-lock">🔒 Premium</span>
-          <h3>Criador de sites</h3>
-          <p>Crie páginas usando modelos.</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- BANNER PREMIUM -->
+    <!-- ASSINATURA PREMIUM -->
+    <!-- Os cards Premium ficam apenas na categoria de ferramentas. -->
     <section id="assinar-premium">
       <div>
         <div class="premium-label">✦ ACESSO EXCLUSIVO</div>
@@ -589,7 +455,16 @@
       </div>
     </section>
 
-    <!-- DOAÇÕES EM DESTAQUE -->
+    <!-- CONTROLES INTERNOS DO PAGAMENTO -->
+    <!-- Mantidos para preservar a integração com o JavaScript. -->
+    <div id="premiumPaymentControls" hidden>
+      <button id="subscribePremium" type="button">
+        Assinar Premium
+      </button>
+      <p id="premiumMessage" role="status"></p>
+    </div>
+
+    <!-- DOAÇÕES -->
     <section class="donation-section" id="doacoes">
       <div class="donation-card">
         <div class="donation-label">♡ APOIE O PD TOOLS</div>
@@ -655,7 +530,7 @@
       </div>
     </section>
 
-    <!-- FERRAMENTAS GRATUITAS -->
+    <!-- FERRAMENTAS GRATUITAS E PREMIUM -->
     <section class="tools-section" id="ferramentas">
       <div class="section-head">
         <div>
@@ -1148,6 +1023,8 @@
           textarea.readOnly = true;
           pixBox.appendChild(textarea);
 
+          const copyStatus = addText("p", "");
+
           addButton("Copiar código Pix", async () => {
             try {
               await navigator.clipboard.writeText(data.qr_code);
@@ -1159,8 +1036,6 @@
                 "Selecione e copie o código acima.";
             }
           });
-
-          const copyStatus = addText("p", "");
         }
 
         if (data.ticket_url) {
@@ -1215,6 +1090,11 @@
         if (!client) {
           message.textContent =
             "Sistema de contas indisponível.";
+
+          if (isPremium) {
+            premiumBannerMessage.textContent =
+              message.textContent;
+          }
           return;
         }
 
@@ -1227,6 +1107,11 @@
         }
 
         message.textContent = "Preparando pagamento...";
+
+        if (isPremium) {
+          premiumBannerMessage.textContent =
+            "Preparando pagamento...";
+        }
 
         try {
           const { data, error } =
@@ -1449,9 +1334,6 @@
         }
 
         if (section) {
-          section.hidden = false;
-          section.style.removeProperty("display");
-
           section.scrollIntoView({
             behavior: "smooth",
             block: "start"
@@ -1463,7 +1345,7 @@
       donationClose.addEventListener("click", closeCurrent);
 
       premiumGo.addEventListener("click", () => {
-        goToSection("premium");
+        goToSection("assinar-premium");
       });
 
       donationGo.addEventListener("click", () => {
@@ -1520,8 +1402,7 @@
         }
       }, true);
 
-      // Não usa sessionStorage:
-      // os dois anúncios reaparecem em todo carregamento.
+      // Os dois anúncios reaparecem em toda visita.
       window.addEventListener("load", () => {
         previousFocus = document.activeElement;
         openPopup(0);
