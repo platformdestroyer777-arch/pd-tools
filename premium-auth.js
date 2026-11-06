@@ -1,5 +1,5 @@
 
-/* PD Tools — Login e cadastro dos membros */
+/* PD Tools — Login, cadastro e assinatura Premium */
 
 (() => {
   "use strict";
@@ -50,14 +50,17 @@
   }
 
   function dateBR(value) {
-    return new Date(value).toLocaleDateString(
-      "pt-BR",
-      {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-      }
-    );
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "data indisponível";
+    }
+
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
   }
 
   function showGuest() {
@@ -72,7 +75,7 @@
 
     desc.textContent =
       mode === "login"
-        ? "Entre para acompanhar seu acesso Premium."
+        ? "Entre para acompanhar sua assinatura Premium."
         : "Crie sua conta com e-mail e senha.";
 
     submit.textContent =
@@ -108,7 +111,7 @@
     title.textContent = "Minha conta";
 
     desc.textContent =
-      "Acompanhe seu acesso ao PD Tools Premium.";
+      "Acompanhe sua assinatura do PD Tools Premium.";
 
     form.hidden = true;
     toggle.hidden = true;
@@ -118,7 +121,7 @@
       user.email || "Conta conectada";
 
     premiumStatus.textContent =
-      "Consultando seu Premium...";
+      "Consultando sua assinatura Premium...";
 
     const {
       data,
@@ -133,19 +136,20 @@
 
     if (accessError) {
       premiumStatus.textContent =
-        "Não foi possível consultar o Premium agora.";
+        "Não foi possível consultar sua assinatura agora.";
       return;
     }
 
-    if (
-      data &&
-      new Date(data.expires_at).getTime() > Date.now()
-    ) {
+    const expiration = data?.expires_at
+      ? new Date(data.expires_at).getTime()
+      : 0;
+
+    if (expiration > Date.now()) {
       premiumStatus.textContent =
         `💜 Premium ativo até ${dateBR(data.expires_at)}.`;
     } else {
       premiumStatus.textContent =
-        "🔒 Premium inativo. Doe R$ 5,00 ou mais para obter 30 dias após a confirmação do pagamento.";
+        "🔒 Premium inativo. Assine por R$ 5,00 e tenha acesso às ferramentas exclusivas por 30 dias.";
     }
   }
 
@@ -164,6 +168,7 @@
       await refresh();
     } catch (error) {
       console.error(error);
+
       showMessage(
         "Não foi possível carregar sua conta."
       );
@@ -227,6 +232,7 @@
       await refresh();
     } catch (error) {
       console.error(error);
+
       showMessage(
         "Não foi possível atualizar a tela."
       );
@@ -274,6 +280,7 @@
 
         if (data.session) {
           await refresh();
+
           showMessage(
             "Conta criada com sucesso!"
           );
