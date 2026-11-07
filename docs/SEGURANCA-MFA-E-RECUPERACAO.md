@@ -3,7 +3,7 @@
 ## Implementado
 - Login do administrador com segundo fator (TOTP).
 - Coluna require_mfa em public.admins com false por padrão, preservando o acesso existente.
-- Ao validar o código, a função enable_admin_mfa confirma no banco que existe um fator verificado e que a sessão tem nível aal2; então exige MFA para futuras alterações.
+- Ao validar o código, a endpoint /api/admin-mfa-enable confirma no servidor que existe um fator verificado e que a sessão tem nível aal2; então exige MFA para futuras alterações.
 - RLS de tools, site_settings e Storage site-assets exige aal2 quando require_mfa=true.
 - A auditoria administrativa Pix também exige aal2 quando a proteção está ativa.
 - SRI SHA-384 fixo nas três bibliotecas CDN, lockfile de dependências e auditoria automática.
