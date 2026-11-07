@@ -1,5 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+const centavos = valor => {
+  if (!/^\d+(?:\.\d{1,2})?$/.test(String(valor))) return null;
+  const numero = Number(valor);
+  return Number.isFinite(numero) ? Math.round(numero * 100) : null;
+};
+
 // Diagnóstico administrativo somente de leitura.
 // Não libera, cancela, reembolsa ou modifica qualquer pagamento.
 export default async function handler(req, res) {
@@ -45,7 +51,7 @@ export default async function handler(req, res) {
 
     const { data: pending, error: paymentError, count } = await client
       .from("premium_payments")
-      .select("provider_order_id,payment_type,created_at", { count: "exact" })
+      .select("id,provider_order_id,provider_payment_id,payment_type,amount,currency,created_at", { count: "exact" })
       .eq("provider", "mercadopago")
       .eq("status", "pending")
       .order("created_at", { ascending: true })
@@ -86,10 +92,33 @@ export default async function handler(req, res) {
           return;
         }
         const order = await response.json();
-        if (String(order.id) !== String(payment.provider_order_id)) {
+        if (
+          String(order.id) !== String(payment.provider_order_id) ||
+          String(order.external_reference) !== String(payment.id)
+        ) {
           summary.inconclusivos++;
         } else if (order.status === "processed" && order.status_detail === "accredited") {
-          summary.creditados++;
+          const transactions = order.transactions?.payments;
+          const remotePayment = Array.isArray(transactions) && transactions.length === 1
+            ? transactions[0] : null;
+          const expected = centavos(payment.amount);
+          if (
+            payment.currency !== "BRL" ||
+            !remotePayment?.id ||
+            String(remotePayment.id) !== String(payment.provider_payment_id) ||
+            remotePayment.payment_method?.id !== "pix" ||
+            remotePayment.status !== "processed" ||
+            remotePayment.status_detail !== "accredited" ||
+            expected === null ||
+            centavos(order.total_amount) !== expected ||
+            centavos(order.total_paid_amount) !== expected ||
+            centavos(remotePayment.amount) !== expected ||
+            centavos(remotePayment.paid_amount) !== expected
+          ) {
+            summary.inconclusivos++;
+          } else {
+            summary.creditados++;
+          }
         } else if (["cancelled", "canceled", "rejected", "expired"].includes(order.status)) {
           summary.cancelados_ou_rejeitados++;
         } else {
