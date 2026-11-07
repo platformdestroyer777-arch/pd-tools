@@ -9,7 +9,7 @@ const supabaseClient = window.supabase?.createClient?.(
   SUPABASE_KEY
 ) || null;
 
-const defaultTools = [
+const builtInTools = [
   {id:"qr",name:"Gerador de QR Code",desc:"Transforme links e textos em QR Codes.",cat:"Criatividade",icon:"▦",active:true},
   {id:"counter",name:"Contador de texto",desc:"Conte palavras, caracteres e linhas.",cat:"Texto",icon:"¶",active:true},
   {id:"password",name:"Gerador de senhas",desc:"Crie senhas fortes e aleatórias.",cat:"Segurança",icon:"✳",active:true},
@@ -21,6 +21,13 @@ const defaultTools = [
   {id:"json",name:"Formatador JSON",desc:"Organize e valide seus dados JSON.",cat:"Desenvolvimento",icon:"{}",active:true},
   {id:"base64",name:"Codificador Base64",desc:"Codifique ou decodifique textos.",cat:"Desenvolvimento",icon:"⌘",active:true}
 ];
+
+// Catálogo Supabase é preferido. O arquivo local mantém as 80 ferramentas
+// acessíveis quando a CDN ou a API externa está temporariamente indisponível.
+const defaultTools = Array.isArray(window.PD_TOOLS_FALLBACK) &&
+  window.PD_TOOLS_FALLBACK.length > 0
+  ? window.PD_TOOLS_FALLBACK
+  : builtInTools;
 
 let tools = defaultTools;
 let category = "Todas";
