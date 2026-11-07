@@ -968,7 +968,7 @@
   // Mantém a busca Premium funcionando.
   if (search) {
     search.addEventListener("input", () => {
-      if (premiumSelected && premiumVerified) {
+      if (premiumSelected) {
         renderPremiumCards();
       }
     });
