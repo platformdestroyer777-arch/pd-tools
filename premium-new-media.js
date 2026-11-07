@@ -4,7 +4,10 @@
 const T=window.PDNewTools;if(!T)return;
 const reg=T.register;
 function videoFromFile(f){
-  if(!f||!f.type.startsWith("video/"))throw Error("Selecione um vídeo compatível (MP4 ou WebM).");
+  if (!f || !["video/mp4", "video/webm", "video/quicktime"].includes(f.type)) {
+    throw Error("Selecione MP4, WebM ou MOV compatível com seu navegador.");
+  }
+  if (f.size > 250 * 1024 * 1024) throw Error("Vídeo acima de 250 MB.");
   const url=URL.createObjectURL(f),v=document.createElement("video");
   v.preload="auto";v.muted=true;v.playsInline=true;v.src=url;
   const ready=new Promise((res,rej)=>{

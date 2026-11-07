@@ -49,15 +49,29 @@ export default async function handler(req, res) {
     }
     if (!admin) return res.status(403).json({ erro: "Acesso administrativo necessário" });
 
-    if (admin.require_mfa === true) {
-      const { data: assurance, error: assuranceError } =
-        await client.auth.mfa.getAuthenticatorAssuranceLevel(token);
-      if (assuranceError || !assurance) {
-        return res.status(503).json({ erro: "Verificação adicional indisponível" });
-      }
-      if (assurance.currentLevel !== "aal2") {
-        return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
-      }
+    // A auditoria financeira é privilegiada: todo administrador precisa
+    // de AAL2 atual e de um fator ainda cadastrado, sem exceções.
+    const { data: assurance, error: assuranceError } =
+      await client.auth.mfa.getAuthenticatorAssuranceLevel(token);
+    if (assuranceError || !assurance) {
+      return res.status(503).json({ erro: "Verificação adicional indisponível" });
+    }
+    if (assurance.currentLevel !== "aal2" || assurance.nextLevel !== "aal2") {
+      return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
+    }
+
+    // Cada auditoria pode consultar até 15 pedidos externos. A limitação
+    // transacional impede consultas excessivas mesmo entre instâncias serverless.
+    const { data: auditAllowed, error: auditRateError } = await client.rpc(
+      "claim_admin_audit_slot", { p_user_id: userId }
+    );
+    if (auditRateError) {
+      console.error("Limite de auditoria indisponível:", auditRateError.message);
+      return res.status(503).json({ erro: "Proteção de auditoria indisponível" });
+    }
+    if (auditAllowed !== true) {
+      res.setHeader("Retry-After", "600");
+      return res.status(429).json({ erro: "Limite de auditorias atingido. Tente novamente mais tarde." });
     }
 
     const { data: pending, error: paymentError, count } = await client

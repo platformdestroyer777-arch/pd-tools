@@ -41,3 +41,5 @@ jobs:
         run: node scripts/live-smoke.mjs
       - name: Testes ampliados de segurança HTTP (sem pagamentos)
         run: node scripts/audit-security.mjs
+      - name: Validar reforço de segurança do painel e Premium
+        run: node scripts/check-security-hardening.mjs

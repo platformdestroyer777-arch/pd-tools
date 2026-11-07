@@ -106,9 +106,9 @@ export default async function handler(req, res) {
 
     const user = data.user;
 
-    if (!user.email) {
-      return res.status(400).json({
-        erro: "Sua conta precisa ter um e-mail válido"
+    if (!user.email || !user.email_confirmed_at) {
+      return res.status(403).json({
+        erro: "Confirme o e-mail da sua conta antes de gerar um Pix"
       });
     }
 
