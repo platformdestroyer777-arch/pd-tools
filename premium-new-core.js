@@ -36,7 +36,29 @@
   function toBlob(c,type="image/png",quality=0.92){
     return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(Error("Não foi possível exportar.")),type,quality));
   }
-  function protect(fn) { return async function(...args){try{await fn(...args)}catch(e){error(e)}} }
+  // Every Premium action is authorized again immediately before running.
+  // A valid session when the modal first opened is not enough after expiry.
+  function protect(fn) {
+    let busy = false;
+    return async function(...args) {
+      if (busy) return;
+      busy = true;
+      const button = this?.tagName === "BUTTON" ? this : null;
+      if (button) button.disabled = true;
+      try {
+        if (!(await allowed())) {
+          status("🔒 Seu Premium não está ativo. Renove para continuar.");
+          return;
+        }
+        await fn(...args);
+      } catch (err) {
+        error(err);
+      } finally {
+        busy = false;
+        if (button && button.isConnected) button.disabled = false;
+      }
+    };
+  }
   function register(id,handler){if(handlers.has(id))throw Error("Ferramenta duplicada: "+id);handlers.set(id,handler)}
   async function allowed() {
     const client=(typeof supabaseClient!=="undefined"&&supabaseClient)||window.supabaseClient;
