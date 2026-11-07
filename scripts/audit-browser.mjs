@@ -256,6 +256,92 @@ async function main(){
  report.functional.push("Editor de volume WAV");
  await closeModal(paid);
 
+
+ // Funções Premium com processamento real de imagens e arquivos locais.
+ const openPaid=async(id,selector)=>{
+   await paid.evaluate(id=>document.querySelector('[data-premium-tool="'+id+'"]')?.click(),id);
+   await paid.locator(selector).waitFor({state:"attached",timeout:7000});
+ };
+ const expectFile=async(id,extension)=>{
+   const event=paid.waitForEvent("download",{timeout:10000});
+   await paid.locator("#"+id).click();
+   const name=(await event).suggestedFilename();
+   check(name.endsWith(extension),"Saída inválida em "+id+": "+name);
+ };
+ await openPaid("photo-collage","#pnImages");
+ await paid.locator("#pnImages").setInputFiles([
+   {name:"a.png",mimeType:"image/png",buffer:imageBuffer},
+   {name:"b.png",mimeType:"image/png",buffer:imageBuffer}
+ ]);
+ await paid.locator("#pnCreate").click();
+ check((await resultText(paid)).includes("Colagem criada"),"Colagem não gerou imagem");
+ await expectFile("pnSave",".png");report.functional.push("Colagem Premium gerada com 2 fotos");await closeModal(paid);
+
+ await openPaid("svg-png","#pnSvgText");
+ await paid.locator("#pnMake").click();
+ check((await resultText(paid)).includes("convertido"),"SVG não converteu");
+ await expectFile("pnSave",".png");report.functional.push("SVG Premium convertido e exportado");await closeModal(paid);
+
+ await openPaid("device-mockup","#pnPicture");
+ await paid.locator("#pnPicture").setInputFiles({name:"imagem.png",mimeType:"image/png",buffer:imageBuffer});
+ await paid.locator("#pnMake").click();
+ check((await resultText(paid)).includes("criado"),"Mockup não gerado");
+ await expectFile("pnSave",".png");report.functional.push("Mockup Premium gerado");await closeModal(paid);
+
+ await openPaid("thumbnail-maker","#pnPicture");
+ await paid.locator("#pnPicture").setInputFiles({name:"imagem.png",mimeType:"image/png",buffer:imageBuffer});
+ await paid.locator("#pnMake").click();
+ check((await resultText(paid)).includes("criada"),"Miniatura não gerada");
+ await expectFile("pnSave",".png");report.functional.push("Miniatura Premium 1280x720");await closeModal(paid);
+
+ await openPaid("privacy-blur","#pnPicture");
+ await paid.locator("#pnPicture").setInputFiles({name:"imagem.png",mimeType:"image/png",buffer:imageBuffer});
+ await paid.locator("#pnLoad").click();
+ const blurCanvas=paid.locator("#pnCanvas");
+ await blurCanvas.waitFor({state:"visible"});
+ const bounds=await blurCanvas.boundingBox();
+ await paid.mouse.move(bounds.x+bounds.width*.2,bounds.y+bounds.height*.2);
+ await paid.mouse.down();
+ await paid.mouse.move(bounds.x+bounds.width*.7,bounds.y+bounds.height*.7,{steps:5});
+ await paid.mouse.up();
+ check((await resultText(paid)).includes("área"),"Não houve marcação de área");
+ await expectFile("pnSave",".png");report.functional.push("Ocultação Premium com tarja e download");await closeModal(paid);
+
+ check(await paid.evaluate(()=>typeof JSZip==="function"),"JSZip indisponível para ferramentas ZIP");
+ await openPaid("favicon-maker","#pnLogo");
+ await paid.locator("#pnLogo").setInputFiles({name:"logo.png",mimeType:"image/png",buffer:imageBuffer});
+ await paid.locator("#pnMake").click();
+ check((await resultText(paid)).includes("Ícone"),"Ícone favicon não gerado");
+ await expectFile("pnSave",".zip");report.functional.push("Pacote de favicons ZIP");await closeModal(paid);
+
+ const exampleFiles=[
+  {name:"a.txt",mimeType:"text/plain",buffer:Buffer.from("Exemplo A","utf8")},
+  {name:"b.txt",mimeType:"text/plain",buffer:Buffer.from("Exemplo B","utf8")}
+ ];
+ for(const id of ["file-organizer","bulk-rename","zip-maker"]){
+   await openPaid(id,"#pnFiles");
+   await paid.locator("#pnFiles").setInputFiles(exampleFiles);
+   await expectFile("pnSave",".zip");
+   report.functional.push("ZIP Premium: "+id);await closeModal(paid);
+ }
+
+ // Teste real do leitor QR usando QR Code gerado na sessão do navegador.
+ const qrBase64=await paid.evaluate(async()=>{
+   if(typeof QRCode!=="function")return null;
+   const div=document.createElement("div");document.body.append(div);
+   new QRCode(div,{text:"https://pdtools.vercel.app/audit",width:190,height:190});
+   await new Promise(resolve=>setTimeout(resolve,120));
+   const cv=div.querySelector("canvas");
+   const result=cv?.toDataURL("image/png").split(",")[1]||null;
+   div.remove();return result;
+ });
+ check(qrBase64,"Biblioteca QRCode externa não carregou");
+ await openPaid("qr-reader","#pnPicture");
+ await paid.locator("#pnPicture").setInputFiles({name:"qr.png",mimeType:"image/png",buffer:Buffer.from(qrBase64,"base64")});
+ await paid.locator("#pnRead").click();
+ await paid.waitForFunction(()=>document.querySelector("#pnDecoded")?.value.includes("pdtools.vercel.app/audit"),null,{timeout:9000});
+ report.functional.push("Leitor QR Premium decodificou QR real");await closeModal(paid);
+
  const errors=report.pageErrors.filter(x=>!/Failed to load resource|net::ERR|is not defined/i.test(x));
  check(errors.length===0,"Exceções JavaScript no navegador: "+errors.slice(0,5).join(" | "));
  console.log("RESULTADO: "+JSON.stringify({free:report.free.length,premium:report.premium.length,functions:report.functional,pageErrors:report.pageErrors.slice(0,5),failures:report.failures}));
