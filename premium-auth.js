@@ -123,33 +123,28 @@
     premiumStatus.textContent =
       "Consultando sua assinatura Premium...";
 
-    const {
-      data,
-      error: accessError
-    } = await client
-      .from("premium_access")
-      .select("expires_at")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (version !== refreshVersion) return;
-
-    if (accessError) {
-      premiumStatus.textContent =
-        "Não foi possível consultar sua assinatura agora.";
+    const { data: sessionData, error: sessionError } =
+      await client.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (sessionError || !token) {
+      premiumStatus.textContent = "Entre novamente para conferir o Premium.";
       return;
     }
 
-    const expiration = data?.expires_at
-      ? new Date(data.expires_at).getTime()
-      : 0;
-
-    if (expiration > Date.now()) {
-      premiumStatus.textContent =
-        `💜 Premium ativo até ${dateBR(data.expires_at)}.`;
-    } else {
-      premiumStatus.textContent =
-        "🔒 Premium inativo. Assine por R$ 5,00 e tenha acesso às ferramentas exclusivas por 30 dias.";
+    try {
+      const response = await fetch("/api/premium-status", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Falha na consulta Premium");
+      const result = await response.json();
+      if (version !== refreshVersion) return;
+      premiumStatus.textContent = result.active === true
+        ? `💜 Premium ativo até ${dateBR(result.expires_at)}.`
+        : "🔒 Premium inativo. Assine por R$ 5,00 e tenha acesso às ferramentas exclusivas por 30 dias.";
+    } catch (error) {
+      if (version !== refreshVersion) return;
+      premiumStatus.textContent = "Não foi possível consultar sua assinatura agora.";
     }
   }
 
