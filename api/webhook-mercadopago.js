@@ -246,21 +246,18 @@ export default async function handler(req, res) {
     // A order já foi autenticada por HMAC, consultada com nosso token MP,
     // e sua external_reference corresponde ao UUID gerado pelo servidor.
     if (registro.status === "pending" &&
-        registro.provider_order_id == null &&
-        registro.provider_payment_id == null) {
-      const { data: vinculado, error: vinculoErro } = await supabase
-        .from("premium_payments")
-        .update({
-          provider_order_id: String(order.id),
-          provider_payment_id: String(payment.id)
-        })
-        .eq("id", registro.id)
-        .eq("status", "pending")
-        .is("provider_order_id", null)
-        .is("provider_payment_id", null)
-        .select("provider_order_id, provider_payment_id")
-        .maybeSingle();
-
+        (!registro.provider_order_id || !registro.provider_payment_id) &&
+        (!registro.provider_order_id || registro.provider_order_id === String(order.id)) &&
+        (!registro.provider_payment_id || registro.provider_payment_id === String(payment.id))) {
+      const updates = {};
+      if (!registro.provider_order_id) updates.provider_order_id = String(order.id);
+      if (!registro.provider_payment_id) updates.provider_payment_id = String(payment.id);
+      let query = supabase.from("premium_payments")
+        .update(updates).eq("id", registro.id).eq("status", "pending");
+      if (!registro.provider_order_id) query = query.is("provider_order_id", null);
+      if (!registro.provider_payment_id) query = query.is("provider_payment_id", null);
+      const { data: vinculado, error: vinculoErro } = await query
+        .select("provider_order_id, provider_payment_id").maybeSingle();
       if (vinculoErro) {
         console.error("Erro ao conciliar order:", vinculoErro.message);
         return res.status(503).json({ erro: "Tente reenviar a notificação" });
