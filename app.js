@@ -2326,10 +2326,6 @@ async function abrirAdmin() {
   $("#adminModal").classList.add("show");
 }
 
-  renderAdmin("overview");
-  $("#adminModal").classList.add("show");
-}
-
 async function atualizarListaAdmin() {
   const { data, error } = await supabaseClient
     .from("tools")
