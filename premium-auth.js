@@ -27,8 +27,18 @@
   const userLabel = byId("pdAccountUser");
   const premiumStatus = byId("pdAccountStatus");
 
+  if (!client?.auth?.getSession) {
+    trigger?.addEventListener("click", () => {
+      if (typeof toast === "function") {
+        toast("Sistema de contas temporariamente indisponível. Tente novamente.");
+      }
+    });
+    console.warn("PD Tools: Supabase indisponível; login temporariamente desativado.");
+    return;
+  }
+
   if (
-    !client || !overlay || !trigger ||
+    !overlay || !trigger ||
     !closeButton || !form || !email ||
     !password || !submit || !profile ||
     !logout || !toggle || !title ||
