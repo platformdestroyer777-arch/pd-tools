@@ -5,10 +5,13 @@
  */
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { setTimeout as pause } from "node:timers/promises";
 import { chromium } from "playwright";
 
 const base = "http://127.0.0.1:8765";
+const securityHeaders=JSON.parse(readFileSync("vercel.json","utf8")).headers.flatMap(x=>x.headers);
+const csp=securityHeaders.find(x=>x.key==="Content-Security-Policy").value;
 const server = spawn("python3",["-m","http.server","8765","--bind","127.0.0.1"],{stdio:"ignore"});
 let browser;
 const report = { free:[],premium:[],functional:[],failures:[],pageErrors:[] };
@@ -42,6 +45,10 @@ async function newPage(premium){
  page.on("pageerror",error=>{report.pageErrors.push((premium?"paid ":"guest ")+error.message)});
  // The next line only affects this local audit page; never touches production.
  await page.addInitScript({content:"window.__PD_AUDIT_PREMIUM="+JSON.stringify(premium)+";\n"+authStub});
+ await page.route(base+"/",async route=>{
+   const response=await route.fetch();
+   await route.fulfill({response,headers:{...response.headers(),"Content-Security-Policy":csp}});
+ });
  await page.route("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0",r=>r.abort());
  await page.route("**/popups-ui.js",r=>r.fulfill({status:200,contentType:"text/javascript",body:"// ads disabled only in browser testing"}));
  await page.route("**/api/**",r=>r.fulfill({status:401,contentType:"application/json",body:'{"erro":"Acesso negado em ambiente de testes"}'}));
@@ -104,6 +111,26 @@ async function main(){
   await closeModal(guest);
  }
  console.log("ABERTURA_FREE: "+report.free.length+"/80");
+ await openFree(guest,"calc");
+ await guest.locator("#calcInput").fill("12*(2+3)");
+ await guest.locator("#calcGo").click();
+ check((await guest.locator("#calcResult").innerText()).trim()==="60","Calculadora básica incompatível com CSP");
+ await closeModal(guest);
+ report.functional.push("Calculadora básica: resultado 60 sob CSP real");
+
+ await openFree(guest,"scientific-calculator");
+ await guest.locator("#scientificInput").fill("sin(30)");
+ await guest.locator("#scientificAngle").selectOption("deg");
+ await guest.locator("#scientificGo").click();
+ check(Math.abs(Number(await guest.locator("#scientificResult").innerText())-0.5)<1e-7,"Calculadora científica incompatível com CSP");
+ await guest.locator("#scientificInput").fill("window.constructor.constructor('alert(1)')()");
+ await guest.locator("#scientificGo").click();
+ check((await guest.locator("#scientificResult").innerText()).includes("não permitido")||
+       (await guest.locator("#scientificResult").innerText()).includes("Caractere"),
+       "Calculadora científica permitiu código JavaScript malicioso");
+ await closeModal(guest);
+ report.functional.push("Calculadora científica: trigonometria e bloqueio de código malicioso sob CSP real");
+
 
  // Injeções armazenadas simuladas: todos os campos do catálogo devem ser escapados.
  const xssToolId="audit-xss-dummy";
