@@ -25,6 +25,8 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - name: Calcular integridade das bibliotecas CDN
         run: node scripts/check-cdn-sri.mjs --verify
+      - name: Calcular integridade de bibliotecas PDF e OCR
+        run: node scripts/check-premium-deps-sri.mjs
       - name: Verificar sintaxe, catálogo e segurança
         run: node scripts/check-project.mjs
       - name: Calcular hash do leitor QR multiplataforma
@@ -37,3 +39,5 @@ jobs:
         run: node scripts/check-premium.mjs
       - name: Smoke HTTP sem credenciais e sem pagamentos
         run: node scripts/live-smoke.mjs
+      - name: Testes ampliados de segurança HTTP (sem pagamentos)
+        run: node scripts/audit-security.mjs

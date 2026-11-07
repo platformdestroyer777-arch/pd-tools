@@ -1205,6 +1205,144 @@ function formatDateInZone(date, zone) {
   return new Intl.DateTimeFormat("pt-BR", {timeZone:zone,dateStyle:"full",timeStyle:"short"}).format(date);
 }
 
+
+/**
+ * Avaliador matemático sem eval/Function.
+ * Interpreta apenas números, operações e funções explicitamente permitidas.
+ * Compatível com CSP sem unsafe-eval.
+ */
+function evaluateSafeMath(expression, functions = {}) {
+  const source = String(expression || "")
+    .trim()
+    .toLowerCase()
+    .replace(/π/g, "pi")
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/\^/g, "**");
+  if (!source || source.length > 400) {
+    throw new Error("Informe uma expressão de até 400 caracteres.");
+  }
+
+  const tokens = [];
+  for (let i = 0; i < source.length;) {
+    const c = source[i];
+    if (/\s/.test(c)) { i++; continue; }
+    const remaining = source.slice(i);
+    const number = remaining.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/);
+    if (number) {
+      tokens.push({type: "number", value: Number(number[0])});
+      i += number[0].length;
+    } else {
+      const word = remaining.match(/^[a-z]+/);
+      if (word) {
+        tokens.push({type: "word", value: word[0]});
+        i += word[0].length;
+      } else if (remaining.startsWith("**")) {
+        tokens.push({type: "op", value: "**"});
+        i += 2;
+      } else if ("+-*/%(),".includes(c)) {
+        tokens.push({type: "op", value: c});
+        i++;
+      } else {
+        throw new Error("Caractere não permitido na expressão.");
+      }
+    }
+    if (tokens.length > 250) {
+      throw new Error("Expressão muito complexa.");
+    }
+  }
+
+  let position = 0;
+  let depth = 0;
+  const current = () => tokens[position]?.value;
+  const consume = value => {
+    if (current() === value) {position++; return true;}
+    return false;
+  };
+  const finite = value => {
+    if (!Number.isFinite(value)) {
+      throw new Error("Resultado indefinido. Confira os valores.");
+    }
+    return value;
+  };
+
+  function primary() {
+    if (++depth > 45) throw new Error("Expressão muito aninhada.");
+    try {
+      const token = tokens[position];
+      if (!token) throw new Error("Expressão incompleta.");
+      if (token.type === "number") {
+        position++;
+        return finite(token.value);
+      }
+      if (consume("(")) {
+        const value = addition();
+        if (!consume(")")) throw new Error("Falta fechar parênteses.");
+        return value;
+      }
+      if (token.type === "word") {
+        position++;
+        const name = token.value;
+        if (name === "pi") return Math.PI;
+        if (name === "e") return Math.E;
+        if (!Object.hasOwn(functions, name) || typeof functions[name] !== "function") {
+          throw new Error("Função não permitida: " + name);
+        }
+        if (!consume("(")) throw new Error("Use parênteses após " + name + ".");
+        const args = [];
+        if (!consume(")")) {
+          do {
+            args.push(addition());
+            if (args.length > 20) throw new Error("Muitos argumentos.");
+          } while (consume(","));
+          if (!consume(")")) throw new Error("Falta fechar chamada de função.");
+        }
+        return finite(functions[name](...args));
+      }
+      throw new Error("Símbolo inesperado na expressão.");
+    } finally {
+      depth--;
+    }
+  }
+
+  function power() {
+    const base = primary();
+    if (consume("**")) return finite(Math.pow(base, unary()));
+    return base;
+  }
+  function unary() {
+    if (consume("+")) return unary();
+    if (consume("-")) return finite(-unary());
+    return power();
+  }
+  function multiplication() {
+    let value = unary();
+    for (;;) {
+      const op = current();
+      if (!["*", "/", "%"].includes(op)) break;
+      position++;
+      const right = unary();
+      value = finite(op === "*" ? value * right : op === "/" ? value / right : value % right);
+    }
+    return value;
+  }
+  function addition() {
+    let value = multiplication();
+    for (;;) {
+      const op = current();
+      if (op !== "+" && op !== "-") break;
+      position++;
+      const right = multiplication();
+      value = finite(op === "+" ? value + right : value - right);
+    }
+    return value;
+  }
+
+  const result = finite(addition());
+  if (position !== tokens.length) throw new Error("Expressão contém elementos não reconhecidos.");
+  return result;
+}
+
 function wireTool(id) {
   if (id === "qr") {
     $("#qrMake").onclick = () => {
@@ -1800,9 +1938,7 @@ function wireTool(id) {
       try {
         const expression = $("#calcInput").value;
 
-        if (!/^[\d+\-*/().%\s]+$/.test(expression)) throw new Error();
-
-        const result = Function('"use strict";return (' + expression + ')')();
+        const result = evaluateSafeMath(expression);
 
         $("#calcResult").textContent = Number.isFinite(result)
           ? String(result)
@@ -2092,21 +2228,15 @@ function wireTool(id) {
   if (id === "scientific-calculator") {
     $("#scientificGo").onclick=()=>{
       try {
-        let expr=$("#scientificInput").value.trim().toLowerCase().replace(/π/g,"pi").replace(/×/g,"*").replace(/÷/g,"/").replace(/\^/g,"**");
+        const expr=$("#scientificInput").value.trim();
         if (!expr) throw new Error("Digite uma expressão.");
-        const allowed=["sin","cos","tan","asin","acos","atan","sqrt","abs","log","ln","exp","floor","ceil","round","min","max","pow","pi","e"];
-        const identifiers=expr.match(/[a-z]+/g)||[];
-        if (identifiers.some(name=>!allowed.includes(name))) throw new Error("A expressão contém uma função ou palavra não permitida.");
         const degrees=$("#scientificAngle").value==="deg";
         const fns={
           sin:x=>Math.sin(degrees?x*Math.PI/180:x), cos:x=>Math.cos(degrees?x*Math.PI/180:x), tan:x=>Math.tan(degrees?x*Math.PI/180:x),
           asin:x=>degrees?Math.asin(x)*180/Math.PI:Math.asin(x), acos:x=>degrees?Math.acos(x)*180/Math.PI:Math.acos(x), atan:x=>degrees?Math.atan(x)*180/Math.PI:Math.atan(x),
           sqrt:Math.sqrt,abs:Math.abs,log:Math.log10,ln:Math.log,exp:Math.exp,floor:Math.floor,ceil:Math.ceil,round:Math.round,min:Math.min,max:Math.max,pow:Math.pow,pi:Math.PI,e:Math.E
         };
-        const safeExpr=expr.replace(/\bpi\b/g,"pi").replace(/\be\b/g,"e");
-        if (!/^[0-9a-z+*/%().,\s*-]+$/.test(safeExpr)) throw new Error("Use apenas números, operadores e funções listadas.");
-        const names=Object.keys(fns);
-        const result=Function(...names,`"use strict";return (${safeExpr});`)(...names.map(n=>fns[n]));
+        const result=evaluateSafeMath(expr,fns);
         if (!Number.isFinite(result)) throw new Error("Resultado indefinido. Confira os valores.");
         $("#scientificResult").textContent=formatNumber(result,10);
       } catch(error) { $("#scientificResult").textContent=error.message||"Expressão inválida."; }

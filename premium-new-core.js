@@ -83,5 +83,6 @@
       if(card&&grid.contains(card)){ev.preventDefault();void open(card.dataset.premiumTool)}
     });
   }
-  window.PDNewTools={register,handlers,allowed,esc};
+  // Não expor o mapa de implementações ao escopo global.
+  window.PDNewTools=Object.freeze({register,allowed,esc});
 })();

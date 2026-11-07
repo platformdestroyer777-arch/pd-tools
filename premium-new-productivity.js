@@ -16,7 +16,19 @@ function parseCSV(input,sep=","){
   row.push(cell);if(row.some(v=>v!==""))rows.push(row);
   return rows;
 }
-function encodeCSV(rows,sep=","){return rows.map(row=>row.map(cell=>{const s=String(cell??"");return /[",\r\n;]/.test(s)||s.includes(sep)?'"'+s.replace(/"/g,'""')+'"':s}).join(sep)).join("\r\n")}
+// Impede que conteúdo de células seja executado como fórmula ao abrir
+// arquivos CSV no Excel/LibreOffice. Dados simples permanecem legíveis.
+function encodeCSV(rows,sep=","){
+  return rows.map(row=>row.map(cell=>{
+    const raw=String(cell??"");
+    const risky=/^[\s\u0000-\u001f]*[=+@\t\r]/.test(raw) ||
+      /^[\s\u0000-\u001f]*-(?!\d+(?:[.,]\d+)?\s*$)/.test(raw);
+    const value=risky?"'"+raw:raw;
+    return /[",\r\n;]/.test(value)||value.includes(sep)
+      ? '"'+value.replace(/"/g,'""')+'"'
+      : value;
+  }).join(sep)).join("\r\n");
+}
 function requireZip(){if(!window.JSZip)throw Error("Biblioteca ZIP não disponível.");return new JSZip()}
 const clean=name=>String(name).replace(/[/\\<>:"|?*\x00-\x1f]/g,"_").replace(/^\.+$/,"arquivo").slice(0,130)||"arquivo";
 reg("csv-editor",async h=>{

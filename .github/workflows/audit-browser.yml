@@ -1,0 +1,29 @@
+name: Auditoria Chromium — 115 ferramentas
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Instalar dependências do projeto
+        run: npm ci --ignore-scripts --no-fund
+      - name: Instalar Playwright somente para auditoria
+        run: npm install --no-save --ignore-scripts --no-fund --no-audit playwright@1.56.1
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verificar 80 gratuitas e 35 Premium no navegador
+        run: node scripts/audit-browser.mjs

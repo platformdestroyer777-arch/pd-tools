@@ -51,6 +51,16 @@ assert.equal(data[1][0],"Ana, B.");
 assert.equal(data[1][1],'Diz "oi"');
 assert.equal(csv.encodeCSV(data).includes('"Ana, B."'),true);
 
+// CSV formula injection: exporting untrusted cells must not run formulas in Excel.
+const attackCells=[["label","payload"],["a","=HYPERLINK(\"https://evil.example\",\"Click\")"],["b","+SUM(1,2)"],["c","@SUM(2,2)"],["d","-cmd|' /C calc'!A0"],["e","-123.45"]];
+const safeCSV=csv.encodeCSV(attackCells);
+assert.ok(safeCSV.includes("'+SUM(1,2)"));
+assert.ok(safeCSV.includes("'@SUM(2,2)"));
+assert.ok(safeCSV.includes("'-cmd"));
+assert.ok(safeCSV.includes("'-")===false || !safeCSV.includes("'-123.45"),"Negative numeric values should remain numeric");
+assert.ok(!safeCSV.includes('\r\nb,+SUM'));
+
+
 const subtitle=expose("premium-new-creators.js",["convertSubs"]);
 const srt='1\n00:00:01,000 --> 00:00:03,000\nOlá, mundo!';
 const vtt=subtitle.convertSubs(srt,"vtt");
