@@ -6,7 +6,7 @@ import vm from "node:vm";
 // Verificações sem credenciais, sem acesso à produção e sem criar cobranças.
 const jsFiles = [
   "app.js", "tools-fallback.js", "payments-ui.js", "popups-ui.js",
-  "premium-auth.js", "premium-filter.js", "premium-image-batch.js",
+  "premium-auth.js", "admin-mfa.js", "premium-filter.js", "premium-image-batch.js",
   "premium-qrcode.js", "premium-watermark.js", "premium-extras.js",
   "api/auditar-pix.js", "api/consultar-pix.js", "api/criar-pix.js",
   "api/premium-status.js", "api/webhook-mercadopago.js"
@@ -47,5 +47,20 @@ assert.doesNotMatch(frontend, /SUPABASE_SERVICE_ROLE_KEY|MERCADOPAGO_ACCESS_TOKE
 assert.match(readFileSync("api/criar-pix.js", "utf8"), /claim_pix_checkout_slot/, "Proteção anti-abuso do Pix ausente");
 assert.match(readFileSync("api/webhook-mercadopago.js", "utf8"), /timingSafeEqual/, "Validação HMAC ausente");
 assert.match(readFileSync("api/premium-status.js", "utf8"), /auth\.getUser/, "Consulta Premium sem autenticação");
+const mfaScript = readFileSync("admin-mfa.js", "utf8");
+const mfaMigration = readFileSync("supabase/migrations/20261107_admin_mfa_enforcement.sql", "utf8");
+assert.match(html, /id="pdAdminMfaDialog"/, "Diálogo MFA ausente");
+assert.match(html, /src="admin-mfa.js"/, "Script MFA não carregado");
+assert.match(mfaScript, /challengeAndVerify/, "Desafio TOTP ausente");
+assert.match(mfaScript, /enable_admin_mfa/, "Ativação do MFA no banco ausente");
+assert.match(mfaMigration, /require_mfa/, "MFA não marcado na tabela admins");
+assert.match(mfaMigration, /auth\.jwt\(\)\s*->>\s*'aal'/, "Validação AAL2 ausente nas policies");
+assert.match(mfaMigration, /auth\.mfa_factors/, "Verificação de fator persistido ausente");
+assert.match(mfaMigration, /storage\.objects/, "Uploads do admin sem MFA");
+assert.match(readFileSync("api/auditar-pix.js", "utf8"), /getAuthenticatorAssuranceLevel/, "Auditoria Pix sem MFA");
+for (const file of ["api/criar-pix.js", "api/consultar-pix.js", "api/webhook-mercadopago.js"]) {
+  assert.match(readFileSync(file, "utf8"), /AbortSignal\.timeout/, "Timeout do Mercado Pago ausente: " + file);
+}
+
 
 console.log("PD Tools: sintaxe de " + jsFiles.length + " arquivos JS, catálogo offline (80), HTML, CSP, SEO e contratos Pix validados.");
