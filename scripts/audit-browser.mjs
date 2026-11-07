@@ -145,6 +145,77 @@ async function main(){
  report.functional.push("Campos de catálogo escapam HTML, SVG e atributos maliciosos");
 
 
+
+ const freeOperations=[
+  ["names",{nameWord:"Kraz"},"nameMake","nameResult","Kraz"],
+  ["ideas",{},"ideaMake","ideaResult","1."],
+  ["slogans",{sloganName:"Platform Destroyer"},"sloganMake","sloganResult","Platform Destroyer"],
+  ["palette",{},"paletteMake","paletteResult","#"],
+  ["gradients",{},"gradientMake","gradientResult","linear-gradient"],
+  ["color-combinations",{},"combinationMake","combinationResult","#"],
+  ["symbols",{} ,null,"symbolResult","★"],
+  ["fonts",{fontInput:"Teste"},"fontMake","fontResult","Negrito"],
+  ["decorative-text",{decorativeInput:"PD Tools"},"decorativeMake","decorativeResult","PD Tools"],
+  ["counter",{countText:"um dois tres"},null,"countResult","3 palavras"],
+  ["remove-spaces",{removeSpacesInput:"abc  def"},"removeSpacesGo","removeSpacesResult","abc def"],
+  ["reverse-text",{reverseTextInput:"abc"},"reverseTextGo","reverseTextResult","cba"],
+  ["find-replace",{replaceText:"casa casa",replaceFind:"casa",replaceWith:"lar"},"replaceGo","replaceResult","lar lar"],
+  ["lorem-ipsum",{},"loremGo","loremResult","Lorem ipsum"],
+  ["line-splitter",{lineSource:"abc def"},"lineGo","lineResult","abc"],
+  ["remove-duplicates",{duplicatesInput:"x\nx\ny"},"duplicatesGo","duplicatesResult","y"],
+  ["text-diff",{compareTextA:"abc",compareTextB:"abd"},"compareGo","compareResult","abc"],
+  ["password",{},"passMake","passResult",null],
+  ["units",{unitValue:"1000"},"unitGo","unitResult","km"],
+  ["json",{jsonInput:'{"a":1}'},"jsonGo","jsonResult",'"a": 1'],
+  ["base64",{b64Input:"abc"},"b64Encode","b64Result","YWJj"],
+  ["password-check",{passwordCheckInput:"ABCdef09875!!"},"passwordCheckGo","passwordCheckResult","Forte"],
+  ["pin-generator",{},"pinGo","pinResult",null],
+  ["random-password",{},"randomPassGo","randomPassResult",null],
+  ["md5",{hashInput:"abc"},"hashGo","hashResult","900150983cd24fb0d6963f7d28e17f72"],
+  ["sha256",{hashInput:"abc"},"hashGo","hashResult","ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"],
+  ["url-encode",{urlTextInput:"a b"},"urlGo","urlResult","a%20b"],
+  ["url-decode",{urlTextInput:"a%20b"},"urlGo","urlResult","a b"],
+  ["token-generator",{},"tokenGo","tokenResult",null],
+  ["uuid-generator",{},"uuidGo","uuidResult","-"],
+  ["percentage",{percentageRate:"10",percentageBase:"200"},"percentageGo","percentageResult","20"],
+  ["rule-of-three",{ruleA:"2",ruleB:"4",ruleC:"6"},"ruleGo","ruleResult","12"],
+  ["average",{averageInput:"1 2 3"},"averageGo","averageResult","2"],
+  ["simple-interest",{interestPrincipal:"100",interestRate:"10",interestTime:"2"},"interestGo","interestResult","20,00"],
+  ["compound-interest",{interestPrincipal:"100",interestRate:"10",interestTime:"2"},"interestGo","interestResult","21,00"],
+  ["discount",{discountPrice:"200",discountRate:"10"},"discountGo","discountResult","180,00"],
+  ["bmi",{bmiWeight:"80",bmiHeight:"2"},"bmiGo","bmiResult","20"],
+  ["area-perimeter",{geometryA:"2"},"geometryGo","geometryResult","4"],
+  ["temperature",{temperatureValue:"0"},"temperatureGo","temperatureResult","0"],
+  ["storage",{storageValue:"1024"},"storageGo","storageResult","1024"],
+  ["speed",{speedValue:"36"},"speedGo","speedResult","36"],
+  ["time-converter",{timeValue:"60"},"timeConvertGo","timeConvertResult","60"],
+  ["energy",{energyValue:"1000"},"energyGo","energyResult","1000"],
+  ["angles",{angleValue:"180"},"angleGo","angleResult","180"],
+  ["pressure",{pressureValue:"1000"},"pressureGo","pressureResult","1000"],
+  ["number-bases",{baseNumberInput:"1010"},"baseConvertGo","baseConvertResult","1010"]
+ ];
+ for(const [id,values,action,output,part] of freeOperations){
+   await openFree(guest,id);
+   for(const [field,value] of Object.entries(values)){
+     const el=guest.locator("#"+field);
+     if(await el.evaluate(e=>e.tagName==="SELECT"))await el.selectOption(value);
+     else await el.fill(value);
+   }
+   if(action)await guest.locator("#"+action).click();
+   const out=guest.locator("#"+output);
+   await guest.waitForFunction(({output,part})=>{
+     const target=document.getElementById(output);
+     const val=target?.value??target?.innerText??"";
+     return typeof val==="string"&&val.trim().length>0&&(!part||val.includes(part));
+   },{output,part},{timeout:6500}).catch(async err=>{
+     const actual=await out.evaluate(e=>e.value??e.innerText??"");
+     throw Error("Operação grátis falhou "+id+": "+String(actual).slice(0,220)+" / "+err.message);
+   });
+   report.functional.push("Operação grátis validada: "+id);
+   await closeModal(guest);
+ }
+ console.log("OPERAÇÕES_FREE: "+freeOperations.length+"/"+freeOperations.length);
+
  const imageBase64=await guest.evaluate(()=>{
    const c=document.createElement("canvas");c.width=100;c.height=80;
    const ctx=c.getContext("2d");
