@@ -25,7 +25,7 @@ assert.equal(new Set(registered).size,20,"New tool IDs duplicated");
 
 const catalog=source("premium-filter.js");
 const toolsSection=catalog.split("const premiumTools = [")[1]?.split("];")[0]||"";
-const ids=[...toolsSection.matchAll(/\b id: "([^"]+)"/g)].map(x=>x[1]);
+const ids=[...toolsSection.matchAll(/\bid:\s*"([^"]+)"/g)].map(x=>x[1]);
 assert.equal(ids.length,35,"Expected 35 Premium tools in the catalog");
 assert.equal(new Set(ids).size,35,"Duplicate Premium tool IDs");
 for(const id of expected)assert.ok(ids.includes(id),"Missing in catalog: "+id);
