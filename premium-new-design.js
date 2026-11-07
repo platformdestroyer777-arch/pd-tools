@@ -37,7 +37,7 @@ function safeSvg(svg){
  if(parsed.querySelector("parsererror")||parsed.documentElement.localName!=="svg")throw Error("SVG inválido.");
  const root=parsed.documentElement;
  const forbidden=["script","foreignObject","iframe","image","audio","video","animate","animateTransform","animateMotion","set","style"];
- root.querySelectorAll("*").forEach(el=>{
+ [root,...root.querySelectorAll("*")].forEach(el=>{
    if(forbidden.includes(el.localName)||el.namespaceURI!=="http://www.w3.org/2000/svg"){el.remove();return}
    Array.from(el.attributes).forEach(attr=>{
      const name=attr.name.toLowerCase(),value=attr.value.toLowerCase();
