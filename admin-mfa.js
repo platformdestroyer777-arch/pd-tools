@@ -57,6 +57,22 @@
     return !error && !!admin;
   }
 
+  async function enableInServer(client) {
+    const { data, error } = await client.auth.getSession();
+    const token = data?.session?.access_token;
+    if (error || !token) throw new Error("Sessão indisponível");
+    const response = await fetch("/api/admin-mfa-enable", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token },
+      cache: "no-store"
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.enabled !== true) {
+      throw new Error("Não foi possível confirmar a proteção no servidor");
+    }
+    return true;
+  }
+
   async function open(nextMode = "setup") {
     if (busy) return;
     reset();
@@ -83,10 +99,7 @@
         factorId = verified.id;
         if (currentLevel === "aal2") {
           // Finaliza a ativação somente quando a sessão e um fator estiverem validados.
-          const { data: enabled, error: gateError } = await client.rpc("enable_admin_mfa");
-          if (gateError || enabled !== true) {
-            throw new Error("Não foi possível ativar a proteção MFA no banco");
-          }
+          await enableInServer(client);
           info.textContent = "Seu 2FA está ativado e a sessão já foi verificada. Seu painel tem proteção adicional.";
           setStatus("Proteção no banco ativa.");
           showCode(false);
@@ -153,8 +166,9 @@
       const client = getClient();
       const { error } = await client.auth.mfa.challengeAndVerify({ factorId, code });
       if (error) throw error;
-      const { data: enabled, error: gateError } = await client.rpc("enable_admin_mfa");
-      if (gateError || enabled !== true) {
+      try {
+        await enableInServer(client);
+      } catch (enableError) {
         setStatus("2FA confirmado, mas a proteção do banco não foi ativada. Abra esta tela novamente para concluir.");
         return;
       }
