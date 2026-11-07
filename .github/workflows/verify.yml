@@ -23,5 +23,7 @@ jobs:
         run: npm ci --ignore-scripts --no-fund
       - name: Auditar vulnerabilidades de dependências
         run: npm audit --omit=dev --audit-level=high
+      - name: Calcular integridade das bibliotecas CDN
+        run: node scripts/check-cdn-sri.mjs
       - name: Verificar sintaxe, catálogo e segurança
         run: node scripts/check-project.mjs
