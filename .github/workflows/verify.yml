@@ -17,5 +17,12 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
+      - name: Preparar lockfile de dependências (sem scripts)
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          echo PDTOOLS_LOCK_BEGIN
+          base64 -w 0 package-lock.json
+          echo
+          echo PDTOOLS_LOCK_END
       - name: Verificar sintaxe, catálogo e segurança
         run: node scripts/check-project.mjs
