@@ -2313,13 +2313,25 @@ async function verificarAdmin() {
 
   const { data, error } = await supabaseClient
     .from("admins")
-    .select("user_id")
+    .select("user_id,require_mfa")
     .eq("user_id", session.user.id)
     .maybeSingle();
 
   if (error || !data) {
     console.error("Falha ao verificar administrador:", error);
     return false;
+  }
+
+  // Exige AAL2 apenas depois da ativação confirmada no banco.
+  // RLS continua sendo a autorização efetiva para operações administrativas.
+  if (data.require_mfa === true) {
+    const { data: assurance, error: assuranceError } =
+      await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceError || assurance?.currentLevel !== "aal2") {
+      if (window.PD_ADMIN_MFA?.open) await window.PD_ADMIN_MFA.open("verify");
+      else toast("Confirme o código 2FA antes de acessar o painel.");
+      return false;
+    }
   }
 
   adminSession = session;
@@ -2331,6 +2343,7 @@ async function abrirAdmin() {
   const autorizado = await verificarAdmin();
 
   if (!autorizado) {
+    if (window.PD_ADMIN_MFA?.isOpen()) return;
     toast(
       "Entre com sua conta administrativa e clique novamente em Painel administrativo."
     );
@@ -2584,12 +2597,15 @@ function renderAdmin(tab) {
         <b>${new Set(tools.map(t => t.cat)).size}</b> categorias<br><br>
         PD Tools conectado ao Supabase.
         <br><br>
+        <button class="secondary" id="adminMfaSettings" type="button">🔐 Proteger painel com 2FA</button><br><br>
         <button class="secondary" id="adminPixAudit" type="button">Verificar Pix pendentes</button>
         <p id="adminPixAuditStatus" role="status" aria-live="polite" style="white-space:pre-line;margin:10px 0"></p>
         <br>
         <button class="secondary" id="adminLogout">Sair da conta administrativa</button>
       </div>
     `;
+
+    $("#adminMfaSettings").onclick = () => window.PD_ADMIN_MFA?.open("setup");
 
     $("#adminPixAudit").onclick = async () => {
       const button = $("#adminPixAudit");

@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     // Apenas a API do Mercado Pago pode provar que houve um Pix creditado.
     const remote = await fetch(
       `https://api.mercadopago.com/v1/orders/${encodeURIComponent(record.provider_order_id)}`,
-      { headers: { Authorization: `Bearer ${mpToken}`, Accept: "application/json" } }
+      { headers: { Authorization: `Bearer ${mpToken}`, Accept: "application/json" }, signal: AbortSignal.timeout(9000) }
     );
     if (!remote.ok) {
       console.error("Falha MP na conciliação:", remote.status);

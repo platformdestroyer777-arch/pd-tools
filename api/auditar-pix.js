@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
     const { data: admin, error: adminError } = await client
       .from("admins")
-      .select("user_id")
+      .select("user_id,require_mfa")
       .eq("user_id", userId)
       .maybeSingle();
     if (adminError) {
@@ -48,6 +48,17 @@ export default async function handler(req, res) {
       return res.status(503).json({ erro: "Falha na autorização" });
     }
     if (!admin) return res.status(403).json({ erro: "Acesso administrativo necessário" });
+
+    if (admin.require_mfa === true) {
+      const { data: assurance, error: assuranceError } =
+        await client.auth.mfa.getAuthenticatorAssuranceLevel(token);
+      if (assuranceError || !assurance) {
+        return res.status(503).json({ erro: "Verificação adicional indisponível" });
+      }
+      if (assurance.currentLevel !== "aal2") {
+        return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
+      }
+    }
 
     const { data: pending, error: paymentError, count } = await client
       .from("premium_payments")

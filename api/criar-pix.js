@@ -159,6 +159,7 @@ export default async function handler(req, res) {
       "https://api.mercadopago.com/v1/orders",
       {
         method: "POST",
+        signal: AbortSignal.timeout(12000),
         headers: {
           Authorization: `Bearer ${mpToken}`,
           "Content-Type": "application/json",
