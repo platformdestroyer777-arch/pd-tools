@@ -102,14 +102,31 @@
   }
 
   const loaded = new Map();
+  // Bibliotecas externas travadas por URL e SHA-384. Uma mudança de CDN
+  // será bloqueada em vez de executar código inesperado.
+  const verifiedScripts = Object.freeze({
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js":
+      "sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI",
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js":
+      "sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e",
+    "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js":
+      "sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F"
+  });
 
   function script(url, check) {
     if (check()) return Promise.resolve();
     if (loaded.has(url)) return loaded.get(url);
 
     const promise = new Promise((resolve, reject) => {
+      const integrity = verifiedScripts[url];
+      if (!integrity) {
+        reject(new Error("Biblioteca externa não autorizada."));
+        return;
+      }
       const s = document.createElement("script");
       s.src = url;
+      s.integrity = integrity;
+      s.crossOrigin = "anonymous";
 
       s.onload = () => check()
         ? resolve()
