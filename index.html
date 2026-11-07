@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="fixes.css">
   <link rel="stylesheet" href="premium-auth.css">
   <link rel="stylesheet" href="premium-tools.css">
+  <link rel="stylesheet" href="premium-marketing.css">
 
   <style>
     .hero {
@@ -423,19 +424,54 @@
         <div class="premium-label">✦ ACESSO EXCLUSIVO</div>
 
         <h2>
-          O próximo nível da sua produtividade.
+          35 ferramentas exclusivas. Um só lugar.
         </h2>
 
         <p>
-          Desbloqueie os recursos Premium disponíveis
-          e tenha mais possibilidades em um único lugar.
+          Crie GIFs, miniaturas, edite arquivos em lote e muito mais.
+          Tudo isso por R$ 5,00 durante 30 dias.
         </p>
 
+        <div class="pd-premium-count" aria-label="35 ferramentas exclusivas">✦ 35 ferramentas Premium <span aria-hidden="true">·</span> 20 novidades</div>
+
+        <div class="pd-premium-showcase">
+          <h3>Veja o que você consegue criar</h3>
+          <p>Exemplos ilustrativos dos recursos disponíveis no Premium.</p>
+          <div class="pd-premium-tabs" role="group" aria-label="Exemplos de ferramentas Premium">
+            <button type="button" data-pd-example="gif" aria-pressed="true">🎬 Vídeo → GIF</button>
+            <button type="button" data-pd-example="miniatura" aria-pressed="false">📸 Miniaturas</button>
+            <button type="button" data-pd-example="arquivo" aria-pressed="false">📦 Arquivos</button>
+            <button type="button" data-pd-example="audio" aria-pressed="false">🎵 Áudio</button>
+          </div>
+          <div id="pdPremiumExample" class="pd-premium-example" role="status" aria-live="polite">
+            <div><strong>Transforme vídeos em GIFs</strong><p>Selecione um trecho e baixe seu GIF.</p></div>
+          </div>
+        </div>
+
         <div class="premium-benefits">
-          <div>✦ Ferramentas Premium disponíveis</div>
-          <div>✦ Recursos exclusivos</div>
-          <div>✦ Acesso durante 30 dias</div>
+          <div>✦ 35 ferramentas exclusivas em um único catálogo</div>
+          <div>✦ Edição de imagens, áudio, arquivos e desenvolvimento</div>
+          <div>✦ 30 dias de acesso após a confirmação do Pix</div>
           <div>✦ Sem renovação automática</div>
+        </div>
+
+        <div class="pd-premium-comparison">
+          <h3>Grátis ou Premium? Você escolhe.</h3>
+          <div class="pd-plan-grid">
+            <div class="pd-plan-mini">
+              <h4>PD Tools Grátis</h4>
+              <b>R$ 0</b>
+              <p>80 ferramentas gratuitas para tarefas do dia a dia. Sem assinatura.</p>
+            </div>
+            <div class="pd-plan-mini premium">
+              <h4>PD Tools Premium</h4>
+              <b>R$ 5,00 / 30 dias</b>
+              <p>As 80 ferramentas gratuitas + 35 exclusivas, incluindo os 20 novos recursos.</p>
+            </div>
+          </div>
+          <button id="premiumExplore" class="pd-premium-explore" type="button">
+            Explorar todas as 35 ferramentas Premium ↗
+          </button>
         </div>
 
         <div class="donation-total">
@@ -444,14 +480,32 @@
         </div>
 
         <button id="premiumBannerSubscribe" type="button">
-          ✦ Quero virar Premium — R$ 5,00
+          ✦ Desbloquear 35 ferramentas — R$ 5,00
         </button>
 
         <p id="premiumBannerMessage" role="status"></p>
 
         <p class="donation-footer">
-          Pagamento via Pix • Platform Destroyer
+          Pagamento via Pix • Acesso após confirmação • Sem renovação automática
         </p>
+        <div class="pd-premium-faq">
+          <details>
+            <summary>O valor de R$ 5,00 é mensal automático?</summary>
+            <p>Não. O pagamento é único e libera 30 dias de acesso. Não há cobrança automática.</p>
+          </details>
+          <details>
+            <summary>Quando as ferramentas são desbloqueadas?</summary>
+            <p>Após a confirmação do pagamento Pix pelo Mercado Pago e a atualização do status da sua conta.</p>
+          </details>
+          <details>
+            <summary>As ferramentas gratuitas continuam disponíveis?</summary>
+            <p>Sim. O Premium adiciona 35 recursos exclusivos, sem retirar as 80 ferramentas gratuitas.</p>
+          </details>
+          <details>
+            <summary>Posso conhecer as ferramentas antes de assinar?</summary>
+            <p>Sim. Toque em “Explorar todas as 35 ferramentas Premium” para ver o catálogo. O uso exige acesso Premium ativo.</p>
+          </details>
+        </div>
       </div>
     </section>
 
@@ -931,6 +985,12 @@
   <script src="premium-qrcode.js"></script>
   <script src="premium-watermark.js"></script>
   <script src="premium-extras.js"></script>
+  <script src="premium-new-core.js"></script>
+  <script src="premium-new-media.js"></script>
+  <script src="premium-new-design.js"></script>
+  <script src="premium-new-productivity.js"></script>
+  <script src="premium-new-creators.js"></script>
+  <script src="premium-marketing.js"></script>
 
   <!-- PAGAMENTOS -->
   <script src="payments-ui.js"></script>
