@@ -186,12 +186,12 @@ async function main(){
   ["bmi",{bmiWeight:"80",bmiHeight:"2"},"bmiGo","bmiResult","20"],
   ["area-perimeter",{geometryA:"2"},"geometryGo","geometryResult","4"],
   ["temperature",{temperatureValue:"0"},"temperatureGo","temperatureResult","0"],
-  ["storage",{storageValue:"1024"},"storageGo","storageResult","1024"],
+  ["storage",{storageValue:"1024"},"storageGo","storageResult","GB"],
   ["speed",{speedValue:"36"},"speedGo","speedResult","36"],
   ["time-converter",{timeValue:"60"},"timeConvertGo","timeConvertResult","60"],
-  ["energy",{energyValue:"1000"},"energyGo","energyResult","1000"],
+  ["energy",{energyValue:"1000"},"energyGo","energyResult","J"],
   ["angles",{angleValue:"180"},"angleGo","angleResult","180"],
-  ["pressure",{pressureValue:"1000"},"pressureGo","pressureResult","1000"],
+  ["pressure",{pressureValue:"1000"},"pressureGo","pressureResult","Pa"],
   ["number-bases",{baseNumberInput:"1010"},"baseConvertGo","baseConvertResult","1010"]
  ];
  for(const [id,values,action,output,part] of freeOperations){
