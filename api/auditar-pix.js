@@ -49,15 +49,15 @@ export default async function handler(req, res) {
     }
     if (!admin) return res.status(403).json({ erro: "Acesso administrativo necessário" });
 
-    if (admin.require_mfa === true) {
-      const { data: assurance, error: assuranceError } =
-        await client.auth.mfa.getAuthenticatorAssuranceLevel(token);
-      if (assuranceError || !assurance) {
-        return res.status(503).json({ erro: "Verificação adicional indisponível" });
-      }
-      if (assurance.currentLevel !== "aal2") {
-        return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
-      }
+    // A auditoria financeira é privilegiada: todo administrador precisa
+    // de AAL2 atual e de um fator ainda cadastrado, sem exceções.
+    const { data: assurance, error: assuranceError } =
+      await client.auth.mfa.getAuthenticatorAssuranceLevel(token);
+    if (assuranceError || !assurance) {
+      return res.status(503).json({ erro: "Verificação adicional indisponível" });
+    }
+    if (assurance.currentLevel !== "aal2" || assurance.nextLevel !== "aal2") {
+      return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
     }
 
     const { data: pending, error: paymentError, count } = await client
