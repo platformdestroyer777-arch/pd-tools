@@ -2313,7 +2313,7 @@ async function verificarAdmin() {
 
   const { data, error } = await supabaseClient
     .from("admins")
-    .select("user_id")
+    .select("user_id,require_mfa")
     .eq("user_id", session.user.id)
     .maybeSingle();
 
@@ -2322,22 +2322,16 @@ async function verificarAdmin() {
     return false;
   }
 
-  // Exige TOTP apenas depois de o administrador ter cadastrado um fator.
-  // A proteção efetiva de alterações é aplicada em RLS no Supabase.
-  const { data: assurance, error: assuranceError } =
-    await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
-
-  if (assuranceError || !assurance) {
-    toast("Não foi possível confirmar o nível de segurança da sessão.");
-    return false;
-  }
-  if (assurance.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
-    if (window.PD_ADMIN_MFA?.open) {
-      await window.PD_ADMIN_MFA.open("verify");
-    } else {
-      toast("A verificação em duas etapas está indisponível.");
+  // Exige AAL2 apenas depois da ativação confirmada no banco.
+  // RLS continua sendo a autorização efetiva para operações administrativas.
+  if (data.require_mfa === true) {
+    const { data: assurance, error: assuranceError } =
+      await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceError || assurance?.currentLevel !== "aal2") {
+      if (window.PD_ADMIN_MFA?.open) await window.PD_ADMIN_MFA.open("verify");
+      else toast("Confirme o código 2FA antes de acessar o painel.");
+      return false;
     }
-    return false;
   }
 
   adminSession = session;
