@@ -27,5 +27,7 @@ jobs:
         run: node scripts/check-cdn-sri.mjs --verify
       - name: Verificar sintaxe, catálogo e segurança
         run: node scripts/check-project.mjs
+      - name: Validar funcionalidades e catálogo Premium (35)
+        run: node scripts/check-premium.mjs
       - name: Smoke HTTP sem credenciais e sem pagamentos
         run: node scripts/live-smoke.mjs
