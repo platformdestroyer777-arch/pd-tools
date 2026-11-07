@@ -24,13 +24,25 @@
   }
   function textDownload(text,name,mime="text/plain") { download(new Blob([text],{type:mime+";charset=utf-8"}),name); }
   async function image(fileObj) {
-    if(!fileObj || !fileObj.type.startsWith("image/")) throw Error("Selecione uma imagem válida.");
-    const url=URL.createObjectURL(fileObj);
-    return await new Promise((resolve,reject)=>{
-      const img=new Image();
-      img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
-      img.onerror=()=>{URL.revokeObjectURL(url);reject(Error("Não foi possível abrir a imagem."))};
-      img.src=url;
+    if (!fileObj || !/^image\/(?:png|jpeg|webp|gif|bmp|avif)$/i.test(fileObj.type)) {
+      throw Error("Selecione PNG, JPG, WebP, GIF, BMP ou AVIF. Para SVG, use o conversor específico.");
+    }
+    if (fileObj.size > 40 * 1024 * 1024) throw Error("Imagem acima de 40 MB.");
+    const url = URL.createObjectURL(fileObj);
+    return await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const pixels = img.naturalWidth * img.naturalHeight;
+        if (!pixels || pixels > 25_000_000) {
+          reject(Error("Resolução de imagem acima de 25 milhões de pixels."));
+        } else resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(Error("Não foi possível abrir a imagem."));
+      };
+      img.src = url;
     });
   }
   function toBlob(c,type="image/png",quality=0.92){
