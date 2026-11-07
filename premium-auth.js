@@ -27,8 +27,18 @@
   const userLabel = byId("pdAccountUser");
   const premiumStatus = byId("pdAccountStatus");
 
+  if (!client?.auth?.getSession) {
+    trigger?.addEventListener("click", () => {
+      if (typeof toast === "function") {
+        toast("Sistema de contas temporariamente indisponível. Tente novamente.");
+      }
+    });
+    console.warn("PD Tools: Supabase indisponível; login temporariamente desativado.");
+    return;
+  }
+
   if (
-    !client || !overlay || !trigger ||
+    !overlay || !trigger ||
     !closeButton || !form || !email ||
     !password || !submit || !profile ||
     !logout || !toggle || !title ||
@@ -248,9 +258,19 @@
     }
 
     if (userPassword.length < 8) {
-      showMessage(
-        "A senha precisa ter pelo menos 8 caracteres."
-      );
+      showMessage("A senha precisa ter pelo menos 8 caracteres.");
+      return;
+    }
+
+    // Proteção adicional de UX no plano Free; o Supabase Auth continua
+    // responsável pela validação no servidor.
+    if (mode === "signup" &&
+        (userPassword.length < 12 ||
+         !/[a-z]/.test(userPassword) ||
+         !/[A-Z]/.test(userPassword) ||
+         !/[0-9]/.test(userPassword) ||
+         !/[^A-Za-z0-9]/.test(userPassword))) {
+      showMessage("Para criar a conta, use ao menos 12 caracteres com maiúscula, minúscula, número e símbolo.");
       return;
     }
 

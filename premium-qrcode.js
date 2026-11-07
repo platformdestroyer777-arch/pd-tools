@@ -31,43 +31,26 @@
   }
 
   async function hasPremium() {
-    const client = getClient();
-
-    if (!client) {
-      throw new Error("Supabase indisponível.");
-    }
+    const client = (typeof supabaseClient !== "undefined" && supabaseClient)
+      || window.supabaseClient || null;
+    if (!client?.auth?.getSession) return false;
 
     const { data: sessionData, error: sessionError } =
       await client.auth.getSession();
+    if (sessionError) throw sessionError;
 
-    if (sessionError) {
-      throw sessionError;
-    }
+    const token = sessionData?.session?.access_token;
+    if (!token) return false;
 
-    if (!sessionData?.session?.user) {
-      return false;
-    }
-
-    const { data: userData, error: userError } =
-      await client.auth.getUser();
-
-    if (userError || !userData?.user) {
-      return false;
-    }
-
-    const { data, error } = await client
-      .from("premium_access")
-      .select("expires_at")
-      .eq("user_id", userData.user.id)
-      .maybeSingle();
-
-    if (error) {
-      throw error;
-    }
-
-    const expires = Date.parse(data?.expires_at || "");
-
-    return Number.isFinite(expires) && expires > Date.now();
+    // Verificação confiável no servidor; não usa a hora do navegador.
+    const response = await fetch("/api/premium-status", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store"
+    });
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error("Não foi possível verificar o Premium.");
+    const result = await response.json();
+    return result.active === true;
   }
 
   function loadQRLibrary() {

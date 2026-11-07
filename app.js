@@ -9,7 +9,7 @@ const supabaseClient = window.supabase?.createClient?.(
   SUPABASE_KEY
 ) || null;
 
-const defaultTools = [
+const builtInTools = [
   {id:"qr",name:"Gerador de QR Code",desc:"Transforme links e textos em QR Codes.",cat:"Criatividade",icon:"▦",active:true},
   {id:"counter",name:"Contador de texto",desc:"Conte palavras, caracteres e linhas.",cat:"Texto",icon:"¶",active:true},
   {id:"password",name:"Gerador de senhas",desc:"Crie senhas fortes e aleatórias.",cat:"Segurança",icon:"✳",active:true},
@@ -21,6 +21,13 @@ const defaultTools = [
   {id:"json",name:"Formatador JSON",desc:"Organize e valide seus dados JSON.",cat:"Desenvolvimento",icon:"{}",active:true},
   {id:"base64",name:"Codificador Base64",desc:"Codifique ou decodifique textos.",cat:"Desenvolvimento",icon:"⌘",active:true}
 ];
+
+// Catálogo Supabase é preferido. O arquivo local mantém as 80 ferramentas
+// acessíveis quando a CDN ou a API externa está temporariamente indisponível.
+const defaultTools = Array.isArray(window.PD_TOOLS_FALLBACK) &&
+  window.PD_TOOLS_FALLBACK.length > 0
+  ? window.PD_TOOLS_FALLBACK
+  : builtInTools;
 
 let tools = defaultTools;
 let category = "Todas";
@@ -2577,9 +2584,45 @@ function renderAdmin(tab) {
         <b>${new Set(tools.map(t => t.cat)).size}</b> categorias<br><br>
         PD Tools conectado ao Supabase.
         <br><br>
+        <button class="secondary" id="adminPixAudit" type="button">Verificar Pix pendentes</button>
+        <p id="adminPixAuditStatus" role="status" aria-live="polite" style="white-space:pre-line;margin:10px 0"></p>
+        <br>
         <button class="secondary" id="adminLogout">Sair da conta administrativa</button>
       </div>
     `;
+
+    $("#adminPixAudit").onclick = async () => {
+      const button = $("#adminPixAudit");
+      const output = $("#adminPixAuditStatus");
+      button.disabled = true;
+      output.textContent = "Consultando pedidos pendentes no Mercado Pago...";
+      try {
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !sessionData?.session?.access_token) {
+          throw new Error("Entre novamente com sua conta administrativa.");
+        }
+        const response = await fetch("/api/auditar-pix", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+          cache: "no-store"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.erro || "Auditoria indisponível");
+        output.textContent =
+          `Registros pendentes: ${result.total_pendentes}\n` +
+          `Consultados: ${result.analisados}\n` +
+          `Creditados no Mercado Pago: ${result.creditados}\n` +
+          `Ainda pendentes: ${result.ainda_pendentes}\n` +
+          `Cancelados ou rejeitados: ${result.cancelados_ou_rejeitados}\n` +
+          `Inconclusivos: ${result.inconclusivos}\n` +
+          `Falhas de consulta: ${result.falhas_consulta}\n` +
+          "Esta consulta não modifica pagamentos nem assinaturas.";
+      } catch (error) {
+        output.textContent = error.message || "Falha ao consultar pagamentos.";
+      } finally {
+        button.disabled = false;
+      }
+    };
 
     $("#adminLogout").onclick = async () => {
       await supabaseClient.auth.signOut();

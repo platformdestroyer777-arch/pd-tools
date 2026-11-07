@@ -19,8 +19,8 @@
     return;
   }
 
-  if (typeof supabaseClient === "undefined") {
-    console.error("PD Tools: Supabase indisponível.");
+  if (typeof supabaseClient === "undefined" || !supabaseClient?.auth?.getSession) {
+    console.warn("PD Tools Premium: autenticação temporariamente indisponível.");
     return;
   }
 
