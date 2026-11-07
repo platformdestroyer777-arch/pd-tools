@@ -8,7 +8,7 @@ const jsFiles = [
   "app.js", "tools-fallback.js", "payments-ui.js", "popups-ui.js",
   "premium-auth.js", "admin-mfa.js", "premium-filter.js", "premium-image-batch.js",
   "premium-qrcode.js", "premium-watermark.js", "premium-extras.js",
-  "api/auditar-pix.js", "api/consultar-pix.js", "api/criar-pix.js",
+  "api/admin-mfa-enable.js", "api/auditar-pix.js", "api/consultar-pix.js", "api/criar-pix.js",
   "api/premium-status.js", "api/webhook-mercadopago.js"
 ];
 
@@ -52,10 +52,10 @@ const mfaMigration = readFileSync("supabase/migrations/20261107_admin_mfa_enforc
 assert.match(html, /id="pdAdminMfaDialog"/, "Diálogo MFA ausente");
 assert.match(html, /src="admin-mfa.js"/, "Script MFA não carregado");
 assert.match(mfaScript, /challengeAndVerify/, "Desafio TOTP ausente");
-assert.match(mfaScript, /enable_admin_mfa/, "Ativação do MFA no banco ausente");
+assert.match(mfaScript, /\/api\/admin-mfa-enable/, "Ativação do MFA no backend ausente");
 assert.match(mfaMigration, /require_mfa/, "MFA não marcado na tabela admins");
 assert.match(mfaMigration, /auth\.jwt\(\)\s*->>\s*'aal'/, "Validação AAL2 ausente nas policies");
-assert.match(mfaMigration, /auth\.mfa_factors/, "Verificação de fator persistido ausente");
+assert.match(mfaMigration, /DROP FUNCTION IF EXISTS public\.enable_admin_mfa/, "RPC pública antiga não removida");
 assert.match(mfaMigration, /storage\.objects/, "Uploads do admin sem MFA");
 assert.match(readFileSync("api/auditar-pix.js", "utf8"), /getAuthenticatorAssuranceLevel/, "Auditoria Pix sem MFA");
 for (const file of ["api/criar-pix.js", "api/consultar-pix.js", "api/webhook-mercadopago.js"]) {
@@ -64,3 +64,8 @@ for (const file of ["api/criar-pix.js", "api/consultar-pix.js", "api/webhook-mer
 
 
 console.log("PD Tools: sintaxe de " + jsFiles.length + " arquivos JS, catálogo offline (80), HTML, CSP, SEO e contratos Pix validados.");
+
+const mfaBackend = readFileSync("api/admin-mfa-enable.js", "utf8");
+assert.match(mfaBackend, /getAuthenticatorAssuranceLevel/, "Servidor MFA não verifica AAL2");
+assert.match(mfaBackend, /auth\.getUser/, "Servidor MFA não valida JWT");
+assert.match(mfaBackend, /require_mfa:\s*true/, "Servidor MFA não ativa proteção");
