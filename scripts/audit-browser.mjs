@@ -44,8 +44,8 @@ async function newPage(premium){
  await page.addInitScript({content:"window.__PD_AUDIT_PREMIUM="+JSON.stringify(premium)+";\n"+authStub});
  await page.route("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0",r=>r.abort());
  await page.route("**/popups-ui.js",r=>r.fulfill({status:200,contentType:"text/javascript",body:"// ads disabled only in browser testing"}));
- await page.route("**/api/premium-status",r=>r.fulfill({status:200,contentType:"application/json",body:JSON.stringify({active:premium,expires_at:premium?"2027-01-01T00:00:00Z":null})}));
  await page.route("**/api/**",r=>r.fulfill({status:401,contentType:"application/json",body:'{"erro":"Acesso negado em ambiente de testes"}'}));
+ await page.route("**/api/premium-status",r=>r.fulfill({status:200,contentType:"application/json",body:JSON.stringify({active:premium,expires_at:premium?"2027-01-01T00:00:00Z":null})}));
  await page.goto(base+"/",{waitUntil:"domcontentloaded",timeout:45000});
  await page.waitForSelector('#filters [data-cat="Premium"]',{timeout:15000});
  return page;
