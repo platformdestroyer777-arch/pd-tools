@@ -8,6 +8,8 @@ const jsFiles = [
   "app.js", "tools-fallback.js", "payments-ui.js", "popups-ui.js",
   "premium-auth.js", "admin-mfa.js", "premium-filter.js", "premium-image-batch.js",
   "premium-qrcode.js", "premium-watermark.js", "premium-extras.js",
+  "premium-new-core.js", "premium-new-media.js", "premium-new-design.js",
+  "premium-new-productivity.js", "premium-new-creators.js", "premium-marketing.js",
   "api/admin-mfa-enable.js", "api/auditar-pix.js", "api/consultar-pix.js", "api/criar-pix.js",
   "api/premium-status.js", "api/webhook-mercadopago.js"
 ];
