@@ -113,12 +113,33 @@ reg("qr-reader",async h=>{
    const c=$("pnCanvas"),scale=Math.min(1,1800/Math.max(im.width,im.height));
    c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));
    const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(im,0,0,c.width,c.height);
-   if(!("BarcodeDetector" in window))throw Error("Seu navegador não tem leitor de QR nativo. Abra esta ferramenta no Chrome ou Edge atualizado.");
-   const supported=await BarcodeDetector.getSupportedFormats();
-   if(!supported.includes("qr_code"))throw Error("Leitura QR não disponível neste navegador.");
-   const found=await new BarcodeDetector({formats:["qr_code"]}).detect(c);
-   if(!found.length)throw Error("QR Code não encontrado. Use uma imagem mais nítida.");
-   $("pnDecoded").value=found[0].rawValue;status("QR Code lido. Confira o conteúdo antes de abrir links.");
+   let decoded="";
+   if("BarcodeDetector" in window){
+     try{
+       const supported=await BarcodeDetector.getSupportedFormats();
+       if(supported.includes("qr_code")){
+         const found=await new BarcodeDetector({formats:["qr_code"]}).detect(c);
+         decoded=found[0]?.rawValue||"";
+       }
+     }catch(err){console.warn("Leitor QR nativo indisponível:",err)}
+   }
+   if(!decoded){
+     if(typeof window.jsQR!=="function"){
+       await new Promise((resolve,reject)=>{
+         const script=document.createElement("script");
+         script.src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+         script.integrity="sha384-hStSInNIZ8ljtOVrmrgf7zdHMapaLBWoSnPTtF0nzsybp4+LuhDz6sHuEVpWIX8o";
+         script.crossOrigin="anonymous";
+         script.onload=()=>typeof window.jsQR==="function"?resolve():reject(Error("Leitor QR não iniciou."));
+         script.onerror=()=>reject(Error("Não foi possível carregar o leitor QR."));
+         document.head.append(script);
+       });
+     }
+     const pixels=ctx.getImageData(0,0,c.width,c.height);
+     decoded=window.jsQR(pixels.data,c.width,c.height)?.data||"";
+   }
+   if(!decoded)throw Error("QR Code não encontrado. Use uma imagem mais nítida.");
+   $("pnDecoded").value=decoded;status("QR Code lido. Confira o conteúdo antes de abrir links.");
  });
  $("pnCopy").onclick=protect(async()=>{
    const val=$("pnDecoded").value;if(!val)throw Error("Leia um QR Code primeiro.");
