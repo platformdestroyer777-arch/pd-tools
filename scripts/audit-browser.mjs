@@ -325,6 +325,7 @@ async function main(){
  await openPaid("privacy-blur","#pnPicture");
  await paid.locator("#pnPicture").setInputFiles({name:"imagem.png",mimeType:"image/png",buffer:imageBuffer});
  await paid.locator("#pnLoad").click();
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("Arraste sobre"),null,{timeout:7000});
  const blurCanvas=paid.locator("#pnCanvas");
  await blurCanvas.waitFor({state:"visible"});
  const bounds=await blurCanvas.boundingBox();
@@ -332,7 +333,7 @@ async function main(){
  await paid.mouse.down();
  await paid.mouse.move(bounds.x+bounds.width*.7,bounds.y+bounds.height*.7,{steps:5});
  await paid.mouse.up();
- check((await resultText(paid)).includes("área"),"Não houve marcação de área");
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("área"),null,{timeout:6000});
  await expectFile("pnSave",".png");report.functional.push("Ocultação Premium com tarja e download");await closeModal(paid);
 
  check(await paid.evaluate(()=>typeof JSZip==="function"),"JSZip indisponível para ferramentas ZIP");
