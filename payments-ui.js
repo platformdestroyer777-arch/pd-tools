@@ -159,6 +159,48 @@
             : "Esta é uma doação voluntária e não libera o Premium."
         );
 
+        // Consulta autenticada: nunca libera Premium pela resposta do navegador.
+        if (data.pagamento_id) {
+          const checkStatus = addText("p", "");
+          const checkButton = addButton("Já paguei? Verificar pagamento", async () => {
+            checkButton.disabled = true;
+            checkStatus.textContent = "Conferindo pagamento no Mercado Pago...";
+            try {
+              const client = typeof supabaseClient !== "undefined" ? supabaseClient : null;
+              const { data: sessionData } = await client.auth.getSession();
+              const token = sessionData?.session?.access_token;
+              if (!token) throw new Error("Entre novamente na sua conta.");
+
+              const response = await fetch("/api/consultar-pix", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Bearer " + token
+                },
+                body: JSON.stringify({ pagamento_id: data.pagamento_id })
+              });
+              const result = await response.json();
+              if (!response.ok && response.status !== 202) {
+                throw new Error(result.erro || "Falha na consulta.");
+              }
+              if (result.status === "approved") {
+                checkStatus.textContent = result.premium_liberado
+                  ? "💜 Premium confirmado! Atualize a página para utilizar."
+                  : "Doação confirmada! Obrigado pelo apoio.";
+                if (result.premium_liberado) {
+                  addButton("Atualizar página", () => window.location.reload());
+                }
+              } else {
+                checkStatus.textContent = "Pagamento ainda pendente. Aguarde a compensação e tente novamente.";
+              }
+            } catch (error) {
+              checkStatus.textContent = error.message || "Não foi possível consultar o pagamento.";
+            } finally {
+              checkButton.disabled = false;
+            }
+          });
+        }
+
         addButton("Fechar", closePix);
 
         pixOverlay.hidden = false;
