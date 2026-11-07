@@ -2304,35 +2304,27 @@ async function verificarAdmin() {
   return true;
 }
 
+
 async function abrirAdmin() {
-  let autorizado = await verificarAdmin();
+  const autorizado = await verificarAdmin();
 
   if (!autorizado) {
-    const email = prompt("Digite seu e-mail de administrador:");
-    if (!email) return;
+    toast(
+      "Entre com sua conta administrativa e clique novamente em Painel administrativo."
+    );
 
-    const password = prompt("Digite sua senha:");
-    if (!password) return;
+    const botaoConta = document.querySelector("#pdAccountOpen");
 
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      console.error(error);
-      toast("E-mail ou senha incorretos.");
-      return;
+    if (botaoConta) {
+      botaoConta.click();
     }
 
-    autorizado = await verificarAdmin();
-
-    if (!autorizado) {
-      await supabaseClient.auth.signOut();
-      toast("Você não tem permissão de administrador.");
-      return;
-    }
+    return;
   }
+
+  renderAdmin("overview");
+  $("#adminModal").classList.add("show");
+}
 
   renderAdmin("overview");
   $("#adminModal").classList.add("show");
