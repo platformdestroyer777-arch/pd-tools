@@ -18,13 +18,29 @@ const requests = [
 ];
 
 for (const check of requests) {
-  const response = await fetch(origin + check.path, {
+  const strict = process.env.GITHUB_REF === "refs/heads/main";
+  let response;
+  for (let attempt = 0; attempt < (strict ? 5 : 1); attempt++) {
+    response = await fetch(origin + check.path, {
     method: check.method,
     headers: check.body ? { "Content-Type": "application/json" } : {},
     body: check.body,
     redirect: "manual",
     signal: AbortSignal.timeout(12000)
-  });
+    });
+    if (check.path === "/api/admin-mfa-enable" && strict &&
+        response.status === 404 && attempt < 4) {
+      await response.body?.cancel();
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      continue;
+    }
+    break;
+  }
+  if (check.path === "/api/admin-mfa-enable" && !strict && response.status === 404) {
+    console.log("SKIP endpoint MFA ainda não publicado na produção.");
+    await response.body?.cancel();
+    continue;
+  }
   assert.equal(response.status, check.status,
     check.method + " " + check.path + ": esperado " + check.status +
     ", recebido " + response.status);
