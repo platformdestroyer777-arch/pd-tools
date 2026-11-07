@@ -9,6 +9,7 @@ const requests = [
   { path: "/tools-fallback.js", method: "GET", status: 200 },
   { path: "/api/premium-status", method: "GET", status: 401 },
   { path: "/api/auditar-pix", method: "POST", status: 401 },
+  { path: "/api/admin-mfa-enable", method: "POST", status: 401 },
   { path: "/api/criar-pix", method: "POST", status: 401,
     body: JSON.stringify({ tipo: "subscription" }) },
   { path: "/api/webhook-mercadopago", method: "POST", status: 401,
@@ -36,4 +37,4 @@ for (const check of requests) {
   }
   console.log("OK " + check.method + " " + check.path + " -> " + response.status);
 }
-console.log("Smoke: 9 verificações sem autenticação/pagamento concluídas.");
+console.log("Smoke: 10 verificações sem autenticação/pagamento concluídas.");
