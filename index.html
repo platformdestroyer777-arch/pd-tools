@@ -870,6 +870,26 @@
     </div>
   </div>
 
+  <!-- SEGUNDO FATOR PARA A GESTÃO -->
+  <dialog class="pd-mfa-dialog" id="pdAdminMfaDialog" aria-labelledby="pdMfaTitle">
+    <div class="pd-mfa-header">
+      <h3 id="pdMfaTitle">🔐 Segurança administrativa</h3>
+      <button id="pdMfaCancel" class="secondary" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <p id="pdMfaInfo">Conferindo sua autenticação...</p>
+    <img id="pdMfaQr" alt="QR Code para o aplicativo autenticador" hidden>
+    <p id="pdMfaSecret" class="pd-mfa-secret" hidden></p>
+    <div id="pdMfaCodeBox" hidden>
+      <label for="pdMfaCode">Código de 6 dígitos do autenticador</label>
+      <input type="text" id="pdMfaCode" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code">
+    </div>
+    <div class="pd-mfa-buttons">
+      <button class="action" type="button" id="pdMfaStart" hidden>Ativar autenticação em duas etapas</button>
+      <button class="action" type="button" id="pdMfaVerify" hidden>Confirmar código</button>
+    </div>
+    <p id="pdMfaStatus" role="status" aria-live="polite"></p>
+  </dialog>
+
   <!-- AVISOS -->
   <div
     class="toast"
@@ -902,6 +922,7 @@
 
   <!-- LOGIN PREMIUM -->
   <script src="premium-auth.js"></script>
+  <script src="admin-mfa.js"></script>
   <script src="premium-filter.js"></script>
 
   <!-- FERRAMENTAS PREMIUM -->
