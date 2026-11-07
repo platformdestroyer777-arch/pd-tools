@@ -17,7 +17,7 @@ const attacks=[
  ["GET","/api/auditar-pix",405,null],
  ["POST","/api/criar-pix",401,'{"tipo":"subscription"}'],
  ["POST","/api/criar-pix",401,'{"tipo":"donation","valor":5.00}'],
- ["POST","/api/criar-pix",400,'{"tipo":"subscription","valor":0.01,"role":"service_role"}'],
+ ["POST","/api/criar-pix",401,'{"tipo":"subscription","valor":0.01,"role":"service_role"}'],
  ["POST","/api/criar-pix",400,'{"tipo":"__proto__","valor":5}'],
  ["POST","/api/criar-pix",400,'{"tipo":"donation","valor":-99}'],
  ["POST","/api/criar-pix",400,'{"tipo":"donation","valor":1e300}'],
