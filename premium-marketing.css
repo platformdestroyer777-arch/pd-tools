@@ -1,0 +1,43 @@
+/* PD Tools — vitrine Premium; complementa a identidade roxo/preto existente. */
+.pd-premium-count{
+  display:inline-flex;gap:9px;flex-wrap:wrap;align-items:center;
+  margin:5px 0 12px;padding:9px 13px;border-radius:999px;
+  background:rgba(167,139,250,.13);border:1px solid rgba(167,139,250,.36);
+  color:#dfd0ff;font-size:12px;font-weight:750;letter-spacing:.1px
+}
+.pd-premium-showcase{margin:22px 0;padding:20px;border-radius:16px;background:#1d1728;border:1px solid #3a2d51}
+.pd-premium-showcase h3,.pd-premium-comparison h3{font-size:17px;font-weight:800;color:#f3edff;margin:0 0 6px}
+.pd-premium-showcase>p{margin:0 0 16px;color:#c7bdd4;font-size:13px}
+.pd-premium-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.pd-premium-tabs button{
+ background:#241d31;border:1px solid #4b3c65;border-radius:9px;
+ color:#d8cdec;min-height:39px;padding:9px 12px;cursor:pointer;font:inherit;font-size:12px
+}
+.pd-premium-tabs button[aria-pressed="true"]{background:#6543a6;color:white;border-color:#aa89fb}
+.pd-premium-example{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:17px;background:#14111d;border:1px solid #342844;border-radius:12px}
+.pd-premium-example strong{display:block;font-size:16px;color:#eee7ff}
+.pd-premium-example p{margin:5px 0 0;font-size:13px;color:#bcb0cc;line-height:1.6}
+.pd-premium-transform{font-family:ui-monospace,monospace;font-size:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#d3c0fc}
+.pd-premium-transform span{padding:8px 10px;background:#2c2140;border:1px solid #4f3d6c;border-radius:8px}
+.pd-premium-comparison{margin:19px 0 22px}
+.pd-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.pd-plan-mini{background:#1c1825;border:1px solid #393049;border-radius:13px;padding:16px}
+.pd-plan-mini.premium{background:#271e37;border-color:#8764bb}
+.pd-plan-mini h4{color:#eee9f4;font-size:14px;margin:0 0 6px}
+.pd-plan-mini b{color:#ccb3ff;font-size:18px}
+.pd-plan-mini p{font-size:12px;color:#c4b8ce;line-height:1.6;margin:9px 0 0}
+.pd-premium-explore{width:100%;margin:12px 0 0;min-height:43px;border:1px solid #715e8b;background:transparent;color:#ded1ff;font:inherit;font-weight:700;border-radius:10px;cursor:pointer}
+.pd-premium-explore:hover{background:#2c2240}
+.pd-premium-faq{margin:22px 0 8px}
+.pd-premium-faq details{border-bottom:1px solid #392f48;padding:13px 4px}
+.pd-premium-faq summary{cursor:pointer;color:#eee7fa;font-size:13px;font-weight:650}
+.pd-premium-faq p{font-size:13px;color:#beb3cb;line-height:1.6;margin:9px 0 0}
+.pd-premium-unlock{grid-column:1/-1;border:1px solid #6c4b9e;background:#211b30;padding:20px;border-radius:14px}
+.pd-premium-unlock strong{font-size:17px;color:#e9dbff}
+.pd-premium-unlock p{font-size:13px;color:#cdc1de;line-height:1.6;margin:9px 0}
+.pd-premium-unlock a{display:inline-flex;color:#d9c2ff;font-weight:700;font-size:13px;text-underline-offset:3px}
+@media(max-width:650px){
+ #assinar-premium .pd-premium-showcase{padding:14px}
+ .pd-plan-grid{grid-template-columns:1fr}
+ .pd-premium-example{align-items:flex-start}
+}

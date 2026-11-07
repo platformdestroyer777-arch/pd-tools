@@ -41,7 +41,27 @@
     { id: "image-editor", name: "Editor de imagens", desc: "Edite suas imagens.", icon: "🖼️", ready: true },
     { id: "srt", name: "Criador de legendas SRT", desc: "Crie legendas para vídeos.", icon: "≡", ready: true },
     { id: "minifier", name: "Minificador avançado", desc: "Compacte códigos HTML, CSS e JavaScript.", icon: "⌘", ready: true },
-    { id: "site-builder", name: "Criador de sites", desc: "Monte páginas personalizadas.", icon: "🌐", ready: true }
+    { id: "site-builder", name: "Criador de sites", desc: "Monte páginas personalizadas.", icon: "🌐", ready: true },
+    { id: "video-frames", name: "Extrator de frames", desc: "Salve imagens de vídeos em PNG.", icon: "🎬", ready: true },
+    { id: "audio-trim", name: "Cortador de áudio", desc: "Recorte trechos de áudio e exporte em WAV.", icon: "🎵", ready: true },
+    { id: "audio-volume", name: "Editor de volume", desc: "Ajuste o volume e baixe o áudio WAV.", icon: "🔊", ready: true },
+    { id: "video-gif", name: "Criador de GIF", desc: "Transforme trechos de vídeos em GIF.", icon: "🎞️", ready: true },
+    { id: "photo-collage", name: "Criador de colagens", desc: "Junte até nove fotos em uma imagem.", icon: "🖼️", ready: true },
+    { id: "favicon-maker", name: "Gerador de favicon", desc: "Crie ícones para seus projetos e sites.", icon: "🧩", ready: true },
+    { id: "svg-png", name: "Conversor SVG para PNG", desc: "Converta desenhos SVG em imagens PNG.", icon: "🎨", ready: true },
+    { id: "privacy-blur", name: "Ocultador de dados", desc: "Cubra informações sensíveis em imagens.", icon: "🛡️", ready: true },
+    { id: "device-mockup", name: "Criador de mockups", desc: "Mostre seus projetos em telas de dispositivos.", icon: "📱", ready: true },
+    { id: "thumbnail-maker", name: "Criador de miniaturas", desc: "Crie capas profissionais para vídeos.", icon: "📸", ready: true },
+    { id: "csv-editor", name: "Editor de CSV", desc: "Edite arquivos CSV como uma tabela.", icon: "📊", ready: true },
+    { id: "file-organizer", name: "Organizador de arquivos", desc: "Separe arquivos por tipo em um ZIP.", icon: "🗂️", ready: true },
+    { id: "bulk-rename", name: "Renomeador em lote", desc: "Renomeie vários arquivos de uma vez.", icon: "✏️", ready: true },
+    { id: "zip-maker", name: "Criador de ZIP", desc: "Compacte seus arquivos em um ZIP.", icon: "📦", ready: true },
+    { id: "qr-reader", name: "Leitor de QR Code", desc: "Leia QR Codes em imagens compatíveis.", icon: "🔍", ready: true },
+    { id: "sitemap-maker", name: "Gerador de sitemap", desc: "Crie sitemap.xml para melhorar a navegação por robôs.", icon: "🌐", ready: true },
+    { id: "meta-generator", name: "Gerador de meta tags", desc: "Crie meta tags para páginas de sites.", icon: "📝", ready: true },
+    { id: "css-animations", name: "Gerador de animações CSS", desc: "Crie efeitos animados com código CSS.", icon: "✨", ready: true },
+    { id: "markdown-editor", name: "Editor Markdown", desc: "Escreva textos Markdown com prévia segura.", icon: "💻", ready: true },
+    { id: "subtitle-converter", name: "Conversor SRT/VTT", desc: "Converta legendas entre SRT e WebVTT.", icon: "🎞️", ready: true }
   ];
 
   const externalTools = new Set([
@@ -54,7 +74,27 @@
     "pdf-compress",
     "resume",
     "image-editor",
-    "site-builder"
+    "site-builder",
+    "video-frames",
+    "audio-trim",
+    "audio-volume",
+    "video-gif",
+    "photo-collage",
+    "favicon-maker",
+    "svg-png",
+    "privacy-blur",
+    "device-mockup",
+    "thumbnail-maker",
+    "csv-editor",
+    "file-organizer",
+    "bulk-rename",
+    "zip-maker",
+    "qr-reader",
+    "sitemap-maker",
+    "meta-generator",
+    "css-animations",
+    "markdown-editor",
+    "subtitle-converter"
   ]);
 
   let premiumSelected = false;
@@ -192,7 +232,7 @@
       button.type = "button";
       button.className = "filter";
       button.dataset.cat = "Premium";
-      button.textContent = "🔒 Premium";
+      button.textContent = "💜 Premium (35)";
     }
 
     const all = filters.querySelector('[data-cat="Todas"]');
@@ -242,7 +282,7 @@
   }
 
   function renderPremiumCards() {
-    if (!premiumSelected || !premiumVerified) return;
+    if (!premiumSelected) return;
 
     const query = (search?.value || "").trim().toLowerCase();
 
@@ -258,7 +298,7 @@
       return;
     }
 
-    grid.innerHTML = visible.map(tool => `
+    grid.innerHTML = (premiumVerified ? "" : `<div class="pd-premium-unlock"><strong>💜 Conheça as 35 ferramentas Premium</strong><p>Explore os recursos. Para usar, assine por R$ 5,00 e tenha 30 dias de acesso após a confirmação do Pix.</p><a href="#assinar-premium">Quero desbloquear as ferramentas</a></div>`) + visible.map(tool => `
       <article
         class="tool-card"
         data-premium-tool="${escapeHTML(tool.id)}"
@@ -272,7 +312,7 @@
         <h3>${escapeHTML(tool.name)}</h3>
         <p>${escapeHTML(tool.desc)}</p>
         <span class="pd-premium-status ${tool.ready ? "" : "pending"}">
-          ${tool.ready ? "💜 Disponível" : "Em desenvolvimento"}
+          ${premiumVerified ? "💜 Disponível" : "🔒 Veja o que faz"}
         </span>
       </article>
     `).join("");
@@ -297,14 +337,6 @@
       if (version !== requestVersion || !premiumSelected) return;
 
       premiumVerified = active;
-
-      if (!active) {
-        showMessage(
-          "🔒 Premium bloqueado",
-          "Você precisa de um Premium ativo para visualizar as ferramentas exclusivas."
-        );
-        return;
-      }
 
       renderPremiumCards();
 
@@ -826,7 +858,13 @@
   async function openPremiumTool(id) {
     const tool = premiumTools.find(item => item.id === id);
 
-    if (!tool || !premiumSelected || !premiumVerified) return;
+    if (!tool || !premiumSelected) return;
+    if (!premiumVerified) {
+      const notice = document.getElementById("premiumBannerMessage");
+      if (notice) notice.textContent = "A ferramenta “" + tool.name + "” faz parte do Premium. Acesso por R$ 5,00 durante 30 dias.";
+      document.getElementById("assinar-premium")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
 
     // Ferramentas externas possuem seus próprios eventos.
     // Não abrir aqui para evitar janelas duplicadas.
@@ -930,7 +968,7 @@
   // Mantém a busca Premium funcionando.
   if (search) {
     search.addEventListener("input", () => {
-      if (premiumSelected && premiumVerified) {
+      if (premiumSelected) {
         renderPremiumCards();
       }
     });
@@ -952,12 +990,7 @@
     if (!premiumSelected) return;
 
     if (!premiumVerified) {
-      if (grid.querySelector("[data-tool]")) {
-        showMessage(
-          "💜 PD Tools Premium",
-          "Verificando seu acesso..."
-        );
-      }
+      if (grid.querySelector("[data-tool]")) renderPremiumCards();
       return;
     }
 
@@ -979,5 +1012,5 @@
 
   addPremiumButton();
 
-  console.log("PD Tools Premium: 15 ferramentas cadastradas.");
+  console.log("PD Tools Premium: 35 ferramentas cadastradas.");
 })();

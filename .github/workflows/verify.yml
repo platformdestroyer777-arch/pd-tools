@@ -27,5 +27,13 @@ jobs:
         run: node scripts/check-cdn-sri.mjs --verify
       - name: Verificar sintaxe, catálogo e segurança
         run: node scripts/check-project.mjs
+      - name: Calcular hash do leitor QR multiplataforma
+        run: |
+          curl --fail --silent --show-error --location https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js -o /tmp/pd-jsQR.min.js
+          calculated="$(openssl dgst -sha384 -binary /tmp/pd-jsQR.min.js | base64 -w0)"
+          test "$calculated" = "hStSInNIZ8ljtOVrmrgf7zdHMapaLBWoSnPTtF0nzsybp4+LuhDz6sHuEVpWIX8o"
+          echo "Leitor QR: SHA384 confirmado"
+      - name: Validar funcionalidades e catálogo Premium (35)
+        run: node scripts/check-premium.mjs
       - name: Smoke HTTP sem credenciais e sem pagamentos
         run: node scripts/live-smoke.mjs
