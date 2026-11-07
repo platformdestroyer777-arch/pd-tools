@@ -274,24 +274,24 @@ async function main(){
    {name:"b.png",mimeType:"image/png",buffer:imageBuffer}
  ]);
  await paid.locator("#pnCreate").click();
- check((await resultText(paid)).includes("Colagem criada"),"Colagem não gerou imagem");
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("Colagem criada"),null,{timeout:7000});
  await expectFile("pnSave",".png");report.functional.push("Colagem Premium gerada com 2 fotos");await closeModal(paid);
 
  await openPaid("svg-png","#pnSvgText");
  await paid.locator("#pnMake").click();
- check((await resultText(paid)).includes("convertido"),"SVG não converteu");
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("convertido"),null,{timeout:7000});
  await expectFile("pnSave",".png");report.functional.push("SVG Premium convertido e exportado");await closeModal(paid);
 
  await openPaid("device-mockup","#pnPicture");
  await paid.locator("#pnPicture").setInputFiles({name:"imagem.png",mimeType:"image/png",buffer:imageBuffer});
  await paid.locator("#pnMake").click();
- check((await resultText(paid)).includes("criado"),"Mockup não gerado");
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("criado"),null,{timeout:7000});
  await expectFile("pnSave",".png");report.functional.push("Mockup Premium gerado");await closeModal(paid);
 
  await openPaid("thumbnail-maker","#pnPicture");
  await paid.locator("#pnPicture").setInputFiles({name:"imagem.png",mimeType:"image/png",buffer:imageBuffer});
  await paid.locator("#pnMake").click();
- check((await resultText(paid)).includes("criada"),"Miniatura não gerada");
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("criada"),null,{timeout:7000});
  await expectFile("pnSave",".png");report.functional.push("Miniatura Premium 1280x720");await closeModal(paid);
 
  await openPaid("privacy-blur","#pnPicture");
@@ -311,7 +311,7 @@ async function main(){
  await openPaid("favicon-maker","#pnLogo");
  await paid.locator("#pnLogo").setInputFiles({name:"logo.png",mimeType:"image/png",buffer:imageBuffer});
  await paid.locator("#pnMake").click();
- check((await resultText(paid)).includes("Ícone"),"Ícone favicon não gerado");
+ await paid.waitForFunction(()=>document.querySelector("#pnResult")?.textContent.includes("ícone")||document.querySelector("#pnResult")?.textContent.includes("Ícone"),null,{timeout:7000});
  await expectFile("pnSave",".zip");report.functional.push("Pacote de favicons ZIP");await closeModal(paid);
 
  const exampleFiles=[
