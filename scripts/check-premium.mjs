@@ -64,4 +64,49 @@ const bytes=new Uint8Array(await output.arrayBuffer());
 assert.equal(new TextDecoder().decode(bytes.slice(0,6)),"GIF89a");
 assert.equal(bytes.at(-1),0x3b);
 assert.ok(bytes.length>800,"Palette or frame payload missing");
+
+// Decode each GIF frame's LZW stream to validate actual pixel data,
+// not just file headers. No third-party image dependencies.
+function decodeGIFFrames(g){
+ let p=13+256*3,frames=[];
+ const word=at=>g[at]|(g[at+1]<<8);
+ while(p<g.length){
+   const mark=g[p++];
+   if(mark===0x3b)break;
+   if(mark===0x21){
+     p++; // extension label
+     while(true){const length=g[p++];if(!length)break;p+=length}
+     continue;
+   }
+   assert.equal(mark,0x2c,"Invalid GIF image separator");
+   const width=word(p+4),height=word(p+6),flags=g[p+8];p+=9;
+   if(flags&0x80)p+=3*(1<<((flags&7)+1));
+   const min=g[p++],compressed=[];
+   while(true){const len=g[p++];if(!len)break;compressed.push(...g.slice(p,p+len));p+=len}
+   const clear=1<<min,end=clear+1;
+   let dict,codeSize,next,last,bits=0,pixel=[];
+   const reset=()=>{dict=Array.from({length:clear},(_,i)=>[i]);next=end+1;codeSize=min+1;last=null};
+   const read=()=>{let code=0;for(let j=0;j<codeSize;j++){code|=((compressed[bits>>3]>>(bits&7))&1)<<j;bits++}return code};
+   reset();
+   for(let guard=0;guard<width*height*2+256;guard++){
+     const code=read();if(code===clear){reset();continue}if(code===end)break;
+     let entry=dict[code];
+     if(!entry&&code===next&&last)entry=[...last,last[0]];
+     assert.ok(entry,"Invalid GIF LZW dictionary code "+code);
+     pixel.push(...entry);
+     if(last){
+       dict[next++]=[...last,entry[0]];
+       if(next===(1<<codeSize)&&codeSize<12)codeSize++;
+     }
+     last=entry;
+   }
+   assert.equal(pixel.length,width*height,"GIF pixel stream length");
+   frames.push({width,height,pixel});
+ }
+ return frames;
+}
+const frames=decodeGIFFrames(bytes);
+assert.equal(frames.length,2);
+assert.deepEqual(frames[0].pixel,[224,28,3,255]);
+
 console.log("PD Tools Premium: 35 tools; 20 registered; CSV, SRT/VTT, GIF and storefront checks passed.");
