@@ -109,4 +109,16 @@ const frames=decodeGIFFrames(bytes);
 assert.equal(frames.length,2);
 assert.deepEqual(frames[0].pixel,[224,28,3,255]);
 
+
+const noisy=new Uint8Array(80*50*4),expectedIndexes=[];
+for(let i=0;i<80*50;i++){
+ const r=(i*173+(i>>2)*29)%256,g=(i*87+(i>>4)*149)%256,b=(i*31+(i>>1)*113)%256;
+ noisy[i*4]=r;noisy[i*4+1]=g;noisy[i*4+2]=b;noisy[i*4+3]=255;
+ expectedIndexes.push(((r>>5)<<5)|((g>>5)<<2)|(b>>6));
+}
+const complex=media.gif([noisy],80,50,8);
+const complexFrames=decodeGIFFrames(new Uint8Array(await complex.arrayBuffer()));
+assert.equal(complexFrames.length,1);
+assert.deepEqual(complexFrames[0].pixel,expectedIndexes,"Complex GIF image pixels differ");
+
 console.log("PD Tools Premium: 35 tools; 20 registered; CSV, SRT/VTT, GIF and storefront checks passed.");
