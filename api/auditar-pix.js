@@ -49,6 +49,17 @@ export default async function handler(req, res) {
     }
     if (!admin) return res.status(403).json({ erro: "Acesso administrativo necessário" });
 
+    // Quando o admin tiver MFA configurado, somente uma sessão AAL2
+    // poderá consultar os pedidos; getUser(token) já validou a identidade.
+    const { data: assurance, error: assuranceError } =
+      await client.auth.mfa.getAuthenticatorAssuranceLevel(token);
+    if (assuranceError || !assurance) {
+      return res.status(503).json({ erro: "Verificação adicional indisponível" });
+    }
+    if (assurance.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+      return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
+    }
+
     const { data: pending, error: paymentError, count } = await client
       .from("premium_payments")
       .select("id,provider_order_id,provider_payment_id,payment_type,amount,currency,created_at", { count: "exact" })
