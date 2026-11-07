@@ -477,6 +477,24 @@ async function main(){
  await paid.waitForFunction(()=>document.querySelector("#pnDecoded")?.value.includes("pdtools.vercel.app/audit"),null,{timeout:9000});
  report.functional.push("Leitor QR Premium decodificou QR real");await closeModal(paid);
 
+
+ // Verifica expiração do Premium ENQUANTO a ferramenta está aberta.
+ // O processamento deve ser barrado pelo servidor antes da ação.
+ await openPaid("meta-generator","#pnGenerate");
+ await paid.route("**/api/premium-status",route=>route.fulfill({
+   status:200,contentType:"application/json",
+   body:JSON.stringify({active:false,expires_at:"2020-01-01T00:00:00Z"})
+ }));
+ await paid.locator("#pnGenerate").click();
+ await paid.waitForFunction(
+   ()=>document.getElementById("pnResult")?.textContent.includes("não está ativo"),
+   null,{timeout:7000}
+ );
+ check((await paid.locator("#pnOutput").inputValue())==="",
+  "Ferramenta Premium executou ação após acesso expirar");
+ report.functional.push("Premium expirado durante uso bloqueia nova ação");
+ await closeModal(paid);
+
  const errors=report.pageErrors.filter(x=>!/Failed to load resource|net::ERR|is not defined/i.test(x));
  check(errors.length===0,"Exceções JavaScript no navegador: "+errors.slice(0,5).join(" | "));
  console.log("RESULTADO: "+JSON.stringify({free:report.free.length,premium:report.premium.length,functions:report.functional,pageErrors:report.pageErrors.slice(0,5),failures:report.failures}));
