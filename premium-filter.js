@@ -284,6 +284,13 @@
   function renderPremiumCards() {
     if (!premiumSelected) return;
 
+    // Visitantes sem assinatura veem somente o aviso,
+    // sem exibir os cards das ferramentas exclusivas.
+    if (!premiumVerified) {
+      grid.innerHTML = `<div class="pd-premium-unlock"><strong>💜 Conheça as 35 ferramentas Premium</strong><p>Explore os recursos. Para usar, assine por R$ 5,00 e tenha 30 dias de acesso após a confirmação do Pix.</p><a href="#assinar-premium">Quero desbloquear as ferramentas</a></div>`;
+      return;
+    }
+
     const query = (search?.value || "").trim().toLowerCase();
 
     const visible = premiumTools.filter(tool =>
@@ -298,7 +305,7 @@
       return;
     }
 
-    grid.innerHTML = (premiumVerified ? "" : `<div class="pd-premium-unlock"><strong>💜 Conheça as 35 ferramentas Premium</strong><p>Explore os recursos. Para usar, assine por R$ 5,00 e tenha 30 dias de acesso após a confirmação do Pix.</p><a href="#assinar-premium">Quero desbloquear as ferramentas</a></div>`) + visible.map(tool => `
+    grid.innerHTML = visible.map(tool => `
       <article
         class="tool-card"
         data-premium-tool="${escapeHTML(tool.id)}"
