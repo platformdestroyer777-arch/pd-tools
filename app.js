@@ -3,10 +3,11 @@ const SUPABASE_KEY = "sb_publishable_I5gPq6-Qti8SPAoN_8RrOg_-w5shIPo";
 const ASSET_BUCKET = "site-assets";
 const ASSET_BASE = `${SUPABASE_URL}/storage/v1/object/public/${ASSET_BUCKET}`;
 
-const supabaseClient = window.supabase.createClient(
+// Exibe as ferramentas locais se a biblioteca Supabase não carregar.
+const supabaseClient = window.supabase?.createClient?.(
   SUPABASE_URL,
   SUPABASE_KEY
-);
+) || null;
 
 const defaultTools = [
   {id:"qr",name:"Gerador de QR Code",desc:"Transforme links e textos em QR Codes.",cat:"Criatividade",icon:"▦",active:true},
@@ -59,6 +60,10 @@ function mapTool(tool) {
 }
 
 async function carregarFerramentasSupabase() {
+  if (!supabaseClient) {
+    console.warn("Supabase indisponível: exibindo ferramentas locais.");
+    return;
+  }
   const { data, error } = await supabaseClient
     .from("tools")
     .select("*")
@@ -78,6 +83,7 @@ async function carregarFerramentasSupabase() {
 }
 
 async function carregarAparencia() {
+  if (!supabaseClient) return;
   const { data, error } = await supabaseClient
     .from("site_settings")
     .select("site_name, primary_color, logo_url, favicon_url")
@@ -145,7 +151,8 @@ function render() {
   );
 
   grid.innerHTML = list.map(t => `
-    <article class="tool-card" data-tool="${esc(t.id)}">
+    <article class="tool-card" data-tool="${esc(t.id)}"
+      role="button" tabindex="0" aria-label="${esc(t.name)}">
       <span class="tool-arrow">↗</span>
       <div class="tool-icon">${esc(t.icon)}</div>
       <h3>${esc(t.name)}</h3>
@@ -161,7 +168,14 @@ function render() {
   });
 
   grid.querySelectorAll("[data-tool]").forEach(card => {
-    card.onclick = () => openTool(card.dataset.tool);
+    const open = () => openTool(card.dataset.tool);
+    card.onclick = open;
+    card.onkeydown = event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    };
   });
 }
 
@@ -408,7 +422,7 @@ function toolHTML(id) {
         <button class="secondary" id="spellCopy">Copiar texto revisado</button>
         <p style="font-size:12px;color:#999;margin-top:12px">
           A revisão é feita pelo <a href="https://languagetool.org" target="_blank" rel="noopener noreferrer">LanguageTool</a>.
-          O texto enviado é processado pelo serviço para análise.
+          O texto será enviado a esse serviço externo. Evite enviar senhas, dados pessoais ou informações confidenciais.
         </p>
       `;
 
@@ -2195,7 +2209,7 @@ function wireTool(id) {
     $("#jsonValidateCopy").onclick=()=>copy($("#jsonValidateInput").dataset.formatted||"");
   }
   if (id === "api-qr") {
-    $("#apiQrGo").onclick=()=>{const value=$("#apiQrInput").value.trim();if(!value)return toast("Digite o endereço da API.");let parsedUrl;try{parsedUrl=new URL(value);}catch{return toast("Digite um endereço URL válido, incluindo https://.");}if(!["http:","https:"].includes(parsedUrl.protocol))return toast("Use apenas URLs http:// ou https://.");if(!window.QRCode)return toast("Não foi possível carregar o gerador QR.");$("#apiQrResult").innerHTML="";new QRCode($("#apiQrResult"),{text:value,width:210,height:210});$("#apiQrDownload").hidden=false;};
+    $("#apiQrGo").onclick=()=>{const value=$("#apiQrInput").value.trim();if(!value)return toast("Digite o endereço da API.");if(value.length>2048)return toast("A URL deve ter até 2048 caracteres.");let parsedUrl;try{parsedUrl=new URL(value);}catch{return toast("Digite um endereço URL válido, incluindo https://.");}if(!["http:","https:"].includes(parsedUrl.protocol))return toast("Use apenas URLs http:// ou https://.");if(!window.QRCode)return toast("Não foi possível carregar o gerador QR.");try{$("#apiQrResult").replaceChildren();new QRCode($("#apiQrResult"),{text:value,width:210,height:210});$("#apiQrDownload").hidden=false;}catch(error){console.error("Erro QR API:",error);toast("Não foi possível gerar este QR Code.");}};
     $("#apiQrDownload").onclick=()=>{const img=$("#apiQrResult img")||$("#apiQrResult canvas");if(!img)return toast("Gere um QR Code primeiro.");const url=img.tagName==="CANVAS"?img.toDataURL():img.src;const a=document.createElement("a");a.href=url;a.download="pd-tools-api-qrcode.png";a.click();};
   }
   if (id === "color-viewer") {
@@ -2284,6 +2298,7 @@ function wireTool(id) {
 }
 
 async function verificarAdmin() {
+  if (!supabaseClient) return false;
   const { data: { session }, error: sessionError } =
     await supabaseClient.auth.getSession();
 
@@ -2484,7 +2499,7 @@ async function enviarImagemSite(tipo, inputId) {
   const input = $(inputId);
   const file = input?.files?.[0];
   if (!file) return toast("Selecione uma imagem primeiro.");
-  if (!file.type.startsWith("image/")) return toast("Envie um arquivo de imagem.");
+  if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) return toast("Use PNG, JPG ou WebP.");
   if (file.size > 5 * 1024 * 1024) return toast("A imagem deve ter no máximo 5 MB.");
 
   const button = $(`[data-upload="${tipo}"]`);
@@ -2493,7 +2508,8 @@ async function enviarImagemSite(tipo, inputId) {
   button.textContent = "Enviando...";
 
   try {
-    const ext = tipo === "favicon" ? "png" : (file.name.split(".").pop() || "png").toLowerCase();
+    if (tipo === "favicon" && file.type !== "image/png") return toast("O favicon precisa ser PNG.");
+    const ext = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[file.type];
     const path = tipo === "logo" ? `logo.${ext}` : `${tipo}.png`;
     const { error: uploadError } = await supabaseClient.storage
       .from(ASSET_BUCKET)
@@ -2525,7 +2541,7 @@ async function enviarImagemCompartilhamento() {
   const input = $("#shareImage");
   const file = input?.files?.[0];
   if (!file) return toast("Selecione uma imagem primeiro.");
-  if (!file.type.startsWith("image/")) return toast("Envie um arquivo de imagem.");
+  if (file.type !== "image/png") return toast("A imagem de compartilhamento precisa ser PNG.");
   if (file.size > 5 * 1024 * 1024) return toast("A imagem deve ter no máximo 5 MB.");
   const button = $('[data-upload="share"]');
   const original = button.textContent;
@@ -2623,7 +2639,7 @@ function renderAdmin(tab) {
       <h4>Imagens do site</h4>
       <div class="field">
         <label>Logo do site</label>
-        <input id="logoImage" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+        <input id="logoImage" type="file" accept="image/png,image/jpeg,image/webp">
         <button class="secondary" type="button" data-upload="logo">Enviar logo</button>
       </div>
       <div class="field">
@@ -2633,7 +2649,7 @@ function renderAdmin(tab) {
       </div>
       <div class="field">
         <label>Imagem de prévia ao compartilhar o link (recomendado: 1200 × 630)</label>
-        <input id="shareImage" type="file" accept="image/png,image/jpeg,image/webp">
+        <input id="shareImage" type="file" accept="image/png">
         <button class="secondary" type="button" data-upload="share">Enviar imagem de compartilhamento</button>
       </div>
       <p style="color:#999;font-size:11px;line-height:1.6">
