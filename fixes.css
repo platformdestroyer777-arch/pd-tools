@@ -409,3 +409,34 @@ body.donation-popup-open {
   outline: 3px solid #b39aff;
   outline-offset: 4px;
 }
+
+
+/* Segundo fator do painel — exibido apenas quando solicitado pelo administrador. */
+.pd-mfa-dialog {
+  box-sizing: border-box;
+  width: min(92vw, 460px);
+  max-height: min(88vh, 740px);
+  overflow: auto;
+  padding: 26px;
+  border: 1px solid #51416f;
+  border-radius: 18px;
+  background: #15111d;
+  color: #f7f5fc;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, .55);
+}
+.pd-mfa-dialog::backdrop { background: rgba(0,0,0,.78); }
+.pd-mfa-header { display: flex; gap: 12px; justify-content: space-between; align-items: center; }
+.pd-mfa-header h3 { margin: 0; font-size: 19px; color: #f7f5fc; }
+.pd-mfa-dialog p { color: #c8bfd8; line-height: 1.5; font-size: 13px; }
+.pd-mfa-dialog img { display: block; max-width: 210px; margin: 12px auto; background: #fff; padding: 8px; border-radius: 10px; }
+.pd-mfa-dialog img[hidden] { display: none; }
+.pd-mfa-dialog [hidden] { display: none !important; }
+.pd-mfa-dialog label { display: block; margin: 12px 0 7px; font-size: 12px; }
+.pd-mfa-dialog input {
+  width: 100%; box-sizing: border-box; padding: 13px;
+  background: #0d0a13; color: #fff; border-radius: 10px;
+  border: 1px solid #574870; font: inherit;
+}
+.pd-mfa-secret { font-family: monospace; overflow-wrap: anywhere; user-select: all; }
+.pd-mfa-buttons { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+#pdMfaStatus { min-height: 18px; color: #c7b2ff; }
