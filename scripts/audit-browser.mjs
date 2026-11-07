@@ -168,7 +168,7 @@ async function main(){
   ["units",{unitValue:"1000"},"unitGo","unitResult","km"],
   ["json",{jsonInput:'{"a":1}'},"jsonGo","jsonResult",'"a": 1'],
   ["base64",{b64Input:"abc"},"b64Encode","b64Result","YWJj"],
-  ["password-check",{passwordCheckInput:"ABCdef09875!!"},"passwordCheckGo","passwordCheckResult","Forte"],
+  ["password-check",{passwordCheckInput:"ABCdef09875!!"},"passwordCheckGo","passwordCheckResult","Entropia"],
   ["pin-generator",{},"pinGo","pinResult",null],
   ["random-password",{},"randomPassGo","randomPassResult",null],
   ["md5",{hashInput:"abc"},"hashGo","hashResult","900150983cd24fb0d6963f7d28e17f72"],
