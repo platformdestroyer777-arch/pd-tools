@@ -32,6 +32,7 @@ for(const id of expected)assert.ok(ids.includes(id),"Missing in catalog: "+id);
 assert.match(catalog,/renderPremiumCards\(\);/,"Premium catalogue should render without requiring paid status");
 assert.match(catalog,/pd-premium-unlock/,"Non-subscribers must see an upgrade invitation");
 assert.match(source("premium-new-core.js"),/\/api\/premium-status/,"Server-side subscription check missing");
+assert.match(source("premium-new-core.js"),/if \(!\(await allowed\(\)\)\)/,"Premium must check subscription again before performing an action");
 
 const html=source("index.html");
 for(const file of ["premium-new-core.js",...modules,"premium-marketing.css","premium-marketing.js"])
