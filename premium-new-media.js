@@ -58,7 +58,7 @@ function gifLzw(indices){
  const emit=code=>{acc|=code<<bits;bits+=size;while(bits>=8){output.push(acc&255);acc>>>=8;bits-=8}};
  const reset=()=>{dict=new Map();next=258;size=9};
  emit(clear);
- let previous=String(indices[0]);const codeOf=k=>k.length===1?k.charCodeAt(0):dict.get(k);
+ let previous=String.fromCharCode(indices[0]);const codeOf=k=>k.length===1?k.charCodeAt(0):dict.get(k);
  for(let i=1;i<indices.length;i++){
    const ch=String.fromCharCode(indices[i]),joined=previous+ch;
    if(dict.has(joined)){previous=joined;continue}
@@ -87,7 +87,8 @@ function gif(frames,w,h,delay){
    put(0x2c,0,0,0,0);word(w);word(h);put(0,8);
    const idx=new Uint8Array(w*h);
    for(let i=0,p=0;i<idx.length;i++,p+=4)idx[i]=((data[p]>>5)<<5)|((data[p+1]>>5)<<2)|(data[p+2]>>6);
-   put(...gifLzw(idx));
+   const compressed=gifLzw(idx);
+   for(let j=0;j<compressed.length;j++)bytes.push(compressed[j]);
  }
  put(0x3b);return new Blob([new Uint8Array(bytes)],{type:"image/gif"});
 }
