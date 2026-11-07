@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const money = value => {
-  if (!/^[0-9]+(?:\\.[0-9]{1,2})?$/.test(String(value))) return null;
+  if (!/^[0-9]+(?:\.[0-9]{1,2})?$/.test(String(value))) return null;
   const amount = Number(value);
   return Number.isFinite(amount) ? Math.round(amount * 100) : null;
 };
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   const authorization = req.headers.authorization || "";
   const id = req.body?.pagamento_id;
-  if (!/^Bearer\\s+\\S+$/i.test(authorization)) {
+  if (!/^Bearer\s+\S+$/i.test(authorization)) {
     return res.status(401).json({ erro: "Entre na sua conta" });
   }
   if (typeof id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const db = createClient(url, key, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
-    const jwt = authorization.replace(/^Bearer\\s+/i, "").trim();
+    const jwt = authorization.replace(/^Bearer\s+/i, "").trim();
     const { data: identity, error: identityError } = await db.auth.getUser(jwt);
     const userId = identity?.user?.id;
     if (identityError || !userId) return res.status(401).json({ erro: "Sessão inválida" });
