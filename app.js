@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = "https://aohhacasirnzkchbyzlw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I5gPq6-Qti8SPAoN_8RrOg_-w5shIPo";
 const ASSET_BUCKET = "site-assets";
@@ -112,7 +111,7 @@ function aplicarLogo(url) {
 }
 
 function aplicarFavicon(url) {
-  let link = document.querySelector('link[rel="icon"]');
+  let link = document.querySelector('link[ rel="icon" ]');
   if (!link) {
     link = document.createElement("link");
     link.rel = "icon";
@@ -2196,7 +2195,7 @@ function wireTool(id) {
     $("#jsonValidateCopy").onclick=()=>copy($("#jsonValidateInput").dataset.formatted||"");
   }
   if (id === "api-qr") {
-    $("#apiQrGo").onclick=()=>{const value=$("#apiQrInput").value.trim();if(!value)return toast("Digite o endereço da API.");try{new URL(value);}catch{return toast("Digite um endereço URL válido, incluindo https://.");}if(!window.QRCode)return toast("Não foi possível carregar o gerador QR.");$("#apiQrResult").innerHTML="";new QRCode($("#apiQrResult"),{text:value,width:210,height:210});$("#apiQrDownload").hidden=false;};
+    $("#apiQrGo").onclick=()=>{const value=$("#apiQrInput").value.trim();if(!value)return toast("Digite o endereço da API.");let parsedUrl;try{parsedUrl=new URL(value);}catch{return toast("Digite um endereço URL válido, incluindo https://.");}if(!["http:","https:"].includes(parsedUrl.protocol))return toast("Use apenas URLs http:// ou https://.");if(!window.QRCode)return toast("Não foi possível carregar o gerador QR.");$("#apiQrResult").innerHTML="";new QRCode($("#apiQrResult"),{text:value,width:210,height:210});$("#apiQrDownload").hidden=false;};
     $("#apiQrDownload").onclick=()=>{const img=$("#apiQrResult img")||$("#apiQrResult canvas");if(!img)return toast("Gere um QR Code primeiro.");const url=img.tagName==="CANVAS"?img.toDataURL():img.src;const a=document.createElement("a");a.href=url;a.download="pd-tools-api-qrcode.png";a.click();};
   }
   if (id === "color-viewer") {
@@ -2493,26 +2492,6 @@ async function salvarAparencia() {
   toast("Aparência salva no Supabase!");
 }
 
-async function prepararImagemPNG(file) {
-  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-    throw new Error('Use PNG, JPG ou WebP.');
-  }
-  const bitmap = await createImageBitmap(file);
-  try {
-    const maxDimension = 3000;
-    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise((resolve, reject) => canvas.toBlob(
-      value => value ? resolve(value) : reject(new Error('Falha ao converter imagem.')), 'image/png'
-    ));
-    if (blob.size > 5 * 1024 * 1024) throw new Error('Imagem PNG excede 5 MB. Escolha uma menor.');
-    return blob;
-  } finally { bitmap.close(); }
-}
-
 async function enviarImagemSite(tipo, inputId) {
   const input = $(inputId);
   const file = input?.files?.[0];
@@ -2526,11 +2505,11 @@ async function enviarImagemSite(tipo, inputId) {
   button.textContent = "Enviando...";
 
   try {
-    const imagePNG = await prepararImagemPNG(file);
-    const path = `${tipo}.png`;
+    const ext = tipo === "favicon" ? "png" : (file.name.split(".").pop() || "png").toLowerCase();
+    const path = tipo === "logo" ? `logo.${ext}` : `${tipo}.png`;
     const { error: uploadError } = await supabaseClient.storage
       .from(ASSET_BUCKET)
-      .upload(path, imagePNG, { upsert: true, contentType: "image/png", cacheControl: "0" });
+      .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "0" });
     if (uploadError) throw uploadError;
 
     const publicUrl = `${ASSET_BASE}/${path}`;
@@ -2565,9 +2544,8 @@ async function enviarImagemCompartilhamento() {
   button.disabled = true;
   button.textContent = "Enviando...";
   try {
-    const imagePNG = await prepararImagemPNG(file);
-    const { error } = await supabaseClient.storage.from(ASSET_BUCKET).upload("share.png", imagePNG, {
-      upsert: true, contentType: "image/png", cacheControl: "0"
+    const { error } = await supabaseClient.storage.from(ASSET_BUCKET).upload("share.png", file, {
+      upsert: true, contentType: file.type, cacheControl: "0"
     });
     if (error) throw error;
     input.value = "";
@@ -2736,15 +2714,3 @@ $$(".admin-tabs button").forEach(button => {
 render();
 carregarFerramentasSupabase();
 carregarAparencia();
-
-// Melhorias de navegação e fechamento das janelas.
-document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  const opened = [...document.querySelectorAll('.modal-backdrop.show')].pop();
-  if (!opened) return;
-  opened.classList.remove('show');
-  if (opened.id === 'toolModal' && activeToolInterval) {
-    clearInterval(activeToolInterval);
-    activeToolInterval = null;
-  }
-});
