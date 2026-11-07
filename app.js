@@ -2584,9 +2584,45 @@ function renderAdmin(tab) {
         <b>${new Set(tools.map(t => t.cat)).size}</b> categorias<br><br>
         PD Tools conectado ao Supabase.
         <br><br>
+        <button class="secondary" id="adminPixAudit" type="button">Verificar Pix pendentes</button>
+        <p id="adminPixAuditStatus" role="status" aria-live="polite" style="white-space:pre-line;margin:10px 0"></p>
+        <br>
         <button class="secondary" id="adminLogout">Sair da conta administrativa</button>
       </div>
     `;
+
+    $("#adminPixAudit").onclick = async () => {
+      const button = $("#adminPixAudit");
+      const output = $("#adminPixAuditStatus");
+      button.disabled = true;
+      output.textContent = "Consultando pedidos pendentes no Mercado Pago...";
+      try {
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !sessionData?.session?.access_token) {
+          throw new Error("Entre novamente com sua conta administrativa.");
+        }
+        const response = await fetch("/api/auditar-pix", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+          cache: "no-store"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.erro || "Auditoria indisponível");
+        output.textContent =
+          `Registros pendentes: ${result.total_pendentes}\n` +
+          `Consultados: ${result.analisados}\n` +
+          `Creditados no Mercado Pago: ${result.creditados}\n` +
+          `Ainda pendentes: ${result.ainda_pendentes}\n` +
+          `Cancelados ou rejeitados: ${result.cancelados_ou_rejeitados}\n` +
+          `Inconclusivos: ${result.inconclusivos}\n` +
+          `Falhas de consulta: ${result.falhas_consulta}\n` +
+          "Esta consulta não modifica pagamentos nem assinaturas.";
+      } catch (error) {
+        output.textContent = error.message || "Falha ao consultar pagamentos.";
+      } finally {
+        button.disabled = false;
+      }
+    };
 
     $("#adminLogout").onclick = async () => {
       await supabaseClient.auth.signOut();
