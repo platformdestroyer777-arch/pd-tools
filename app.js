@@ -2452,16 +2452,15 @@ async function verificarAdmin() {
     return false;
   }
 
-  // Exige AAL2 apenas depois da ativação confirmada no banco.
-  // RLS continua sendo a autorização efetiva para operações administrativas.
-  if (data.require_mfa === true) {
-    const { data: assurance, error: assuranceError } =
-      await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (assuranceError || assurance?.currentLevel !== "aal2") {
-      if (window.PD_ADMIN_MFA?.open) await window.PD_ADMIN_MFA.open("verify");
-      else toast("Confirme o código 2FA antes de acessar o painel.");
-      return false;
-    }
+  // Todo administrador exige AAL2, mesmo que o registro tenha
+  // require_mfa=false por configuração antiga. O banco impõe o mesmo limite.
+  const { data: assurance, error: assuranceError } =
+    await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assuranceError || assurance?.currentLevel !== "aal2" ||
+      assurance?.nextLevel !== "aal2") {
+    if (window.PD_ADMIN_MFA?.open) await window.PD_ADMIN_MFA.open("verify");
+    else toast("Confirme o código 2FA antes de acessar o painel.");
+    return false;
   }
 
   adminSession = session;
