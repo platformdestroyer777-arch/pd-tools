@@ -65,7 +65,7 @@ function gifLzw(indices){
    emit(codeOf(previous));
    if(next<4096){
      dict.set(joined,next++);
-     if(next===(1<<size)&&size<12)size++;
+     if(next>(1<<size)&&size<12)size++;
    }else{emit(clear);reset()}
    previous=ch;
  }
