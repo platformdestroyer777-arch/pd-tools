@@ -40,33 +40,26 @@
   };
 
   async function checkAccess() {
-    const client = window.supabaseClient ||
-      (typeof supabaseClient !== "undefined" ? supabaseClient : null);
-
-    if (!client) return false;
+    const client = (typeof supabaseClient !== "undefined" && supabaseClient)
+      || window.supabaseClient || null;
+    if (!client?.auth?.getSession) return false;
 
     const { data: sessionData, error: sessionError } =
       await client.auth.getSession();
+    if (sessionError) throw sessionError;
 
-    if (sessionError || !sessionData?.session?.user) return false;
+    const token = sessionData?.session?.access_token;
+    if (!token) return false;
 
-    const { data: userData, error: userError } =
-      await client.auth.getUser();
-
-    if (userError || !userData?.user) return false;
-
-    const { data, error } = await client
-      .from("premium_access")
-      .select("expires_at")
-      .eq("user_id", userData.user.id)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    return Boolean(
-      data?.expires_at &&
-      Date.parse(data.expires_at) > Date.now()
-    );
+    // Verificação confiável no servidor; não usa a hora do navegador.
+    const response = await fetch("/api/premium-status", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store"
+    });
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error("Não foi possível verificar o Premium.");
+    const result = await response.json();
+    return result.active === true;
   }
 
   function fileToBlob(file, type, quality) {
