@@ -32,8 +32,8 @@ assert.match(db,/CREATE SCHEMA IF NOT EXISTS pd_internal/);
 assert.match(db,/CREATE TABLE IF NOT EXISTS pd_internal\.admin_audit_log/);
 assert.match(db,/ENABLE ROW LEVEL SECURITY/);
 assert.match(db,/REVOKE ALL ON SCHEMA pd_internal FROM PUBLIC, anon, authenticated/);
-for(const table of ["admins","tools","site_settings"]) {
- assert.match(db,new RegExp("CREATE TRIGGER pd_audit_"+table+"_change"));
+for(const trigger of ["pd_audit_admins_change","pd_audit_tools_change","pd_audit_settings_change"]) {
+ assert.ok(db.includes("CREATE TRIGGER "+trigger),"Missing audit trigger: "+trigger);
 }
 assert.match(db,/CREATE TABLE IF NOT EXISTS pd_internal\.premium_grant_events/);
 
