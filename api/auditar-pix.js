@@ -60,6 +60,20 @@ export default async function handler(req, res) {
       return res.status(403).json({ erro: "Confirme o código 2FA para acessar a auditoria" });
     }
 
+    // Cada auditoria pode consultar até 15 pedidos externos. A limitação
+    // transacional impede consultas excessivas mesmo entre instâncias serverless.
+    const { data: auditAllowed, error: auditRateError } = await client.rpc(
+      "claim_admin_audit_slot", { p_user_id: userId }
+    );
+    if (auditRateError) {
+      console.error("Limite de auditoria indisponível:", auditRateError.message);
+      return res.status(503).json({ erro: "Proteção de auditoria indisponível" });
+    }
+    if (auditAllowed !== true) {
+      res.setHeader("Retry-After", "600");
+      return res.status(429).json({ erro: "Limite de auditorias atingido. Tente novamente mais tarde." });
+    }
+
     const { data: pending, error: paymentError, count } = await client
       .from("premium_payments")
       .select("id,provider_order_id,provider_payment_id,payment_type,amount,currency,created_at", { count: "exact" })
