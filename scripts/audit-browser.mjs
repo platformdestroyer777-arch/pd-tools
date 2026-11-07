@@ -105,6 +105,17 @@ async function main(){
  }
  console.log("ABERTURA_FREE: "+report.free.length+"/80");
 
+ // Injeções armazenadas simuladas: todos os campos do catálogo devem ser escapados.
+ const xssToolId="audit-xss-dummy";
+ await guest.evaluate(id=>{
+   tools.push({id,name:'<img src=x onerror="window.__pdXss=true">',desc:'<svg/onload=window.__pdXss=true>',cat:"Injeção <img>",icon:'"><script>window.__pdXss=true</script>',active:true});
+   render();
+ },xssToolId);
+ check(await guest.locator('[data-tool="audit-xss-dummy"] img').count()===0,"Card executou marcação HTML injetada");
+ check(await guest.evaluate(()=>!window.__pdXss),"XSS no catálogo de ferramentas");
+ await guest.evaluate(()=>{tools=tools.filter(t=>t.id!=="audit-xss-dummy");render()});
+ report.functional.push("Campos de catálogo escapam HTML, SVG e atributos maliciosos");
+
  await guest.locator('#filters [data-cat="Premium"]').click();
  await guest.waitForSelector(".pd-premium-unlock",{timeout:6000});
  check(await guest.locator("[data-premium-tool]").count()===0,"Vitrine revela cards Premium para visitante sem assinatura");
