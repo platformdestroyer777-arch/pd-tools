@@ -30,6 +30,12 @@ function encodeCSV(rows,sep=","){
   }).join(sep)).join("\r\n");
 }
 function requireZip(){if(!window.JSZip)throw Error("Biblioteca ZIP não disponível.");return new JSZip()}
+function checkZipFiles(fs) {
+  const bytes = fs.reduce((sum, f) => sum + f.size, 0);
+  if (bytes > 120 * 1024 * 1024) {
+    throw Error("Limite de 120 MB por arquivo ZIP para evitar travamentos.");
+  }
+}
 const clean=name=>String(name).replace(/[/\\<>:"|?*\x00-\x1f]/g,"_").replace(/^\.+$/,"arquivo").slice(0,130)||"arquivo";
 reg("csv-editor",async h=>{
  const {$,file,select,btn,result,content,status,textDownload,protect}=h;
@@ -70,7 +76,7 @@ reg("file-organizer",async h=>{
  +btn("pnSave","Organizar e baixar ZIP")+result();
  $("pnSave").onclick=protect(async()=>{
    const fs=Array.from($("pnFiles").files);
-   if(!fs.length)throw Error("Selecione arquivos.");if(fs.length>150)throw Error("Limite de 150 arquivos.");
+   if(!fs.length)throw Error("Selecione arquivos.");if(fs.length>150)throw Error("Limite de 150 arquivos.");checkZipFiles(fs);
    const zip=requireZip(),used=new Set();
    for(const f of fs){
      const ext=(f.name.split(".").pop()||"").toLowerCase();
@@ -95,7 +101,7 @@ reg("bulk-rename",async h=>{
  +btn("pnSave","Renomear e baixar ZIP")+result();
  $("pnSave").onclick=protect(async()=>{
    const fs=Array.from($("pnFiles").files),start=Number($("pnStart").value);
-   if(!fs.length)throw Error("Selecione arquivos.");if(fs.length>150)throw Error("Limite de 150 arquivos.");
+   if(!fs.length)throw Error("Selecione arquivos.");if(fs.length>150)throw Error("Limite de 150 arquivos.");checkZipFiles(fs);
    if(!Number.isInteger(start)||start<0||start>999999)throw Error("Numeração inválida.");
    const prefix=clean($("pnPrefix").value);const zip=requireZip();
    fs.forEach((f,i)=>{const ext=f.name.includes(".")?"."+clean(f.name.split(".").pop()):"";zip.file(prefix+"-"+String(start+i).padStart(3,"0")+ext,f)});
@@ -108,7 +114,7 @@ reg("zip-maker",async h=>{
  +input("pnName","Nome do arquivo ZIP","text","meus-arquivos")+btn("pnSave","Criar arquivo ZIP")+result();
  $("pnSave").onclick=protect(async()=>{
    const fs=Array.from($("pnFiles").files);if(!fs.length)throw Error("Selecione arquivos.");
-   if(fs.length>200)throw Error("Limite de 200 arquivos.");
+   if(fs.length>200)throw Error("Limite de 200 arquivos.");checkZipFiles(fs);
    const zip=requireZip(),used=new Set();
    for(const f of fs){let name=clean(f.name),n=1;while(used.has(name))name=n+++"-"+clean(f.name);used.add(name);zip.file(name,f)}
    download(await zip.generateAsync({type:"blob",compression:"DEFLATE"}),clean($("pnName").value)+".zip");
