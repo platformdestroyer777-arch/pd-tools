@@ -307,14 +307,14 @@ async function main(){
  await paid.evaluate(()=>document.querySelector('[data-premium-tool="subtitle-converter"]').click());
  await paid.waitForSelector("#pnSubtitleText");
  await paid.locator("#pnConvert").click();
- check((await paid.locator("#pnOutput").inputValue()).startsWith("WEBVTT"),"SRT não converteu para VTT");
+ await paid.waitForFunction(()=>document.querySelector("#pnOutput")?.value.startsWith("WEBVTT"),null,{timeout:7000});
  report.functional.push("SRT para VTT conversão real");
  await closeModal(paid);
 
  await paid.evaluate(()=>document.querySelector('[data-premium-tool="meta-generator"]').click());
  await paid.waitForSelector("#pnGenerate");
  await paid.locator("#pnGenerate").click();
- check((await paid.locator("#pnOutput").inputValue()).includes('og:title'),"Meta tags não geradas");
+ await paid.waitForFunction(()=>document.querySelector("#pnOutput")?.value.includes('og:title'),null,{timeout:7000});
  report.functional.push("Meta tags SEO geradas");
  await closeModal(paid);
 
