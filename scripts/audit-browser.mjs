@@ -116,6 +116,43 @@ async function main(){
  await guest.evaluate(()=>{tools=tools.filter(t=>t.id!=="audit-xss-dummy");render()});
  report.functional.push("Campos de catálogo escapam HTML, SVG e atributos maliciosos");
 
+
+ const imageBase64=await guest.evaluate(()=>{
+   const c=document.createElement("canvas");c.width=100;c.height=80;
+   const ctx=c.getContext("2d");
+   ctx.fillStyle="#9944ff";ctx.fillRect(0,0,100,80);
+   ctx.fillStyle="#ffffff";ctx.fillRect(10,10,30,30);
+   return c.toDataURL("image/png").split(",")[1];
+ });
+ const imageBuffer=Buffer.from(imageBase64,"base64");
+ const imageCases=[
+   ["image-compressor","imgCompFile","imgCompGo","#imgCompDownload"],
+   ["image-resizer","imgResizeFile","imgResizeGo","#imgResizeDownload"],
+   ["image-converter","imgConvertFile","imgConvertGo","#imgConvertDownload"],
+   ["image-crop","imgCropFile","imgCropGo","#imgCropDownload"],
+   ["image-rotate","imgRotateFile","imgRotateGo","#imgRotateDownload"],
+   ["image-resolution","imgResFile","imgResGo","#imgResDownload"],
+   ["image-circle","imgCircleFile","imgCircleGo","#imgCircleDownload"],
+   ["image-watermark","imgWaterFile","imgWaterGo","#imgWaterDownload"]
+ ];
+ for(const [id,fileId,actionId,output] of imageCases){
+   await openFree(guest,id);
+   await guest.locator("#"+fileId).setInputFiles({name:"amostra.png",mimeType:"image/png",buffer:imageBuffer});
+   await guest.waitForTimeout(250);
+   if(id==="image-watermark")await guest.locator("#imgWaterText").fill("PD Tools");
+   await guest.locator("#"+actionId).click();
+   await guest.locator(output).waitFor({state:"visible",timeout:7000});
+   report.functional.push("Imagem grátis: "+id+" -> arquivo preparado");
+   await closeModal(guest);
+ }
+ await openFree(guest,"image-color-picker");
+ await guest.locator("#imgColorFile").setInputFiles({name:"amostra.png",mimeType:"image/png",buffer:imageBuffer});
+ await guest.locator("#imgColorPreview canvas").waitFor({state:"visible",timeout:7000});
+ await guest.locator("#imgColorPreview canvas").click({position:{x:50,y:40}});
+ check((await guest.locator("#imgColorResult").innerText()).includes("HEX:"),"Seletor de cores não leu pixel");
+ report.functional.push("Imagem grátis: seletor HEX/RGB reconheceu pixel");
+ await closeModal(guest);
+
  await guest.locator('#filters [data-cat="Premium"]').click();
  await guest.waitForSelector(".pd-premium-unlock",{timeout:6000});
  check(await guest.locator("[data-premium-tool]").count()===0,"Vitrine revela cards Premium para visitante sem assinatura");
