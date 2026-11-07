@@ -37,3 +37,5 @@ jobs:
         run: node scripts/check-premium.mjs
       - name: Smoke HTTP sem credenciais e sem pagamentos
         run: node scripts/live-smoke.mjs
+      - name: Testes ampliados de segurança HTTP (sem pagamentos)
+        run: node scripts/audit-security.mjs
