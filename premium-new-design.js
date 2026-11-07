@@ -67,22 +67,30 @@ reg("svg-png",async h=>{
  $("pnSave").onclick=protect(async()=>{if(!ready)throw Error("Converta primeiro.");download(await toBlob($("pnCanvas")),"pdtools-vetor.png")});
 });
 reg("privacy-blur",async h=>{
- const {$,file,input,btn,result,canvas,content,status,download,toBlob,image,protect}=h;
+ const {$,file,input,select,btn,result,canvas,content,status,download,toBlob,image,protect}=h;
  content.innerHTML=file("pnPicture","Imagem para ocultar informações","image/*")
- +'<p class="pd-premium-result">Arraste o dedo ou mouse sobre a prévia para selecionar a área sensível. A área será <strong>coberta de forma irreversível</strong> na imagem exportada.</p>'
+ +'<p class="pd-premium-result">Arraste o dedo ou mouse para selecionar a área. Para senhas e dados pessoais, prefira a tarja sólida: o desfoque não garante ocultação completa.</p>'
+ +select("pnBlurMode","Como ocultar",[["cover","Tarja sólida (mais segura)"],["blur","Desfoque forte"]])
  +input("pnColor","Cor da tarja","color","#18181b")
  +btn("pnLoad","Abrir imagem")+canvas("pnCanvas")
  +btn("pnUndo","Desfazer última tarja")+" "+btn("pnSave","Baixar imagem protegida")+result();
- const c=$("pnCanvas");let base=null,rects=[],start=null,preview=null;
+ const c=$("pnCanvas");let base=null,rects=[],start=null,preview=null,blurred=null;
  const coords=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}};
  function draw(){
    if(!base)return;const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
    ctx.drawImage(base,0,0,c.width,c.height);ctx.fillStyle=$("pnColor").value;
-   for(const r of [...rects,...(preview?[preview]:[])])ctx.fillRect(r.x,r.y,r.w,r.h);
+   for(const r of [...rects,...(preview?[preview]:[])]){
+     if($("pnBlurMode").value==="blur"&&blurred){
+       ctx.drawImage(blurred,r.x,r.y,r.w,r.h,r.x,r.y,r.w,r.h);
+     }else ctx.fillRect(r.x,r.y,r.w,r.h);
+   }
  }
  $("pnLoad").onclick=protect(async()=>{
    base=await image($("pnPicture").files[0]);const scale=Math.min(1,1800/Math.max(base.width,base.height));
    c.width=Math.round(base.width*scale);c.height=Math.round(base.height*scale);
+   blurred=document.createElement("canvas");blurred.width=c.width;blurred.height=c.height;
+   const blurCtx=blurred.getContext("2d");blurCtx.filter="blur(24px)";
+   blurCtx.drawImage(base,0,0,c.width,c.height);
    rects=[];preview=null;draw();status("Arraste sobre dados que deseja esconder.");
  });
  c.style.touchAction="none";
@@ -91,6 +99,7 @@ reg("privacy-blur",async h=>{
  const finish=e=>{if(!start)return;const p=coords(e),r={x:Math.min(start.x,p.x),y:Math.min(start.y,p.y),w:Math.abs(p.x-start.x),h:Math.abs(p.y-start.y)};if(r.w>3&&r.h>3)rects.push(r);start=null;preview=null;draw();status(rects.length+" área(s) coberta(s).")};
  c.addEventListener("pointerup",finish);c.addEventListener("pointercancel",()=>{start=null;preview=null;draw()});
  $("pnColor").onchange=draw;
+ $("pnBlurMode").onchange=draw;
  $("pnUndo").onclick=()=>{rects.pop();draw()};
  $("pnSave").onclick=protect(async()=>{if(!base)throw Error("Abra a imagem primeiro.");if(!rects.length)throw Error("Selecione uma área para proteger.");download(await toBlob(c),"pdtools-informacoes-ocultas.png");status("Imagem protegida exportada.")});
 });
