@@ -2322,6 +2322,24 @@ async function verificarAdmin() {
     return false;
   }
 
+  // Exige TOTP apenas depois de o administrador ter cadastrado um fator.
+  // A proteção efetiva de alterações é aplicada em RLS no Supabase.
+  const { data: assurance, error: assuranceError } =
+    await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+
+  if (assuranceError || !assurance) {
+    toast("Não foi possível confirmar o nível de segurança da sessão.");
+    return false;
+  }
+  if (assurance.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+    if (window.PD_ADMIN_MFA?.open) {
+      await window.PD_ADMIN_MFA.open("verify");
+    } else {
+      toast("A verificação em duas etapas está indisponível.");
+    }
+    return false;
+  }
+
   adminSession = session;
   return true;
 }
@@ -2331,6 +2349,7 @@ async function abrirAdmin() {
   const autorizado = await verificarAdmin();
 
   if (!autorizado) {
+    if (window.PD_ADMIN_MFA?.isOpen()) return;
     toast(
       "Entre com sua conta administrativa e clique novamente em Painel administrativo."
     );
@@ -2584,12 +2603,15 @@ function renderAdmin(tab) {
         <b>${new Set(tools.map(t => t.cat)).size}</b> categorias<br><br>
         PD Tools conectado ao Supabase.
         <br><br>
+        <button class="secondary" id="adminMfaSettings" type="button">🔐 Proteger painel com 2FA</button><br><br>
         <button class="secondary" id="adminPixAudit" type="button">Verificar Pix pendentes</button>
         <p id="adminPixAuditStatus" role="status" aria-live="polite" style="white-space:pre-line;margin:10px 0"></p>
         <br>
         <button class="secondary" id="adminLogout">Sair da conta administrativa</button>
       </div>
     `;
+
+    $("#adminMfaSettings").onclick = () => window.PD_ADMIN_MFA?.open("setup");
 
     $("#adminPixAudit").onclick = async () => {
       const button = $("#adminPixAudit");
