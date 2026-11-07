@@ -120,7 +120,8 @@ export default async function handler(req, res) {
         headers: {
           Authorization: `Bearer ${mpToken}`,
           Accept: "application/json"
-        }
+        },
+        signal: AbortSignal.timeout(9000)
       }
     );
 
@@ -170,6 +171,8 @@ export default async function handler(req, res) {
     const valorPagoPayment = centavos(payment.paid_amount);
 
     if (
+      (order.currency_id && order.currency_id !== "BRL") ||
+      (payment.currency_id && payment.currency_id !== "BRL") ||
       valorOrder === null ||
       valorOrder < 10 ||
       valorOrder > 10000000 ||
