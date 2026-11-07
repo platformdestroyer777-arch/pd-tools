@@ -34,3 +34,34 @@ END;
 $function$;
 REVOKE ALL ON FUNCTION public.claim_pix_checkout_slot(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.claim_pix_checkout_slot(uuid) TO service_role;
+
+
+-- Rate limit separado para o botão autenticado "Verificar pagamento".
+CREATE TABLE IF NOT EXISTS public.pix_status_rate_limits (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  window_started timestamptz NOT NULL DEFAULT now(),
+  attempts integer NOT NULL DEFAULT 0
+);
+ALTER TABLE public.pix_status_rate_limits ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.pix_status_rate_limits FROM PUBLIC, anon, authenticated;
+CREATE OR REPLACE FUNCTION public.claim_pix_status_slot(p_user_id uuid)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path TO ''
+AS $function$
+DECLARE
+  v_at timestamptz := now();
+  v_attempts integer;
+BEGIN
+  IF auth.role() IS DISTINCT FROM 'service_role' OR p_user_id IS NULL THEN
+    RAISE EXCEPTION 'Acesso não autorizado';
+  END IF;
+  INSERT INTO public.pix_status_rate_limits AS limits(user_id, window_started, attempts)
+  VALUES (p_user_id, v_at, 1)
+  ON CONFLICT (user_id) DO UPDATE SET
+    window_started = CASE WHEN limits.window_started < v_at - interval '10 minutes' THEN v_at ELSE limits.window_started END,
+    attempts = CASE WHEN limits.window_started < v_at - interval '10 minutes' THEN 1 ELSE limits.attempts + 1 END
+  RETURNING attempts INTO v_attempts;
+  RETURN v_attempts <= 12;
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.claim_pix_status_slot(uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_pix_status_slot(uuid) TO service_role;
