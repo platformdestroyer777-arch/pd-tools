@@ -354,6 +354,41 @@ async function main(){
    report.functional.push("ZIP Premium: "+id);await closeModal(paid);
  }
 
+
+ // PDF Studio: unite and extract actual PDF pages. Validate external library SRI.
+ await openPaid("pdf-studio","#pxFiles");
+ const samplePdf=Buffer.from(await paid.evaluate(async()=>{
+   await new Promise((resolve,reject)=>{
+     if(window.PDFLib){resolve();return}
+     const script=document.createElement("script");
+     script.src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js";
+     script.integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI";
+     script.crossOrigin="anonymous";
+     script.onload=resolve;script.onerror=()=>reject(Error("Biblioteca PDF não carregou"));
+     document.head.append(script);
+   });
+   const pdf=await PDFLib.PDFDocument.create();
+   pdf.addPage([200,240]);return Array.from(await pdf.save());
+ }));
+ await paid.locator("#pxFiles").setInputFiles([
+   {name:"a.pdf",mimeType:"application/pdf",buffer:samplePdf},
+   {name:"b.pdf",mimeType:"application/pdf",buffer:samplePdf}
+ ]);
+ await expectFile("pxRun",".pdf");
+ check((await paid.locator("#pxStatus").innerText()).includes("sucesso"),"PDF Studio não uniu páginas");
+ report.functional.push("PDF Studio uniu 2 PDFs reais");await closeModal(paid);
+
+ await openPaid("pdf-studio","#pxFiles");
+ await paid.locator("#pxFiles").setInputFiles([{name:"a.pdf",mimeType:"application/pdf",buffer:samplePdf}]);
+ await paid.locator("#pxOperation").selectOption("extract");
+ await expectFile("pxRun",".pdf");
+ report.functional.push("PDF Studio extraiu páginas reais");await closeModal(paid);
+
+ await openPaid("pdf-compress","#pxFile");
+ await paid.locator("#pxFile").setInputFiles({name:"a.pdf",mimeType:"application/pdf",buffer:samplePdf});
+ await expectFile("pxRun",".pdf");
+ report.functional.push("Compressor de PDF abriu, rasterizou e exportou PDF real");await closeModal(paid);
+
  // Teste real do leitor QR usando QR Code gerado na sessão do navegador.
  const qrBase64=await paid.evaluate(async()=>{
    if(typeof QRCode!=="function")return null;
