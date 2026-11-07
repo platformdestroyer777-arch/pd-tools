@@ -82,8 +82,13 @@
       if (verified) {
         factorId = verified.id;
         if (currentLevel === "aal2") {
+          // Finaliza a ativação somente quando a sessão e um fator estiverem validados.
+          const { data: enabled, error: gateError } = await client.rpc("enable_admin_mfa");
+          if (gateError || enabled !== true) {
+            throw new Error("Não foi possível ativar a proteção MFA no banco");
+          }
           info.textContent = "Seu 2FA está ativado e a sessão já foi verificada. Seu painel tem proteção adicional.";
-          setStatus("Proteção ativa.");
+          setStatus("Proteção no banco ativa.");
           showCode(false);
         } else {
           mode = "verify";
@@ -145,8 +150,14 @@
     verifyButton.disabled = true;
     setStatus("Validando seu código com o Supabase...");
     try {
-      const { error } = await getClient().auth.mfa.challengeAndVerify({ factorId, code });
+      const client = getClient();
+      const { error } = await client.auth.mfa.challengeAndVerify({ factorId, code });
       if (error) throw error;
+      const { data: enabled, error: gateError } = await client.rpc("enable_admin_mfa");
+      if (gateError || enabled !== true) {
+        setStatus("2FA confirmado, mas a proteção do banco não foi ativada. Abra esta tela novamente para concluir.");
+        return;
+      }
       codeInput.value = "";
       secret.textContent = "";
       qrImage.removeAttribute("src");
