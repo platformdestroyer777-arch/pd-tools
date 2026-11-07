@@ -112,6 +112,22 @@ export default async function handler(req, res) {
       });
     }
 
+    // Proteção transacional contra abuso: 4 Pix/10min e 24 Pix/24h por usuário.
+    // Esta função deve ser instalada no Supabase antes do deploy.
+    const { data: slotAllowed, error: slotError } = await supabase.rpc(
+      "claim_pix_checkout_slot", { p_user_id: user.id }
+    );
+    if (slotError) {
+      console.error("Rate limit indisponível:", slotError.message);
+      return res.status(503).json({ erro: "Proteção de pagamentos indisponível" });
+    }
+    if (slotAllowed !== true) {
+      res.setHeader("Retry-After", "600");
+      return res.status(429).json({
+        erro: "Muitas cobranças recentes. Aguarde antes de gerar outro Pix."
+      });
+    }
+
     const paymentId = randomUUID();
 
     // Registrar o pagamento com seu tipo correto.

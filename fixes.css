@@ -402,3 +402,10 @@ body.donation-popup-open {
     font-size: 18px;
   }
 }
+
+
+/* Acessibilidade para navegação por teclado nas ferramentas */
+.tool-card[role="button"]:focus-visible {
+  outline: 3px solid #b39aff;
+  outline-offset: 4px;
+}

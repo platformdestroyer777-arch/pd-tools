@@ -84,6 +84,14 @@ export default async function handler(req, res) {
     });
   }
 
+  // Reenvios legítimos podem ocorrer por dias; rejeitar assinaturas antigas.
+  const timestamp = Number(ts);
+  const timestampMs = ts.length <= 10 ? timestamp * 1000 : timestamp;
+  if (!Number.isSafeInteger(timestampMs) ||
+      Math.abs(Date.now() - timestampMs) > 7 * 24 * 60 * 60 * 1000) {
+    return res.status(401).json({ erro: "Notificação fora da janela válida" });
+  }
+
   const manifest =
     `id:${dataId.toLowerCase()};` +
     `request-id:${requestId};` +
@@ -195,7 +203,7 @@ export default async function handler(req, res) {
     );
 
     // 5. Conferir o registro original.
-    const { data: registro, error: consultaErro } =
+    let { data: registro, error: consultaErro } =
       await supabase
         .from("premium_payments")
         .select(`
@@ -226,14 +234,44 @@ export default async function handler(req, res) {
     if (
       !registro ||
       centavos(registro.amount) !== valorOrder ||
-      registro.provider_order_id !== String(order.id) ||
-      registro.provider_payment_id !== String(payment.id) ||
-      !["subscription", "donation"].includes(
-        registro.payment_type
-      )
+      !["subscription", "donation"].includes(registro.payment_type)
     ) {
       return res.status(400).json({
         erro: "Pagamento não corresponde ao registro"
+      });
+    }
+
+    // Corrida legítima: a notificação pode chegar antes do POST /v1/orders
+    // terminar de gravar os IDs. Vincular uma única vez, sob condição atômica.
+    // A order já foi autenticada por HMAC, consultada com nosso token MP,
+    // e sua external_reference corresponde ao UUID gerado pelo servidor.
+    if (registro.status === "pending" &&
+        (!registro.provider_order_id || !registro.provider_payment_id) &&
+        (!registro.provider_order_id || registro.provider_order_id === String(order.id)) &&
+        (!registro.provider_payment_id || registro.provider_payment_id === String(payment.id))) {
+      const updates = {};
+      if (!registro.provider_order_id) updates.provider_order_id = String(order.id);
+      if (!registro.provider_payment_id) updates.provider_payment_id = String(payment.id);
+      let query = supabase.from("premium_payments")
+        .update(updates).eq("id", registro.id).eq("status", "pending");
+      if (!registro.provider_order_id) query = query.is("provider_order_id", null);
+      if (!registro.provider_payment_id) query = query.is("provider_payment_id", null);
+      const { data: vinculado, error: vinculoErro } = await query
+        .select("provider_order_id, provider_payment_id").maybeSingle();
+      if (vinculoErro) {
+        console.error("Erro ao conciliar order:", vinculoErro.message);
+        return res.status(503).json({ erro: "Tente reenviar a notificação" });
+      }
+      if (vinculado) registro = { ...registro, ...vinculado };
+    }
+
+    if (
+      registro.provider_order_id !== String(order.id) ||
+      registro.provider_payment_id !== String(payment.id)
+    ) {
+      // 503 mantém o webhook na fila de reenvios, sem aprovar cobrança errada.
+      return res.status(503).json({
+        erro: "Identificadores ainda não conciliados"
       });
     }
 
