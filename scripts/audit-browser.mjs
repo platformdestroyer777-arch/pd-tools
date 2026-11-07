@@ -122,7 +122,8 @@ async function main(){
  await guest.locator("#scientificInput").fill("sin(30)");
  await guest.locator("#scientificAngle").selectOption("deg");
  await guest.locator("#scientificGo").click();
- check(Math.abs(Number(await guest.locator("#scientificResult").innerText())-0.5)<1e-7,"Calculadora científica incompatível com CSP");
+ const scientificOutput=(await guest.locator("#scientificResult").innerText()).trim();
+ check(Math.abs(Number(scientificOutput.replace(",","."))-0.5)<1e-7,"Calculadora científica incompatível com CSP: "+scientificOutput);
  await guest.locator("#scientificInput").fill("window.constructor.constructor('alert(1)')()");
  await guest.locator("#scientificGo").click();
  check((await guest.locator("#scientificResult").innerText()).includes("não permitido")||
